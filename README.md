@@ -8,7 +8,7 @@ Orbit brings your everyday web tools and research reading into one calm workspac
 
 **You can download only [Orbit.exe](https://github.com/baiming-zhang/Orbit-Workspace/releases/latest/download/Orbit.exe)** if you just want to use the app. Place it anywhere convenient and double-click it; the source-code folder is not required for normal use.
 
-![Orbit Workspace home screen](docs/home-v1.8.3.png)
+![Orbit Workspace home screen](docs/home-window-v1.8.3.png)
 
 ## Highlights
 
