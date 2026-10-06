@@ -19,7 +19,7 @@ function Invoke-Checked([string]$Command, [string[]]$Arguments) {
 $template = Join-Path $sourceRoot 'build\runtime-template.7z'
 if (-not (Test-Path -LiteralPath $template)) {
     Write-Host 'Downloading the Orbit runtime template...'
-    Invoke-WebRequest -Uri 'https://github.com/baiming-zhang/Orbit-Workspace/releases/download/v1.8.2/runtime-template.7z' -OutFile $template
+    Invoke-WebRequest -Uri 'https://github.com/baiming-zhang/Orbit-Workspace/releases/download/v1.8.3/runtime-template.7z' -OutFile $template
 }
 Invoke-Checked $SevenZip @('x', (Join-Path $sourceRoot 'build\runtime-template.7z'), ('-o' + $runtimeRoot), '-y')
 Invoke-Checked $PythonExecutable @((Join-Path $sourceRoot 'build\pack_asar.py'), (Join-Path $sourceRoot 'app'), (Join-Path $runtimeRoot 'resources\app.asar'))

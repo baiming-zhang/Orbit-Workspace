@@ -6,7 +6,7 @@ const {parseMeetingLink}=require('./links.cjs');
 const defaults=require('./google-defaults.cjs');
 const {createMeetingReader}=require('./meetings.cjs');
 const OrbitTime=require('../dist/timezone.js');
-const scopes=['https://www.googleapis.com/auth/gmail.readonly','https://www.googleapis.com/auth/calendar.readonly'];
+const scopes=['openid','profile','https://www.googleapis.com/auth/gmail.readonly','https://www.googleapis.com/auth/calendar.readonly'];
 function dayWindow(now=new Date(),zone='Asia/Shanghai'){return OrbitTime.dayWindow(now,zone);}
 function zoomInEvent(event){
  const text=[event.location,event.description,event.conferenceData?.entryPoints?.map(p=>p.uri).join(' ')].filter(Boolean).join(' ').replaceAll('&amp;','&');
@@ -15,7 +15,7 @@ function zoomInEvent(event){
 }
 function createGoogle({app,safeStorage,shell,getTimeZone=()=> 'Asia/Shanghai'}){
  const filename=path.join(app.getPath('userData'),'google-connection.enc');
- let config={...defaults};let access=null;let authorizeCancel=null;let generation=0;let refreshPromise=null;
+ let config={...defaults};let access=null;let authorizeCancel=null;let generation=0;let refreshPromise=null;let profileCache=null;
  try{if(fs.existsSync(filename)&&safeStorage.isEncryptionAvailable()){const saved=JSON.parse(safeStorage.decryptString(fs.readFileSync(filename)));config={...defaults,...saved};if(saved.clientId&&saved.clientId!==defaults.clientId)config.clientSecret=saved.clientSecret||'';}}catch{config={...defaults};}
  function save(){delete config.propertyId;if(!safeStorage.isEncryptionAvailable())throw new Error('Windows 凭据加密暂时不可用，无法保存授权。');fs.mkdirSync(path.dirname(filename),{recursive:true});const tmp=filename+'.tmp';fs.writeFileSync(tmp,safeStorage.encryptString(JSON.stringify(config)));fs.renameSync(tmp,filename);}
  function connection(){return {clientId:config.clientId||'',hasSecret:!!config.clientSecret,connected:!!config.refreshToken,calendarWrite:!!config.calendarWrite};}
@@ -73,7 +73,16 @@ function createGoogle({app,safeStorage,shell,getTimeZone=()=> 'Asia/Shanghai'}){
   let pageToken,events=[],pages=0,truncated=false;
   do{const u=new URL('https://www.googleapis.com/calendar/v3/calendars/primary/events');Object.entries({timeMin:window.start,timeMax:window.end,singleEvents:'true',orderBy:'startTime',maxResults:'250',timeZone:OrbitTime.offset(getTimeZone())===null?getTimeZone():'UTC'}).forEach(([k,v])=>u.searchParams.set(k,v));if(pageToken)u.searchParams.set('pageToken',pageToken);const data=await api(u.href);events.push(...(data.items||[]).filter(e=>e.status!=='cancelled').map(e=>{const start=e.start?.dateTime,end=e.end?.dateTime;return {id:'google:'+e.id,title:e.summary||'（无标题）',date:start?dayWindow(new Date(start),getTimeZone()).date:(e.start?.date||window.date),startAt:start||null,allDay:!start,time:start?OrbitTime.clock(start,getTimeZone()):'全天',duration:start&&end?Math.max(0,Math.round((new Date(end)-new Date(start))/60000)):1440,location:e.location||'',notes:(e.description||'').replace(/<[^>]*>/g,''),zoomLink:zoomInEvent(e),htmlLink:e.htmlLink||'',type:'blue',remote:true};}));pageToken=data.nextPageToken;pages++;if(pages>=10&&pageToken){truncated=true;break;}}while(pageToken);return {status:'success',events,truncated};
  }
- async function getSummary(){const window=dayWindow(new Date(),getTimeZone());if(!config.refreshToken)return {connected:false,date:window.date,gmail:{status:'not_connected'},calendar:{status:'not_connected'}};const catchSource=fn=>fn().catch(error=>({status:'error',error:error.message}));const [g,c]=await Promise.all([catchSource(()=>gmail(window)),catchSource(()=>calendar(window))]);return {connected:true,date:window.date,updatedAt:Date.now(),gmail:g,calendar:c};}
+ async function getProfile(){
+  if(!config.refreshToken)return null;
+  if(profileCache?.generation===generation&&profileCache.expires>Date.now())return profileCache.profile;
+  const ownGeneration=generation;let profile=null;
+  try{const data=await api('https://openidconnect.googleapis.com/v1/userinfo');const name=typeof data.name==='string'?data.name.trim().slice(0,100):'';if(name)profile={name};}catch{}
+  if(ownGeneration!==generation)return null;
+  profileCache={generation,profile,expires:Date.now()+(profile?300000:60000)};
+  return profile;
+ }
+ async function getSummary(){const window=dayWindow(new Date(),getTimeZone());if(!config.refreshToken)return {connected:false,profile:null,date:window.date,gmail:{status:'not_connected'},calendar:{status:'not_connected'}};const catchSource=fn=>fn().catch(error=>({status:'error',error:error.message}));const [g,c,profile]=await Promise.all([catchSource(()=>gmail(window)),catchSource(()=>calendar(window)),getProfile()]);return {connected:true,profile,date:window.date,updatedAt:Date.now(),gmail:g,calendar:c};}
  async function disconnect(){meetingReader.clear();generation++;authorizeCancel?.();access=null;const refreshToken=config.refreshToken;config.refreshToken=null;config.calendarWrite=false;save();if(refreshToken){try{await fetch('https://oauth2.googleapis.com/revoke',{method:'POST',body:new URLSearchParams({token:refreshToken}),signal:AbortSignal.timeout(10000)});}catch{}}return {ok:true};}
  function calendarUrl(calendarId,eventId){if(typeof calendarId!=='string'||!calendarId||calendarId.length>1024)throw Error('日历 ID 不正确。');if(eventId!==undefined&&(typeof eventId!=='string'||!eventId||eventId.length>1024))throw Error('日程 ID 不正确。');return 'https://www.googleapis.com/calendar/v3/calendars/'+encodeURIComponent(calendarId)+'/events'+(eventId?'/'+encodeURIComponent(eventId):'');}
  async function readCalendar({calendarId='primary',start,end}={}){const window=dayWindow(new Date(),getTimeZone());const u=new URL(calendarUrl(calendarId));const min=start||window.start,max=end||window.end;if(!Number.isFinite(Date.parse(min))||!Number.isFinite(Date.parse(max))||Date.parse(max)<=Date.parse(min))throw Error('日程范围不正确。');Object.entries({timeMin:new Date(min).toISOString(),timeMax:new Date(max).toISOString(),singleEvents:'true',showHiddenInvitations:'true',maxResults:'2500',orderBy:'startTime'}).forEach(([k,v])=>u.searchParams.set(k,v));let nextPage,events=[];do{if(nextPage)u.searchParams.set('pageToken',nextPage);const data=await api(u.href);events.push(...(data.items||[]));nextPage=data.nextPageToken;}while(nextPage);return {calendarId,events};}

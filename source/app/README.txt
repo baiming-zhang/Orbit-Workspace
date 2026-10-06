@@ -1,4 +1,4 @@
-Orbit Workspace 1.8.2
+Orbit Workspace 1.8.3
 Designed by Baiming Zhang
 
 For documentation, features, personal-use guidance, copyright notices, and build instructions, see README.md and BUILD.md in the source distribution or https://github.com/baiming-zhang/Orbit-Workspace.
