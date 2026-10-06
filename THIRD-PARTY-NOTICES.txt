@@ -1,0 +1,19 @@
+Orbit — Third-party notices
+Designed by Baiming Zhang
+
+The Orbit application source is released under the MIT License; see LICENSE.
+
+Google integration uses Google web services and official APIs. Google logos
+and service names belong to their respective owners. Google services are not
+included in the Orbit source code or relicensed by this project.
+ChatGPT and Zoom are accessed through their services; their names and logos
+belong to their respective owners.
+
+The bundled desktop runtime contains Electron and Chromium components.
+Their original license texts are preserved in:
+  third-party/LICENSE.electron.txt
+  third-party/LICENSES.chromium.html
+The runtime-template.7z also preserves these license texts.
+
+The build requires Python 3, 7-Zip, NSIS, and the Nsis7z plugin, provided
+separately by their maintainers. The Orbit build scripts are MIT licensed.
