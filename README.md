@@ -16,11 +16,24 @@ Orbit brings your everyday web tools and research reading into one calm workspac
 - **Multiple ways to work with ChatGPT.** Use a dedicated ChatGPT page, open several conversation tabs, or keep ChatGPT beside a PDF or website. ChatGPT views share the same local sign-in session.
 - **Literature-friendly reading.** Open local or online PDFs, switch between papers, resize the reading/chat split, and attach the current PDF to ChatGPT when its upload interface and your account support it.
 - **One navigation bar.** Browser and PDF addresses, Back, Forward, Refresh, and Open File share the top workspace bar. The inner row keeps document/page tabs, the + button, and ChatGPT controls.
-- **A clean interface.** Compact controls, adjustable text size, a collapsible/resizable sidebar, and customizable website shortcuts keep the focus on your work.
+- **A workspace that feels like yours.** Press and hold workspace navigation items to reorder them, customize their names and icons, adjust spacing and text size, and fold away reading controls when you want more room for the page.
 - **A fast PDF workflow.** Direct PDF opening and a compact reader aim to make paper reading feel quicker than opening a full browser window. In the author's everyday workflow it feels faster than Edge; no controlled rendering-speed benchmark has been published. Actual performance depends on the PDF, hardware, and cache state.
 - **Pages that stay with you.** Frequently used pages can remain open while you switch workspace sections or keep Orbit in the system tray. Persistent sessions retain login state across launches, subject to each website's session expiry and security checks.
 - **A homepage that acts like a small personal assistant.** See today's schedule and unread-email summary, add local plans or meeting links, and receive reminders five minutes before events. Google summaries are optional; local planning works independently.
 - **Useful extras.** Zoom meeting links, browser tabs, time-zone preferences, English/Chinese interface settings, and an optional local API/MCP bridge.
+
+## Small details, more room to read
+
+Orbit includes small touches that make the workspace comfortable for long reading sessions and easy to arrange around your own habits.
+
+- **Put your tools in your own order.** Press and hold an item in the workspace navigation, then drag it up or down. The list scrolls when you reach its edges, and your order is saved. With a navigation item focused, Alt+Up or Alt+Down also moves it.
+- **Give each page a familiar name and icon.** Right-click a workspace navigation item to edit its name, website address, or icon. Add shortcuts for your own tools and projects, and remove entries you no longer need.
+- **Fold away controls for immersive reading.** Collapse Orbit's sidebar from the top bar. Inside a PDF, use the up-arrow beside the three-dot menu to hide the PDF toolbar; the small down-arrow brings it back. Together, these controls give the document more space and reduce visual clutter while you read.
+- **Choose a softer reading background.** Right-click a PDF to choose white, pale blue, pale green, pale yellow, or pale red. The choice colors the empty space on both sides of the document as well as the PDF side panel, and is remembered for future reading sessions.
+- **Adjust the reading/chat balance by hand.** Drag the divider between a PDF or webpage and ChatGPT to give either side more space. You can keep the paper wide for close reading, then widen the conversation when working through a question.
+- **Set the workspace to your pace.** Settings includes interface text size, comfortable/compact density, and navigation spacing with negative values for a tighter layout. Choose English or Chinese and your preferred time zone. Login preferences let you choose whether supported websites remember credentials and attempt sign-in; saved credentials stay on your device with Windows encryption.
+
+For a focused paper-reading session, arrange your research shortcuts, choose a reading background, fold the sidebar and PDF toolbar, and open ChatGPT only when you want a conversation beside the page.
 
 ## A programmable workspace that keeps your desktop free
 
@@ -93,6 +106,7 @@ Google integration only references official service webpages and APIs. Google, C
 - **Correct active-tab controls:** address and history buttons follow the selected browser or PDF tab; Ctrl+L focuses the shared address field.
 - **Layout and language checks:** the shared bar was checked at 1080 px and 1440 px, in English and Chinese, alongside the PDF/ChatGPT split.
 - **Clearer automation documentation:** the README explains editable integrations, supported background API tasks, and the website commands developers can add.
+- **A guide to the small details:** the README now explains long-press navigation sorting, custom names and icons, folding controls for immersive PDF reading, remembered background colors, draggable reading/chat layouts, and personal settings.
 
 After a new release is published and its download assets are verified, older release packages are removed. Git history and version tags remain available. See [the release procedure](source/PUBLISH.md).
 
