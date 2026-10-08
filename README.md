@@ -108,6 +108,13 @@ Google integration only references official service webpages and APIs. Google, C
 
 ## What's new
 
+### 1.8.6 · October 8, 2026
+
+- **Complete English interface text:** translated sign-in and API settings, event details, meeting guidance, fallback labels, and error messages.
+- **Native controls:** PDF reading-background menus, saved-account selectors, Google authorization callback pages and tray reminders follow the workspace language. Chromium-owned PDF controls use English.
+- **An easy language switch:** the selector keeps the bilingual label **语言 / Language** and bilingual choices in both modes. User-written email, event and document content retains its original language.
+- **Validation:** 25 rendered page/dialog states, settings-form language switching, PDF menu language switching and tray text checked successfully.
+
 ### 1.8.4 · October 8, 2026
 
 - **Shared workspace navigation:** Browser and PDF addresses, Back, Forward, Refresh, and Open File now sit together in the top workspace bar.

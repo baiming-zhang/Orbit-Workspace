@@ -14,8 +14,8 @@ function targetUrl(value){
  if(!/\s/.test(value)&&/^(localhost(?::\d+)?|[\w-]+(?:\.[\w-]+)+)(?:[:/].*)?$/.test(value))return 'https://'+value;
  return 'https://www.google.com/search?q='+encodeURIComponent(value);
 }
-function createTabbedBrowser({getWindow,sessions,onPage,onState=()=>{}}){
- const pdfStyle=createPdfStyle({getWindow});
+function createTabbedBrowser({getWindow,sessions,onPage,getLanguage=()=> 'en',onState=()=>{}}){
+ const pdfStyle=createPdfStyle({getWindow,getLanguage});
  const pdfChatUpload=createPdfChatUpload({publish:()=>publish()});
  let disposed=false;
  const views=new Map(),tabs=[];let activeId=null,toolbar=null,toolbarReady=false,splitter=null,splitterReady=false,drag=null,addressEditing=false,bounds=null,shown=false,counter=0,workspace='browser';const lastActive={browser:null,pdf:null};

@@ -21,6 +21,8 @@ const portals=require('../dist/shortcuts.js');
 const {createCredentials,portalForUrl}=require('./credentials.cjs');
 protocol.registerSchemesAsPrivileged([{scheme:'orbit',privileges:{standard:true,secure:true,supportFetchAPI:true,corsEnabled:true}}]);
 configureBranding();
+// Chromium-owned PDF controls use English; Orbit language labels are handled separately.
+app.commandLine.appendSwitch('lang','en-US');
 const verify=false;
 if(verify){app.disableHardwareAcceleration();app.setPath('userData',path.join(app.getPath('temp'),'orbit-build-verification-'+Date.now()));}
 if(!app.requestSingleInstanceLock()){app.quit();return;}
@@ -59,7 +61,7 @@ app.whenReady().then(()=>{
   Menu.setApplicationMenu(null);
   settings=createSettings(app);
   navigation=createNavigation({app});
-  google=createGoogle({app,safeStorage,shell,getTimeZone:()=>settings.get().timeZone});
+  google=createGoogle({app,safeStorage,shell,getLanguage:()=>settings.get().language,getTimeZone:()=>settings.get().timeZone});
   credentials=createCredentials({app,safeStorage});
   const loginTracker=require('./login-tracker.cjs').createLoginTracker(credentials);
   browserSessions=createBrowserSessions({app,safeStorage});
@@ -85,7 +87,7 @@ app.whenReady().then(()=>{
       return await openSafe(meeting);
     }catch{return {ok:false,error:mode==='app'?'未能打开 Zoom 客户端，请使用浏览器加入。':'未能打开会议链接。'};}
   });
-  const guard=(handler)=>async(event,...args)=>{if(!trusted(event))return {ok:false,error:'未经授权的窗口。'};try{return await handler(...args);}catch(error){return {ok:false,error:error.message||'操作未完成，请重试。'};}};
+  const guard=(handler)=>async(event,...args)=>{if(!trusted(event))return {ok:false,error:'未经授权的窗口。'};try{return await handler(...args);}catch(error){return {ok:false,error:OrbitI18n.text(error.message||'操作未完成，请重试。',settings.get().language)};}};
   ipcMain.handle('orbit:downloads-get',guard(()=>downloads.list()));
   ipcMain.handle('orbit:downloads-action',guard((id,action)=>downloads.action(id,action)));
   ipcMain.handle('orbit:navigation-get',guard(()=>navigation.get()));
@@ -101,12 +103,12 @@ app.whenReady().then(()=>{
     for(const [id,view] of [...serviceViews,...(tabbedBrowser?.views||[])]){const portal=portalForUrl(event.senderFrame?.url);if(view.webContents===event.sender&&portal&&event.senderFrame===event.sender.mainFrame)return {id,view,portal,url:event.senderFrame.url};}
     return null;
   }
-  ipcMain.handle('orbit:website-read',(event,username)=>{const source=websiteSender(event);return source?loginTracker.read(event.sender,source.url,username):null;});
+  ipcMain.handle('orbit:website-read',(event,username)=>{const source=websiteSender(event);if(!source)return null;const entry=loginTracker.read(event.sender,source.url,username);return entry?{...entry,language:settings.get().language}:null;});
   ipcMain.handle('orbit:website-username',(event,username)=>{const source=websiteSender(event);return source?loginTracker.username(event.sender,source.url,username):{ok:false};});
   ipcMain.handle('orbit:website-stage',(event,input)=>{const source=websiteSender(event);return source?loginTracker.stage(event.sender,source.url,input):{ok:false};});
   ipcMain.handle('orbit:website-save',(event,input)=>{const source=websiteSender(event);if(!source)return {ok:false};try{return credentials.remember(source.url,input);}catch(error){return {ok:false,error:error.message};}});
   ipcMain.handle('orbit:website-attempt',event=>{const source=websiteSender(event);if(!source||source.view.orbitLoginAttempted||!credentials.read(source.url)?.autoLogin)return {ok:false};source.view.orbitLoginAttempted=true;return {ok:true};});
-  ipcMain.handle('orbit:language-save',guard(language=>{const result=settings.saveLanguage(language);background?.updatePresentation();return result;}));
+  ipcMain.handle('orbit:language-save',guard(language=>{const result=settings.saveLanguage(language);background?.updatePresentation();for(const view of [...serviceViews.values(),...(tabbedBrowser?.views.values()||[])]){if(!view.webContents.isDestroyed())view.webContents.send('orbit:language-changed',language);}return result;}));
   ipcMain.handle('orbit:reminder-settings',event=>background?.trustedPopup(event)?settings.get():null);
   ipcMain.handle('orbit:time-zone',guard(()=>settings.get()));
   ipcMain.handle('orbit:save-time-zone',guard(zone=>{const result=settings.save(zone);background?.refreshRemote();return {ok:true,...result};}));
@@ -128,7 +130,7 @@ app.whenReady().then(()=>{
   ipcMain.handle('orbit:navigate-website',guard((id,action)=>['browser','pdf'].includes(id)?tabbedBrowser.navigate(id,action):browser.navigate(id,action)));
   ipcMain.handle('orbit:workspace-action',guard((mode,action,value)=>tabbedBrowser.navigate(mode,action,value)));
   createWindow();
-  tabbedBrowser=createTabbedBrowser({getWindow:()=>mainWindow,sessions:browserSessions,onState:state=>{if(!quitting&&mainWindow&&!mainWindow.isDestroyed()&&!mainWindow.webContents.isDestroyed())mainWindow.webContents.send('orbit:workspace-state',state);},onPage:page=>{if(!quitting&&mainWindow&&!mainWindow.isDestroyed()&&mainWindow.webContents&&!mainWindow.webContents.isDestroyed())mainWindow.webContents.send('orbit:open-page',page);}});
+  tabbedBrowser=createTabbedBrowser({getLanguage:()=>settings.get().language,getWindow:()=>mainWindow,sessions:browserSessions,onState:state=>{if(!quitting&&mainWindow&&!mainWindow.isDestroyed()&&!mainWindow.webContents.isDestroyed())mainWindow.webContents.send('orbit:workspace-state',state);},onPage:page=>{if(!quitting&&mainWindow&&!mainWindow.isDestroyed()&&mainWindow.webContents&&!mainWindow.webContents.isDestroyed())mainWindow.webContents.send('orbit:open-page',page);}});
   mainWindow.webContents.once('did-finish-load',()=>{for(const target of launchTargets(process.argv))tabbedBrowser.open(target);});
   ipcMain.handle('orbit:pdf-open',guard(()=>tabbedBrowser.pick('pdf')));
   mainWindow.webContents.on('before-input-event',(event,input)=>{if(input.control&&input.key.toLowerCase()==='o'){event.preventDefault();tabbedBrowser.pick();}});
