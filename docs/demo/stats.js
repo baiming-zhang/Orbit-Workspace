@@ -4,7 +4,8 @@
   const likes = document.getElementById('like-count'), likeButton = document.getElementById('like-orbit'), feedback = document.getElementById('like-feedback');
   const countKey = 'baiming-zhang-orbit-workspace-visits-20261008-d71340e1';
   const likeKey = 'baiming-zhang-orbit-workspace-likes-20261008-c37421da';
-  const storeKey = 'orbit-workspace:public-stats:v1';
+  const downloadKey = 'baiming-zhang-orbit-workspace-download-clicks-20261008-947feea2';
+  const storeKey = 'orbit-workspace:public-stats:v2';
   const format = new Intl.NumberFormat('en-US');
   let cached = {};
   try { cached = JSON.parse(localStorage.getItem(storeKey) || '{}'); } catch {}
@@ -19,8 +20,8 @@
   for (const [kind, minimum] of [['visits', BASE_VISITS], ['downloads', BASE_DOWNLOADS], ['likes', BASE_LIKES]]) {
     if (valid(cached[kind], minimum)) render(kind, cached[kind]);
   }
-  async function json(url) {
-    const response = await fetch(url, { cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer', signal: AbortSignal.timeout(8000) });
+  async function json(url, keepalive = false) {
+    const response = await fetch(url, { cache: 'no-store', credentials: 'omit', keepalive, referrerPolicy: 'no-referrer', signal: AbortSignal.timeout(8000) });
     if (!response.ok) throw new Error(`Statistics unavailable: HTTP ${response.status}`);
     return response.json();
   }
@@ -82,7 +83,42 @@
   json(`https://countapi.mileshilliard.com/api/v1/${live ? 'hit' : 'get'}/${countKey}`)
     .then(data => { render('visits', Number(data.value)); visits.dataset.source = 'shared'; })
     .catch(() => { visits.dataset.i18nTitle = 'visitsCached'; window.OrbitI18n.apply(); });
-  json(live ? 'https://raw.githubusercontent.com/baiming-zhang/Orbit-Workspace/gh-pages/site-stats.json' : './site-stats.json')
-    .then(data => { render('downloads', data.downloads.total); downloads.dataset.source = 'github'; downloads.dataset.i18nTitle = 'downloadsLive'; window.OrbitI18n.apply(); })
-    .catch(() => { downloads.dataset.i18nTitle = 'downloadsCached'; window.OrbitI18n.apply(); });
+  let confirmedDownloads = valid(cached.downloads, BASE_DOWNLOADS) ? cached.downloads : BASE_DOWNLOADS;
+  let pendingDownloads = 0, sendingDownloads = false;
+  function paintDownloads() { downloads.textContent = format.format(confirmedDownloads + pendingDownloads); }
+  downloads.dataset.i18nTitle = 'downloadsLive'; window.OrbitI18n.apply();
+  json(`https://countapi.mileshilliard.com/api/v1/get/${downloadKey}`)
+    .then(data => {
+      const value = Number(data.value);
+      if (!valid(value, BASE_DOWNLOADS)) throw new Error('Invalid download-click count.');
+      if (!sendingDownloads && pendingDownloads === 0) {
+        confirmedDownloads = value;
+        render('downloads', confirmedDownloads); paintDownloads();
+      }
+      downloads.dataset.source = 'shared';
+    }).catch(() => { downloads.dataset.i18nTitle = 'downloadsCached'; window.OrbitI18n.apply(); });
+  async function sendDownloads() {
+    if (sendingDownloads) return;
+    sendingDownloads = true;
+    while (pendingDownloads > 0) {
+      try {
+        const data = await json(`https://countapi.mileshilliard.com/api/v1/hit/${downloadKey}`, true);
+        const value = Number(data.value);
+        if (!valid(value, BASE_DOWNLOADS)) throw new Error('Invalid download-click count.');
+        pendingDownloads--;
+        confirmedDownloads = Math.max(confirmedDownloads, value);
+        render('downloads', confirmedDownloads); downloads.dataset.source = 'shared';
+        downloads.dataset.i18nTitle = 'downloadsLive';
+      } catch {
+        pendingDownloads--;
+        downloads.dataset.i18nTitle = 'downloadError';
+      }
+      paintDownloads(); window.OrbitI18n.apply();
+    }
+    sendingDownloads = false;
+  }
+  document.querySelectorAll('a.download').forEach(link => link.addEventListener('click', () => {
+    if (!live) { confirmedDownloads++; paintDownloads(); return; }
+    pendingDownloads++; paintDownloads(); sendDownloads();
+  }));
 })();

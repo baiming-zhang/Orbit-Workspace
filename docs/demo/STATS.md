@@ -1,15 +1,13 @@
 # Homepage counters
 
-The supplied starting totals are **1,135 page visits**, **178 software downloads** and **268 likes**. They are baseline values, not numbers reconstructed from GitHub.
+Starting totals are **1,135 page visits**, **178 download-button clicks** and **268 likes**. These supplied baselines are not reconstructed historical measurements.
 
-The page adds one shared CountAPI hit per production page load. Local development reads the value without incrementing it. The public counter key is not a credential. The service is a community-hosted counter with no uptime guarantee; the page keeps the last available number when it cannot reach the service. No visitor identity is collected by Orbit's counter code.
+Each production page load increments the shared visit counter. Every click on either the main Windows download button or the upper-right download button increments one shared download-click counter immediately on screen. Repeated clicks count, even if the file transfer is cancelled or fails. This measures button clicks, not completed file downloads. Links retain their normal download behavior; counting requests use keepalive and never delay the download.
 
-Each production like increments a second shared counter. Repeat likes are allowed. Requests are queued to preserve rapid clicks; a failed request is not silently counted as saved. The heart and star animation respects reduced-motion preferences. Local previews animate and simulate likes without changing the public total.
+Each like increments a separate shared counter, with repeat likes allowed. Click requests are queued to preserve rapid clicks. Failed counter requests revert the pending increment and retain the last saved number. Local previews simulate clicks without modifying production counts. Decorative heart effects respect reduced-motion preferences.
 
-Software downloads use GitHub's `download_count` for `Orbit.exe` and the complete Windows/source ZIP files. Videos, checksums, bridges and runtime templates are excluded. The initial asset snapshot prevents adding earlier downloads twice. The per-asset ledger preserves credited totals if old releases are removed or an asset is replaced.
+All three values use CountAPI. Counter keys are public identifiers, not credentials. Orbit collects no visitor identity in this code. A browser cache is a fallback, not the shared source of truth. The community-hosted service has no uptime guarantee. Counter seeds must not be reset during deployment.
 
-The `site-stats.yml` workflow checks published releases approximately every 30 minutes and after a release is published. It writes only `site-stats.json` on `gh-pages` using the workflow token. No token is sent to visitors. The page reads this small file from GitHub's raw-content endpoint, so statistics updates do not depend on rebuilding GitHub Pages. A browser cache is only a fallback, not the shared source of truth.
+The older GitHub release-asset ledger in `site-stats.json` remains separate for historical file-transfer metrics. Its scheduled workflow does not update or overwrite the homepage download-click count.
 
-To verify manually, run the **Sync site download statistics** workflow. To change baseline values, update the persisted state deliberately rather than reseeding the counter on every deployment.
-
-References: [GitHub release asset counts](https://docs.github.com/en/rest/releases/releases), [CountAPI](https://github.com/syntaxerror019/countapi).
+Reference: [CountAPI](https://github.com/syntaxerror019/countapi).
