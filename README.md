@@ -12,9 +12,11 @@ Orbit brings your everyday web tools and research reading into one calm workspac
 
 ## Video demonstration
 
-[![Watch the Orbit Workspace HD demonstration](docs/demo-cover.png)](https://github.com/baiming-zhang/Orbit-Workspace/releases/download/v1.8.5/Orbit-workspace-demo-HD.mp4)
+[![Watch the Orbit Workspace demonstration online](docs/demo-cover.png)](https://baiming-zhang.github.io/Orbit-Workspace/)
 
-[Watch or download the HD demo](https://github.com/baiming-zhang/Orbit-Workspace/releases/download/v1.8.5/Orbit-workspace-demo-HD.mp4) · 2560 × 1646 · 30 fps · 81 seconds. Includes a two-second title card, instrumental music, and a five-second closing rights notice. The schedule and email examples shown in the recording are demonstration content.
+[▶ Watch online — HD / Standard](https://baiming-zhang.github.io/Orbit-Workspace/) with an embedded player, playback controls, fullscreen and quality selection. No download is needed to watch.
+
+HD: 2560 × 1646 · 30 fps. Standard: 1280 × 822 · 24 fps. Both are approximately 81 seconds and include a two-second title card, instrumental music, and a five-second closing rights notice. The schedule and email examples shown in the recording are demonstration content. Video files are also available in [Releases](https://github.com/baiming-zhang/Orbit-Workspace/releases/tag/v1.8.5).
 
 ## Highlights
 
