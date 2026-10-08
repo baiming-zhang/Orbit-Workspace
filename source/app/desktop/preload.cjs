@@ -1,6 +1,9 @@
 const {contextBridge,ipcRenderer}=require('electron');
 contextBridge.exposeInMainWorld('orbitDesktop',Object.freeze({
   platform:'windows',
+  getDownloads:()=>ipcRenderer.invoke('orbit:downloads-get'),
+  downloadAction:(id,action)=>ipcRenderer.invoke('orbit:downloads-action',id,action),
+  onDownloadsChanged:callback=>{const handler=(_event,data)=>callback(data);ipcRenderer.on('orbit:downloads-changed',handler);return ()=>ipcRenderer.removeListener('orbit:downloads-changed',handler);},
   workspaceAction:(mode,action,value)=>ipcRenderer.invoke('orbit:workspace-action',mode,action,value),
   onWorkspaceState:callback=>{const handler=(_event,state)=>callback(state);ipcRenderer.on('orbit:workspace-state',handler);return ()=>ipcRenderer.removeListener('orbit:workspace-state',handler);},
   onWorkspaceFocus:callback=>{const handler=()=>callback();ipcRenderer.on('orbit:workspace-focus',handler);return ()=>ipcRenderer.removeListener('orbit:workspace-focus',handler);},

@@ -15,6 +15,8 @@ const {createBrowser}=require('./browser.cjs');
 const {createBrowserSessions}=require('./browser-sessions.cjs');
 const {configureBranding,brandWindow,registerShortcut}=require('./windows-branding.cjs');
 const OrbitI18n=require('../dist/i18n.js');
+const {createDownloads}=require('./downloads.cjs');
+let downloads;
 const portals=require('../dist/shortcuts.js');
 const {createCredentials,portalForUrl}=require('./credentials.cjs');
 protocol.registerSchemesAsPrivileged([{scheme:'orbit',privileges:{standard:true,secure:true,supportFetchAPI:true,corsEnabled:true}}]);
@@ -23,6 +25,7 @@ const verify=false;
 if(verify){app.disableHardwareAcceleration();app.setPath('userData',path.join(app.getPath('temp'),'orbit-build-verification-'+Date.now()));}
 if(!app.requestSingleInstanceLock()){app.quit();return;}
 let mainWindow;
+downloads=createDownloads({app,shell,onChange:data=>{if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('orbit:downloads-changed',data);}});
 let google;
 let settings;
 let localEvents;
@@ -83,6 +86,8 @@ app.whenReady().then(()=>{
     }catch{return {ok:false,error:mode==='app'?'未能打开 Zoom 客户端，请使用浏览器加入。':'未能打开会议链接。'};}
   });
   const guard=(handler)=>async(event,...args)=>{if(!trusted(event))return {ok:false,error:'未经授权的窗口。'};try{return await handler(...args);}catch(error){return {ok:false,error:error.message||'操作未完成，请重试。'};}};
+  ipcMain.handle('orbit:downloads-get',guard(()=>downloads.list()));
+  ipcMain.handle('orbit:downloads-action',guard((id,action)=>downloads.action(id,action)));
   ipcMain.handle('orbit:navigation-get',guard(()=>navigation.get()));
   ipcMain.handle('orbit:navigation-save',guard(input=>{const result=navigation.save(input);browser.configure(result.items);return result;}));
   ipcMain.handle('orbit:navigation-delete',guard(id=>{const result=navigation.remove(id);browser.remove(id);return result;}));
