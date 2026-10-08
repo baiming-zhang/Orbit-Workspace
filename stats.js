@@ -92,7 +92,7 @@
       const value = Number(data.value);
       if (!valid(value, BASE_DOWNLOADS)) throw new Error('Invalid download-click count.');
       if (!sendingDownloads && pendingDownloads === 0) {
-        confirmedDownloads = value;
+        confirmedDownloads = Math.max(confirmedDownloads, value);
         render('downloads', confirmedDownloads); paintDownloads();
       }
       downloads.dataset.source = 'shared';
