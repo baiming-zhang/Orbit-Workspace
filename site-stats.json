@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-10-08T21:45:25.332007+00:00",
+  "updatedAt": "2026-10-08T21:45:25.332007+00:00",
+  "visits": {
+    "baseline": 1135,
+    "provider": "CountAPI",
+    "key": "baiming-zhang-orbit-workspace-visits-20261008-d71340e1"
+  },
+  "likes": {
+    "baseline": 268,
+    "provider": "CountAPI",
+    "key": "baiming-zhang-orbit-workspace-likes-20261008-c37421da"
+  },
+  "downloads": {
+    "baseline": 178,
+    "total": 178,
+    "assets": {
+      "623025191": {
+        "name": "Orbit-Workspace-1.8.6-Windows-source.zip",
+        "observed": 0
+      },
+      "622993512": {
+        "name": "Orbit.exe",
+        "observed": 1
+      },
+      "622819477": {
+        "name": "Orbit.exe",
+        "observed": 1
+      },
+      "621864825": {
+        "name": "Orbit-Workspace-1.8.4-Windows-Source.zip",
+        "observed": 0
+      },
+      "621851392": {
+        "name": "Orbit.exe",
+        "observed": 1
+      }
+    }
+  }
+}
