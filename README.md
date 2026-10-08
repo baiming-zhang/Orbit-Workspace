@@ -10,6 +10,12 @@ Orbit brings your everyday web tools and research reading into one calm workspac
 
 ![Orbit Workspace home screen](docs/home-window-v1.8.3.png)
 
+## Video demonstration
+
+[![Watch the Orbit Workspace HD demonstration](docs/demo-cover.png)](https://github.com/baiming-zhang/Orbit-Workspace/releases/download/v1.8.5/Orbit-workspace-demo-HD.mp4)
+
+[Watch or download the HD demo](https://github.com/baiming-zhang/Orbit-Workspace/releases/download/v1.8.5/Orbit-workspace-demo-HD.mp4) · 2560 × 1646 · 30 fps · 81 seconds. Includes a two-second title card, instrumental music, and a five-second closing rights notice. The schedule and email examples shown in the recording are demonstration content.
+
 ## Highlights
 
 - **Google-friendly workflow.** Quick access to Google Search, Gmail, Calendar, and Analytics. Optional Gmail and Calendar summaries use official Google APIs, with OAuth authorization completed in your system browser.
