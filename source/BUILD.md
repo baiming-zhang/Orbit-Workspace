@@ -2,7 +2,7 @@
 
 Requirements: Windows, Python 3, 7-Zip, NSIS 3, and the Unicode x86 Nsis7z plugin. Install these tools separately. Use a plugin directory containing `Nsis7z.dll`.
 
-The Electron runtime template is bundled with the complete release ZIP. For a Git clone, the build script downloads the pinned `v1.8.3` template from this repository's GitHub Release when it is missing.
+The Electron runtime template is bundled with the complete release ZIP. For a Git clone, the build script downloads the pinned `v1.8.4` template from this repository's GitHub Release when it is missing.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\build.ps1 -SevenZip "C:\Program Files\7-Zip\7z.exe" -MakeNsis "C:\Program Files (x86)\NSIS\makensis.exe" -NsisPluginDirectory "C:\Tools\Nsis7z\x86-unicode"

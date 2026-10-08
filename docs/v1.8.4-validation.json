@@ -1,0 +1,33 @@
+{
+  "version": "1.8.4",
+  "checks": {
+    "singleHeaderAddress": true,
+    "noInnerNavigation": true,
+    "compactToolbar": true,
+    "headerBackForward": true,
+    "headerReload": true,
+    "typingSurvivesBackgroundUpdate": true,
+    "tabSwitchUpdatesAddress": true,
+    "childCtrlLTargetsHeader": true,
+    "pdfHeaderAddress": true,
+    "pdfHeaderBackForward": true,
+    "invalidPathPreservesDocument": true,
+    "externalPageCannotAccessHeaderBridge": true,
+    "headerRejectsNonNavigationActions": true,
+    "pdfContextAddressStillWorks": true,
+    "splitViewsBelowTabs": true,
+    "dragLayoutRetained": true,
+    "pdfHeaderVisibleInSplit": true,
+    "headerFits_small": true,
+    "headerFits_normal": true,
+    "chinesePlaceholder": true,
+    "englishPlaceholder": true,
+    "addressHiddenOutsideWorkspaces": true,
+    "hiddenWorkspaceRejectsNavigation": true,
+    "hiddenViewsDetached": true
+  },
+  "passed": true,
+  "asarMatchesSource": true,
+  "runtimeErrors": [],
+  "productionEntry": true
+}

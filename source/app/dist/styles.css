@@ -93,3 +93,19 @@ svg.icon{flex-shrink:0;aspect-ratio:1/1}.bottom-link [data-icon]{display:inline-
 
 
 .sidebar-navigation .nav-item{padding-top:var(--nav-row-padding,13px);padding-bottom:var(--nav-row-padding,13px);margin-bottom:var(--nav-row-gap,0px)}
+
+/* Browser and PDF navigation share the workbench's existing title bar. */
+#workspace-address-form{display:flex;align-items:center;gap:5px;flex:1;min-width:120px;max-width:960px;margin-left:5px;-webkit-app-region:no-drag;app-region:no-drag}
+#workspace-address-form[hidden]{display:none}
+#workspace-address{width:100%;min-width:0;height:32px;padding:5px 11px;border:1px solid #dce7f4;border-radius:8px;background:#f7faff;color:#33465d;font:14px 'Segoe UI',sans-serif;-webkit-app-region:no-drag;app-region:no-drag}
+#workspace-address:focus{outline:2px solid #7aa3d5;outline-offset:-1px;background:#fff}
+#workspace-address[aria-invalid=true]{border-color:#b16d67}
+#workspace-open-file{flex-shrink:0;color:#a78239;width:30px;height:32px}
+#workspace-open-file svg{width:18px;height:18px}
+.workspace-navigation .app-titlebar .breadcrumb{gap:6px;padding-left:16px}
+.workspace-navigation .app-titlebar #page-name{max-width:110px;flex-shrink:0}
+.workspace-navigation #page-actions{margin-left:3px;flex-shrink:0}
+.workspace-navigation [data-action=native-back]{color:#5c8bbc}
+.workspace-navigation [data-action=native-forward]{color:#b16d67}
+.workspace-navigation [data-action=reload-native]{color:#60947c}
+@media(max-width:1250px){.workspace-navigation .app-titlebar .crumb-home,.workspace-navigation .app-titlebar .crumb-slash,.workspace-navigation .app-titlebar .demo-indicator{display:none}.workspace-navigation .app-titlebar .breadcrumb{padding-left:10px}.workspace-navigation .app-titlebar .top-actions{padding-left:8px;gap:6px}}

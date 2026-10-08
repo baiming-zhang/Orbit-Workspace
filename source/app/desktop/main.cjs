@@ -119,10 +119,11 @@ app.whenReady().then(()=>{
   ipcMain.handle('orbit:reminder-data',event=>background?.trustedPopup(event)?background.items():[]);
   ipcMain.handle('orbit:reminder-action',(event,action,id)=>background?.action(event,action,id));
   ipcMain.handle('orbit:show-service',guard((id,bounds)=>{if(id==='browser'||id==='pdf'){browser.show(null);return tabbedBrowser.show(bounds,id);}tabbedBrowser?.hide();return browser.show(id,bounds);}));
-  ipcMain.handle('orbit:reload-service',guard(id=>browser.navigate(id,'reload')));
-  ipcMain.handle('orbit:navigate-website',guard((id,action)=>browser.navigate(id,action)));
+  ipcMain.handle('orbit:reload-service',guard(id=>['browser','pdf'].includes(id)?tabbedBrowser.navigate(id,'reload'):browser.navigate(id,'reload')));
+  ipcMain.handle('orbit:navigate-website',guard((id,action)=>['browser','pdf'].includes(id)?tabbedBrowser.navigate(id,action):browser.navigate(id,action)));
+  ipcMain.handle('orbit:workspace-action',guard((mode,action,value)=>tabbedBrowser.navigate(mode,action,value)));
   createWindow();
-  tabbedBrowser=createTabbedBrowser({getWindow:()=>mainWindow,sessions:browserSessions,onPage:page=>{if(!quitting&&mainWindow&&!mainWindow.isDestroyed()&&mainWindow.webContents&&!mainWindow.webContents.isDestroyed())mainWindow.webContents.send('orbit:open-page',page);}});
+  tabbedBrowser=createTabbedBrowser({getWindow:()=>mainWindow,sessions:browserSessions,onState:state=>{if(!quitting&&mainWindow&&!mainWindow.isDestroyed()&&!mainWindow.webContents.isDestroyed())mainWindow.webContents.send('orbit:workspace-state',state);},onPage:page=>{if(!quitting&&mainWindow&&!mainWindow.isDestroyed()&&mainWindow.webContents&&!mainWindow.webContents.isDestroyed())mainWindow.webContents.send('orbit:open-page',page);}});
   mainWindow.webContents.once('did-finish-load',()=>{for(const target of launchTargets(process.argv))tabbedBrowser.open(target);});
   ipcMain.handle('orbit:pdf-open',guard(()=>tabbedBrowser.pick('pdf')));
   mainWindow.webContents.on('before-input-event',(event,input)=>{if(input.control&&input.key.toLowerCase()==='o'){event.preventDefault();tabbedBrowser.pick();}});
