@@ -35,7 +35,11 @@
       render('likes', confirmedLikes); paintLikes(); likes.dataset.source = 'shared';
     }).catch(() => {});
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let celebrationTimer;
   function celebrate() {
+    clearTimeout(celebrationTimer);
+    likeButton.classList.add('is-celebrating');
+    celebrationTimer = setTimeout(() => likeButton.classList.remove('is-celebrating'), 450);
     if (reducedMotion) return;
     likeButton.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.13)' }, { transform: 'scale(1)' }], { duration: 260 });
     const box = likeButton.getBoundingClientRect(), colors = ['#c55349', '#ed91ac', '#306fc6', '#f0b9c9'];
