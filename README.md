@@ -84,6 +84,18 @@ Google integration only references official service webpages and APIs. Google, C
 
 **Copyright concerns / removal requests:** please [open an issue](https://github.com/baiming-zhang/Orbit-Workspace/issues/new) with the affected material and evidence of ownership. The author will review the request and remove or replace infringing material where appropriate. Contact for removal is welcome.
 
+## What's new
+
+### 1.8.4 · October 8, 2026
+
+- **Shared workspace navigation:** Browser and PDF addresses, Back, Forward, Refresh, and Open File now sit together in the top workspace bar.
+- **More room for content:** the duplicate browser address row is removed; the inner row keeps page/document tabs, +, and ChatGPT controls.
+- **Correct active-tab controls:** address and history buttons follow the selected browser or PDF tab; Ctrl+L focuses the shared address field.
+- **Layout and language checks:** the shared bar was checked at 1080 px and 1440 px, in English and Chinese, alongside the PDF/ChatGPT split.
+- **Clearer automation documentation:** the README explains editable integrations, supported background API tasks, and the website commands developers can add.
+
+After a new release is published and its download assets are verified, older release packages are removed. Git history and version tags remain available. See [the release procedure](source/PUBLISH.md).
+
 ## License
 
 The Orbit project source is fully open source under the [MIT License](LICENSE). Preserve the copyright and license notice when distributing copies or substantial portions. The personal-use statement above describes the project's purpose and is not an additional restriction on the MIT License, which also permits commercial use. Third-party components retain their own licenses; see [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt).
