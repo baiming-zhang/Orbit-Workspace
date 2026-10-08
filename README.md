@@ -14,7 +14,7 @@ Orbit brings your everyday web tools and research reading into one calm workspac
 
 [![Watch the Orbit Workspace demonstration online](docs/demo-cover.png)](https://baiming-zhang.github.io/Orbit-Workspace/)
 
-[▶ Watch online — HD / Standard](https://baiming-zhang.github.io/Orbit-Workspace/) with an embedded player, playback controls, fullscreen and quality selection. No download is needed to watch. The full-width product page also introduces the core workflows and a sourced comparison with Microsoft Edge.
+[▶ Watch online — HD / Standard](https://baiming-zhang.github.io/Orbit-Workspace/) with an embedded player, playback controls, fullscreen and quality selection. No download is needed to watch. The full-width product page keeps a simple layout with three short workflow advantages.
 
 HD: 2560 × 1646 · 30 fps. Standard: 1280 × 822 · 24 fps. Both are approximately 81 seconds, with the recorded window's outer white border and shadow removed, and include a two-second title card, instrumental music, and a five-second closing rights notice. The schedule and email examples shown in the recording are demonstration content. Video files are also available in [Releases](https://github.com/baiming-zhang/Orbit-Workspace/releases/latest).
 
@@ -33,16 +33,7 @@ HD: 2560 × 1646 · 30 fps. Standard: 1280 × 822 · 24 fps. Both are approximat
 
 ## Why Orbit alongside Edge?
 
-Orbit brings a research workflow together in its own desktop application. Edge already includes [PDF reading](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-pdf), [split screen and other productivity tools](https://www.microsoft.com/edge/features/productivity); the useful distinction is workflow integration, rather than an exclusive ability to open PDFs or browse beside AI.
-
-| Workflow | What Orbit brings together |
-| --- | --- |
-| Papers and conversations | A dedicated PDF + ChatGPT layout, resizable reading/chat split, document tabs and shared ChatGPT sign-in. |
-| Planning the day | Optional Gmail / Calendar summaries, local plans and five-minute event reminders on one home screen. |
-| A personal reading space | Saved navigation order, custom shortcuts, folding controls and remembered reading backgrounds. |
-| Background integrations | Editable workspace source and an optional local API / MCP bridge for supported tasks without foreground clicking. |
-
-Edge supports browser automation and extensions too. No controlled PDF rendering-speed comparison has been published. See the [full-width product page](https://baiming-zhang.github.io/Orbit-Workspace/) for the demo and side-by-side workflow comparison.
+Orbit brings PDF + ChatGPT reading, a Google-connected daily overview, and a customizable workspace with an optional local API into one desktop application. Edge also supports [PDF reading and split screen](https://www.microsoft.com/edge/features/productivity); Orbit's advantage is the assembled research workflow. No controlled speed benchmark is claimed.
 
 ## Small details, more room to read
 
