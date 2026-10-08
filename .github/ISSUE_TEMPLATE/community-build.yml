@@ -1,0 +1,38 @@
+name: Share a community build
+description: Share an updated or customized version of Orbit Workspace.
+title: "[Community build] "
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Build name and version
+      placeholder: e.g. Orbit Research Edition 1.0
+    validations:
+      required: true
+  - type: textarea
+    id: changes
+    attributes:
+      label: What makes this version useful?
+      description: Describe the features you added, changed, or improved.
+    validations:
+      required: true
+  - type: textarea
+    id: download
+    attributes:
+      label: Build attachment or download link
+      description: Attach a ZIP here, or paste a link to your release. For larger files, use your own GitHub Release or another download host.
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source code link
+      description: A repository or source archive helps others inspect and build your version.
+  - type: textarea
+    id: instructions
+    attributes:
+      label: Setup instructions and screenshots
+      description: Explain how to run your build and attach images of its features.
+  - type: markdown
+    attributes:
+      value: "Please preserve the applicable license and copyright notices. Community builds are shared by their authors and are not automatically part of the official Orbit release."
