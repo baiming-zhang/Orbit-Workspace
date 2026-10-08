@@ -64,7 +64,7 @@
         render('likes', confirmedLikes); likes.dataset.source = 'shared'; feedback.hidden = true;
       } catch {
         pendingLikes--;
-        feedback.textContent = "Couldn't save this like. Try again."; feedback.hidden = false;
+        feedback.dataset.i18n = 'likeError'; window.OrbitI18n.apply(); feedback.hidden = false;
       }
       paintLikes();
     }
@@ -77,8 +77,8 @@
   });
   json(`https://countapi.mileshilliard.com/api/v1/${live ? 'hit' : 'get'}/${countKey}`)
     .then(data => { render('visits', Number(data.value)); visits.dataset.source = 'shared'; })
-    .catch(() => { visits.title = 'Last available page-visit count'; });
+    .catch(() => { visits.dataset.i18nTitle = 'visitsCached'; window.OrbitI18n.apply(); });
   json(live ? 'https://raw.githubusercontent.com/baiming-zhang/Orbit-Workspace/gh-pages/site-stats.json' : './site-stats.json')
-    .then(data => { render('downloads', data.downloads.total); downloads.dataset.source = 'github'; downloads.title = 'Software downloads · synchronized approximately every 30 minutes'; })
-    .catch(() => { downloads.title = 'Last available software-download count'; });
+    .then(data => { render('downloads', data.downloads.total); downloads.dataset.source = 'github'; downloads.dataset.i18nTitle = 'downloadsLive'; window.OrbitI18n.apply(); })
+    .catch(() => { downloads.dataset.i18nTitle = 'downloadsCached'; window.OrbitI18n.apply(); });
 })();
