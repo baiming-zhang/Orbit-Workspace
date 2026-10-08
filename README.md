@@ -14,9 +14,9 @@ Orbit brings your everyday web tools and research reading into one calm workspac
 
 [![Watch the Orbit Workspace demonstration online](docs/demo-cover.png)](https://baiming-zhang.github.io/Orbit-Workspace/)
 
-[▶ Watch online — HD / Standard](https://baiming-zhang.github.io/Orbit-Workspace/) with an embedded player, playback controls, fullscreen and quality selection. No download is needed to watch.
+[▶ Watch online — HD / Standard](https://baiming-zhang.github.io/Orbit-Workspace/) with an embedded player, playback controls, fullscreen and quality selection. No download is needed to watch. The full-width product page also introduces the core workflows and a sourced comparison with Microsoft Edge.
 
-HD: 2560 × 1646 · 30 fps. Standard: 1280 × 822 · 24 fps. Both are approximately 81 seconds and include a two-second title card, instrumental music, and a five-second closing rights notice. The schedule and email examples shown in the recording are demonstration content. Video files are also available in [Releases](https://github.com/baiming-zhang/Orbit-Workspace/releases/tag/v1.8.5).
+HD: 2560 × 1646 · 30 fps. Standard: 1280 × 822 · 24 fps. Both are approximately 81 seconds, with the recorded window's outer white border and shadow removed, and include a two-second title card, instrumental music, and a five-second closing rights notice. The schedule and email examples shown in the recording are demonstration content. Video files are also available in [Releases](https://github.com/baiming-zhang/Orbit-Workspace/releases/latest).
 
 ## Highlights
 
@@ -30,6 +30,19 @@ HD: 2560 × 1646 · 30 fps. Standard: 1280 × 822 · 24 fps. Both are approximat
 - **A homepage that acts like a small personal assistant.** See today's schedule and unread-email summary, add local plans or meeting links, and receive reminders five minutes before events. Google summaries are optional; local planning works independently.
 - **Downloads within reach.** The download button sits immediately left of the notification bell. Check progress, open completed files, reveal their location, or open the Downloads folder. Download history stays on this device.
 - **Useful extras.** Zoom meeting links, browser tabs, time-zone preferences, English/Chinese interface settings, and an optional local API/MCP bridge.
+
+## Why Orbit alongside Edge?
+
+Orbit brings a research workflow together in its own desktop application. Edge already includes [PDF reading](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-pdf), [split screen and other productivity tools](https://www.microsoft.com/edge/features/productivity); the useful distinction is workflow integration, rather than an exclusive ability to open PDFs or browse beside AI.
+
+| Workflow | What Orbit brings together |
+| --- | --- |
+| Papers and conversations | A dedicated PDF + ChatGPT layout, resizable reading/chat split, document tabs and shared ChatGPT sign-in. |
+| Planning the day | Optional Gmail / Calendar summaries, local plans and five-minute event reminders on one home screen. |
+| A personal reading space | Saved navigation order, custom shortcuts, folding controls and remembered reading backgrounds. |
+| Background integrations | Editable workspace source and an optional local API / MCP bridge for supported tasks without foreground clicking. |
+
+Edge supports browser automation and extensions too. No controlled PDF rendering-speed comparison has been published. See the [full-width product page](https://baiming-zhang.github.io/Orbit-Workspace/) for the demo and side-by-side workflow comparison.
 
 ## Small details, more room to read
 
@@ -98,14 +111,6 @@ THIRD-PARTY-NOTICES.txt
 
 See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also includes the Electron runtime template. Large binary files are distributed as release assets rather than committed to Git.
 
-## Personal use and copyright
-
-**Orbit is intended for personal, non-commercial productivity, learning, and research. The author shares it as a personal project and does not operate it as a commercial product.** Please use it responsibly and respect the rights of service providers and content owners.
-
-Google integration only references official service webpages and APIs. Google, ChatGPT, and Zoom names, logos, and services belong to their respective owners. This independent project is not affiliated with or endorsed by those providers. Do not use Orbit to bypass access controls, redistribute copyrighted papers without permission, or infringe trademarks or other rights. Follow each service's terms and the applicable content licenses.
-
-**Copyright concerns / removal requests:** please [open an issue](https://github.com/baiming-zhang/Orbit-Workspace/issues/new) with the affected material and evidence of ownership. The author will review the request and remove or replace infringing material where appropriate. Contact for removal is welcome.
-
 ## What's new
 
 ### 1.8.6 · October 8, 2026
@@ -126,6 +131,10 @@ Google integration only references official service webpages and APIs. Google, C
 
 After a new release is published and its download assets are verified, older release packages are removed. Git history and version tags remain available. See [the release procedure](source/PUBLISH.md).
 
-## License
+## Project purpose, license and third-party rights
 
-The Orbit project source is fully open source under the [MIT License](LICENSE). Preserve the copyright and license notice when distributing copies or substantial portions. The personal-use statement above describes the project's purpose and is not an additional restriction on the MIT License, which also permits commercial use. Third-party components retain their own licenses; see [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt).
+© 2026 Baiming Zhang. Orbit Workspace is an independent, open-source project developed for personal, non-commercial productivity, learning and research. Its application source is distributed under the [MIT License](LICENSE), which governs use and redistribution, permits commercial use, and requires preserving the copyright and license notice. The non-commercial project purpose adds no license restriction. The software is provided without warranty, as described in that license.
+
+Google, ChatGPT, Zoom and other third-party names, logos, trademarks, services and content remain the property of their respective rights holders. References identify the services demonstrated; Orbit is not affiliated with, endorsed by or sponsored by those providers. Third-party services, content and components remain subject to their own terms, policies and licenses; see [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt). Respect access controls and the rights of content owners.
+
+For copyright or other rights concerns, [contact the author through an issue](https://github.com/baiming-zhang/Orbit-Workspace/issues/new) with the affected material and ownership information. The author will review the request and remove or replace material where appropriate.
