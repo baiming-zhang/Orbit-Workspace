@@ -1,3 +1,4 @@
+const {enableMicrophone}=require('./media-permissions.cjs');
 const {normalizeWebUrl,isWebsiteAddress}=require('../dist/url-utils.js');
 const {WebContentsView,ipcMain,dialog,Menu,clipboard}=require('electron');
 const path=require('node:path'),fs=require('node:fs');
@@ -91,7 +92,7 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
  function setup(wc,t){
   wc.on('context-menu',(event,params)=>{if(!wc.mainFrame.framesInSubtree.some(frame=>frame.url.startsWith('chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/')))showLinkMenu(wc,params,event);});
   wc.setUserAgent(wc.getUserAgent().replace(/\sElectron\/[^\s]+/g,'').replace(/\sOrbit(?:%20| )?Workspace\/[^\s]+/gi,''));
-  wc.session.setPermissionRequestHandler((_wc,_permission,callback)=>callback(false));wc.session.setPermissionCheckHandler(()=>false);
+  enableMicrophone(wc.session);
   wc.setWindowOpenHandler(details=>{
    if(!webUrl(details.url)&&details.url!=='about:blank')return {action:'deny'};
    return {action:'allow',createWindow:options=>{

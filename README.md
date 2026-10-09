@@ -104,6 +104,10 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### 1.8.11 · October 9, 2026
+
+- Enabled microphone access for secure webpages, including ChatGPT pages and reading/chat splits. Windows microphone access must also be enabled. Camera and other unrelated permissions remain denied.
+
 ### 1.8.10 · October 9, 2026
 
 - Reviewed English and Chinese interface text, including settings, navigation editing, Downloads and PDF attachment status. Only the language label stays bilingual.

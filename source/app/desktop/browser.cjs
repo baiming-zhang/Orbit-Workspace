@@ -1,3 +1,4 @@
+const {enableMicrophone}=require('./media-permissions.cjs');
 const path=require('node:path');
 const {WebContentsView}=require('electron');
 function webUrl(value){
@@ -41,7 +42,7 @@ function createBrowser({getWindow,views=new Map(),serviceUrls,portals,onPage,ses
   wc.setUserAgent(wc.getUserAgent().replace(/\sElectron\/[^\s]+/g,'').replace(/\sOrbit(?:%20| )?Workspace\/[^\s]+/gi,''));
   view.orbitReady=session?(ready||Promise.resolve()):(sessions?.prepare(partition,wc.session)||Promise.resolve());
   if(serviceUrls[id]){view.orbitWorkspace=id;workspaces.set(id,view);}
-  wc.session.setPermissionRequestHandler((_wc,_permission,callback)=>callback(false));wc.session.setPermissionCheckHandler(()=>false);
+  enableMicrophone(wc.session);
   wc.setWindowOpenHandler(details=>{
    if(!webUrl(details.url)&&details.url!=='about:blank')return {action:'deny'};
    return {action:'allow',createWindow:options=>{

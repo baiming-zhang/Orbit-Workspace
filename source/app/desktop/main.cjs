@@ -1,3 +1,4 @@
+const {enableMicrophone}=require('./media-permissions.cjs');
 const {app,BrowserWindow,WebContentsView,protocol,net,shell,ipcMain,Menu,safeStorage,clipboard,dialog,nativeImage,nativeTheme}=require('electron');
 const path=require('node:path');
 const fs=require('node:fs');
@@ -48,8 +49,7 @@ async function openSafe(url){const safe=webUrl(url);if(!safe)throw new Error('ä¸
 function createWindow(){
   mainWindow=new BrowserWindow({width:1440,height:1000,minWidth:1080,minHeight:720,backgroundColor:'#f6f7f4',title:'Orbit Workspace',icon:path.join(__dirname,'assets/icon.png'),autoHideMenuBar:true,titleBarStyle:'hidden',titleBarOverlay:{color:'#fafbf8',symbolColor:'#617055',height:48},show:!verify,webPreferences:{backgroundThrottling:!verify,preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true}});
   brandWindow(mainWindow);if(!verify)registerShortcut();
-  mainWindow.webContents.session.setPermissionRequestHandler((_wc,_permission,callback)=>callback(false));
-  mainWindow.webContents.session.setPermissionCheckHandler(()=>false);
+  enableMicrophone(mainWindow.webContents.session);
   mainWindow.webContents.setWindowOpenHandler(({url})=>{openSafe(url).catch(()=>{});return {action:'deny'};});
   mainWindow.webContents.on('context-menu',(event,params)=>tabbedBrowser?.showLinkMenu(mainWindow.webContents,params,event));
   mainWindow.webContents.on('will-navigate',(event,url)=>{if(!url.startsWith('orbit://app/')){event.preventDefault();openSafe(url).catch(()=>{});}});
