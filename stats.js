@@ -23,8 +23,7 @@
       nodes[metric].dataset.source = pending ? 'pending' : snapshot.totals[metric] ? 'shared' : 'cached';
       nodes[metric].dataset.pending = String(pending);
     }
-    const likesPending = snapshot.events.some(event => event.metric === 'likes');
-    if (!storageFailure) { if (likesPending) message('likeQueued');else feedback.hidden = true; }
+    if (!storageFailure) feedback.hidden = true;
     nodes.downloads.dataset.i18nTitle = snapshot.events.some(event => event.metric === 'downloads') ? 'downloadQueued' : 'downloadsLive';
     window.OrbitI18n.apply();
   }

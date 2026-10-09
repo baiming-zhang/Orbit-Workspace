@@ -26,4 +26,4 @@ document.querySelectorAll('[data-quality]').forEach(button=>button.addEventListe
  video.addEventListener('loadedmetadata',()=>{if(id!==changeId)return;video.currentTime=Math.min(time,Math.max(0,video.duration-.1));if(resume)video.play().catch(()=>{});},{once:true});
  video.src=config.file;video.load();
 }));video.addEventListener('error',()=>{error.hidden=false;});
-</script><script src="counter-config.js?v=20261009-durable-v3" defer></script><script src="counter-storage.js?v=20261009-durable-v3" defer></script><script src="stats.js?v=20261009-durable-v3" defer></script></body></html>
+</script><script src="counter-config.js?v=20261009-durable-v3" defer></script><script src="counter-storage.js?v=20261009-durable-v3" defer></script><script src="stats.js?v=20261009-quiet-v4" defer></script></body></html>
