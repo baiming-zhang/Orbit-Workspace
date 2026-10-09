@@ -33,6 +33,9 @@
   if(result.workspaceState)accept(result.workspaceState);input.blur();syncInput(true);
  });
  file.addEventListener('click',async()=>{const result=await window.orbitDesktop.workspaceAction(state.page,'open-file');if(!result.ok)toast(result.error);});
+ let selectOnClick=false;
+ input.addEventListener('focus',()=>{input.select();selectOnClick=true;});
+ input.addEventListener('click',()=>{if(selectOnClick){input.select();selectOnClick=false;}});
  input.addEventListener('input',()=>input.removeAttribute('aria-invalid'));
  input.addEventListener('blur',()=>syncInput(true));
  input.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();syncInput(true);input.blur();}});

@@ -104,6 +104,14 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### 1.8.8 · October 9, 2026
+
+- Clicking the workspace address bar selects its full address, ready for replacement or pasting.
+- Downloads open in a flyout directly beneath the Downloads button. New downloads reveal progress automatically while the webpage stays visible. Close it without progress updates reopening it.
+- Website tabs use equal widths and shrink together as more pages open. Long titles remain available in tooltips.
+- Fixed navigation editing closing unexpectedly when selecting text beyond the dialog edge.
+
+
 ### 1.8.7 · October 8, 2026
 
 - Unified addresses and browser tab groups across all workspaces, including built-in pages. Original built-in tabs remain available.

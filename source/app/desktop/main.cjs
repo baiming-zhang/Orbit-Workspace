@@ -16,7 +16,8 @@ const {createBrowserSessions}=require('./browser-sessions.cjs');
 const {configureBranding,brandWindow,registerShortcut}=require('./windows-branding.cjs');
 const OrbitI18n=require('../dist/i18n.js');
 const {createDownloads}=require('./downloads.cjs');
-let downloads;
+const {createDownloadsFlyout}=require('./downloads-flyout.cjs');
+let downloads,downloadsFlyout;
 const portals=require('../dist/shortcuts.js');
 const {createCredentials,portalForUrl}=require('./credentials.cjs');
 protocol.registerSchemesAsPrivileged([{scheme:'orbit',privileges:{standard:true,secure:true,supportFetchAPI:true,corsEnabled:true}}]);
@@ -27,7 +28,7 @@ const verify=false;
 if(verify){app.disableHardwareAcceleration();app.setPath('userData',path.join(app.getPath('temp'),'orbit-build-verification-'+Date.now()));}
 if(!app.requestSingleInstanceLock()){app.quit();return;}
 let mainWindow;
-downloads=createDownloads({app,shell,onChange:data=>{if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('orbit:downloads-changed',data);}});
+downloads=createDownloads({app,shell,onChange:data=>{downloadsFlyout?.update();if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('orbit:downloads-changed',data);}});
 let google;
 let settings;
 let localEvents;
@@ -61,6 +62,7 @@ app.whenReady().then(()=>{
   nativeTheme.themeSource='light';
   Menu.setApplicationMenu(null);
   settings=createSettings(app);
+  downloadsFlyout=createDownloadsFlyout({getWindow:()=>mainWindow,getData:()=>downloads.list(),getLanguage:()=>settings.get().language,onVisibility:visible=>{if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('orbit:downloads-visibility',visible);}});
   navigation=createNavigation({app});
   google=createGoogle({app,safeStorage,shell,getLanguage:()=>settings.get().language,getTimeZone:()=>settings.get().timeZone});
   credentials=createCredentials({app,safeStorage});
@@ -89,8 +91,11 @@ app.whenReady().then(()=>{
     }catch{return {ok:false,error:mode==='app'?'未能打开 Zoom 客户端，请使用浏览器加入。':'未能打开会议链接。'};}
   });
   const guard=(handler)=>async(event,...args)=>{if(!trusted(event))return {ok:false,error:'未经授权的窗口。'};try{return await handler(...args);}catch(error){return {ok:false,error:OrbitI18n.text(error.message||'操作未完成，请重试。',settings.get().language)};}};
-  ipcMain.handle('orbit:downloads-get',guard(()=>downloads.list()));
-  ipcMain.handle('orbit:downloads-action',guard((id,action)=>downloads.action(id,action)));
+  const downloadGuard=handler=>async(event,...args)=>{if(!trusted(event)&&!downloadsFlyout.trusted(event))return {ok:false,error:'Unauthorized download window.'};try{return await handler(...args);}catch(error){return {ok:false,error:OrbitI18n.text(error.message,settings.get().language)};}};
+  ipcMain.handle('orbit:downloads-get',downloadGuard(()=>({...downloads.list(),language:settings.get().language})));
+  ipcMain.handle('orbit:downloads-action',downloadGuard((id,action)=>downloads.action(id,action)));
+  ipcMain.handle('orbit:downloads-show',guard(bounds=>downloadsFlyout.show(bounds)));
+  ipcMain.handle('orbit:downloads-close',downloadGuard(()=>downloadsFlyout.close()));
   ipcMain.handle('orbit:navigation-get',guard(()=>navigation.get()));
   ipcMain.handle('orbit:navigation-save',guard(input=>{const result=navigation.save(input);browser.configure(result.items);tabbedBrowser?.configure(result.items);return result;}));
   ipcMain.handle('orbit:navigation-delete',guard(id=>{const result=navigation.remove(id);browser.remove(id);tabbedBrowser?.remove(id);return result;}));
@@ -109,7 +114,7 @@ app.whenReady().then(()=>{
   ipcMain.handle('orbit:website-stage',(event,input)=>{const source=websiteSender(event);return source?loginTracker.stage(event.sender,source.url,input):{ok:false};});
   ipcMain.handle('orbit:website-save',(event,input)=>{const source=websiteSender(event);if(!source)return {ok:false};try{return credentials.remember(source.url,input);}catch(error){return {ok:false,error:error.message};}});
   ipcMain.handle('orbit:website-attempt',event=>{const source=websiteSender(event);if(!source||source.view.orbitLoginAttempted||!credentials.read(source.url)?.autoLogin)return {ok:false};source.view.orbitLoginAttempted=true;return {ok:true};});
-  ipcMain.handle('orbit:language-save',guard(language=>{const result=settings.saveLanguage(language);background?.updatePresentation();tabbedBrowser?.refresh();for(const view of [...serviceViews.values(),...(tabbedBrowser?.views.values()||[])]){if(!view.webContents.isDestroyed())view.webContents.send('orbit:language-changed',language);}return result;}));
+  ipcMain.handle('orbit:language-save',guard(language=>{const result=settings.saveLanguage(language);background?.updatePresentation();downloadsFlyout.update();tabbedBrowser?.refresh();for(const view of [...serviceViews.values(),...(tabbedBrowser?.views.values()||[])]){if(!view.webContents.isDestroyed())view.webContents.send('orbit:language-changed',language);}return result;}));
   ipcMain.handle('orbit:reminder-settings',event=>background?.trustedPopup(event)?settings.get():null);
   ipcMain.handle('orbit:time-zone',guard(()=>settings.get()));
   ipcMain.handle('orbit:save-time-zone',guard(zone=>{const result=settings.save(zone);background?.refreshRemote();return {ok:true,...result};}));
@@ -131,7 +136,7 @@ app.whenReady().then(()=>{
   ipcMain.handle('orbit:navigate-website',guard((id,action)=>tabbedBrowser.navigate(id,action)));
   ipcMain.handle('orbit:workspace-action',guard((mode,action,value)=>tabbedBrowser.navigate(mode,action,value)));
   createWindow();
-  tabbedBrowser=createTabbedBrowser({onPin:input=>{const existing=navigation.get().items.find(item=>item.url===input.url);const result=existing?{...navigation.get(),item:existing}:navigation.save(input);browser.configure(result.items);tabbedBrowser.configure(result.items);mainWindow.webContents.send('orbit:navigation-action',{action:'saved',result});return result;},workspaceItems:navigation.get().items,getLanguage:()=>settings.get().language,getWindow:()=>mainWindow,sessions:browserSessions,onState:state=>{if(!quitting&&mainWindow&&!mainWindow.isDestroyed()&&!mainWindow.webContents.isDestroyed())mainWindow.webContents.send('orbit:workspace-state',state);},onPage:page=>{if(!quitting&&mainWindow&&!mainWindow.isDestroyed()&&mainWindow.webContents&&!mainWindow.webContents.isDestroyed())mainWindow.webContents.send('orbit:open-page',page);}});
+  tabbedBrowser=createTabbedBrowser({onPin:input=>{const existing=navigation.get().items.find(item=>item.url===input.url);const result=existing?{...navigation.get(),item:existing}:navigation.save(input);browser.configure(result.items);tabbedBrowser.configure(result.items);mainWindow.webContents.send('orbit:navigation-action',{action:'saved',result});return result;},workspaceItems:navigation.get().items,getLanguage:()=>settings.get().language,getWindow:()=>mainWindow,sessions:browserSessions,onState:state=>{downloadsFlyout.raise();if(!quitting&&mainWindow&&!mainWindow.isDestroyed()&&!mainWindow.webContents.isDestroyed())mainWindow.webContents.send('orbit:workspace-state',state);},onPage:page=>{if(!quitting&&mainWindow&&!mainWindow.isDestroyed()&&mainWindow.webContents&&!mainWindow.webContents.isDestroyed())mainWindow.webContents.send('orbit:open-page',page);}});
   mainWindow.webContents.once('did-finish-load',()=>{for(const target of launchTargets(process.argv))tabbedBrowser.open(target);});
   ipcMain.handle('orbit:pdf-open',guard(()=>tabbedBrowser.pick('pdf')));
   mainWindow.webContents.on('before-input-event',(event,input)=>{if(input.control&&input.key.toLowerCase()==='o'){event.preventDefault();tabbedBrowser.pick();}});
@@ -149,7 +154,7 @@ app.on('before-quit',event=>{
   quitSaving=true;
   const shutdownError=error=>{try{fs.appendFileSync(path.join(app.getPath('userData'),'orbit-shutdown.log'),new Date().toISOString()+' '+(error?.stack||error)+'\n');}catch{}};
   // before-quit fires again after saving the sessions. Destroy each view once.
-  for(const cleanup of [()=>tabbedBrowser?.dispose(),()=>background?.dispose(),()=>google?.dispose(),()=>localApi?.stop()])try{cleanup();}catch(error){shutdownError(error);}
+  for(const cleanup of [()=>downloadsFlyout?.dispose(),()=>tabbedBrowser?.dispose(),()=>background?.dispose(),()=>google?.dispose(),()=>localApi?.stop()])try{cleanup();}catch(error){shutdownError(error);}
   Promise.resolve().then(()=>browserSessions?.flush()).catch(shutdownError).finally(()=>{
     try{browserSessions?.dispose();browser?.dispose();}catch(error){shutdownError(error);}
     quitFlushed=true;app.quit();

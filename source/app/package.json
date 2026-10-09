@@ -1,6 +1,6 @@
 {
   "name": "orbit",
-  "version": "1.8.7",
+  "version": "1.8.8",
   "description": "Desktop workspace for Google, ChatGPT, web browsing and PDF reading",
   "main": "desktop/main.cjs",
   "author": "Baiming Zhang",

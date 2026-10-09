@@ -2,7 +2,7 @@
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 function createDownloads({app,shell,onChange=()=>{}}){
  const file=path.join(app.getPath('userData'),'downloads.json');let history=[];const hooked=new WeakSet(),active=new Map();
- try{history=JSON.parse(fs.readFileSync(file,'utf8'));if(!Array.isArray(history))history=[];history=history.slice(0,200).map(x=>({...x,state:x.state==='progressing'?'interrupted':x.state}));}catch{}
+ try{history=JSON.parse(fs.readFileSync(file,'utf8'));if(!Array.isArray(history))history=[];history=history.slice(0,200).map(x=>({...x,state:['progressing','paused'].includes(x.state)?'interrupted':x.state}));}catch{}
  const folder=app.getPath('downloads');
  const list=()=>({ok:true,folder,items:history.map(x=>({...x})),active:active.size});
  function publish(){fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,JSON.stringify(history.slice(0,200),null,2));onChange(list());}

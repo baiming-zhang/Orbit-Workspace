@@ -1,5 +1,7 @@
 const $=s=>document.querySelector(s);let current=null,addressId=null;
 const tr=(en,zh)=>current?.language==='zh'?zh:en;
+function fitTabs(){const root=$('#tabs'),count=root.children.length,width=root.clientWidth/Math.max(1,count),bar=document.querySelector('.tabbar');root.style.setProperty('--tab-gap',count>40?'0px':count>12?'2px':'5px');bar.classList.toggle('compact-tabs',width<85);bar.classList.toggle('tiny-tabs',width<42);}
+new ResizeObserver(fitTabs).observe($('#tabs'));
 function labels(){
  document.documentElement.lang=current?.language==='zh'?'zh-CN':'en';
  $('#new').title=current?.workspace==='pdf'?tr('Open another PDF','打开另一个 PDF'):tr('Open another browser tab (Ctrl+T)','多开一个浏览标签页（Ctrl+T）');$('#new').setAttribute('aria-label',$('#new').title);
@@ -13,11 +15,12 @@ window.orbitTabs.onState(s=>{
  const root=$('#tabs');root.replaceChildren();
  for(const [index,t] of s.tabs.entries()){
   const box=document.createElement('div');box.dataset.tone=String(index%4);box.className='tab'+(t.id===s.activeId?' active':'');
-  const select=document.createElement('button');select.textContent=t.title||tr('New tab','新标签页');select.title=t.url;select.role='tab';select.setAttribute('aria-selected',t.id===s.activeId);select.onclick=()=>window.orbitTabs.action('select',t.id);
+  const select=document.createElement('button');select.textContent=t.title||tr('New tab','新标签页');select.title=(t.title||tr('New tab','新标签页'))+'\n'+t.url;select.role='tab';select.setAttribute('aria-selected',t.id===s.activeId);select.onclick=()=>window.orbitTabs.action('select',t.id);
   box.oncontextmenu=event=>{event.preventDefault();window.orbitTabs.action('tab-menu',t.id);};
   const close=document.createElement('button');close.textContent='×';close.title=tr('Close tab','关闭标签页');close.setAttribute('aria-label',close.title);close.onclick=()=>window.orbitTabs.action('close',t.id);close.hidden=!!t.internal;
   box.append(select,close);root.append(box);
  }
+ fitTabs();
  $('#chat').title=active?.pdf?tr('Open ChatGPT and attach the current PDF','打开 ChatGPT 并附上当前 PDF'):tr('Open ChatGPT','打开 ChatGPT');
  const upload=$('#pdf-upload-status');upload.hidden=!active?.pdf||!active?.chat||!active?.upload;upload.textContent=active?.upload?.state==='error'?tr('Attachment failed · Retry','附件发送失败 · 重试'):active?.upload?.text||'';upload.title=active?.upload?.text||'';upload.dataset.state=active?.upload?.state||'';upload.disabled=active?.upload?.state!=='error';
  $('#chat').setAttribute('aria-pressed',!!active?.chat);$('#chat-reload').hidden=!active?.chat;$('#error').textContent=s.error;

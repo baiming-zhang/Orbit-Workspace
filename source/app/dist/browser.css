@@ -6,3 +6,14 @@ button{color:#5c8bbc}#reload,#chat-reload{color:#60947c}#chat{background:#fcf2f1
 #chat-controls{display:flex;align-items:center;gap:5px;margin-left:auto;flex-shrink:0}#new{flex-shrink:0}#file-address-dialog{width:min(600px,calc(100vw - 48px));padding:26px;border:1px solid #e5edf6;border-radius:14px;color:#475467;background:#fff;box-shadow:0 12px 50px #24364b1f}#file-address-dialog::backdrop{background:#e8eff78c}#file-address-dialog h2{font-size:20px;font-weight:500;margin:0 0 10px;color:#5578a4}#file-address-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0 0 22px;color:#697586}#file-address-dialog label{display:block;margin-bottom:10px;font-size:13px}#file-address{width:100%;padding:12px;border:1px solid #d9e5f4;border-radius:8px;color:#475467;background:#fbfdff}#file-address-error{color:#b16d67;font-size:13px;min-height:16px}.dialog-actions{display:flex;gap:10px;justify-content:flex-end}#file-address-save{background:#edf3fb;color:#4d7fab}#file-address-cancel{color:#60947c}
 
 .tabbar{height:46px}#error{height:2px;padding:0 10px}#error:not(:empty){height:2px}body,.tabbar{background:#fff;color:#5f6368}
+
+/* Equal-width tabs share the available strip; title length never controls width. */
+#tabs{flex:1 1 0;min-width:0;overflow:hidden;gap:var(--tab-gap,5px)}
+.tab{flex:1 1 0;min-width:0;max-width:230px;overflow:hidden}
+.tab>button:first-child{min-width:0;flex:1 1 0}
+.tab>button:last-child{flex:0 0 26px;padding:5px 0}
+.tabbar.compact-tabs .tab::before{display:none}
+.tabbar.compact-tabs .tab>button:first-child{padding:7px 4px}
+.tabbar.compact-tabs .tab:not(.active)>button:last-child{display:none}
+.tabbar.tiny-tabs .tab>button:last-child{display:none}
+.tabbar.tiny-tabs .tab>button:first-child{padding:7px 1px}
