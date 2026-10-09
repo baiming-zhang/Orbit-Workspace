@@ -1,4 +1,15 @@
 const {ipcRenderer}=require('electron');
+// Ordinary web links open another tab in their originating Orbit workspace.
+function openWorkspaceLink(event){
+ if(!event.isTrusted||event.defaultPrevented||event.type==='click'&&event.button!==0||event.type==='auxclick'&&event.button!==1)return;
+ const anchor=event.composedPath().find(node=>node?.matches?.('a[href]'))||event.target.closest?.('a[href]');if(!anchor||anchor.hasAttribute('download'))return;
+ const raw=anchor.getAttribute('href')?.trim();if(!raw||raw.startsWith('#'))return;
+ let url;try{url=new URL(anchor.href,location.href);if(!['http:','https:'].includes(url.protocol)||url.username||url.password)return;const here=new URL(location.href);if(url.origin===here.origin&&url.pathname===here.pathname&&url.search===here.search)return;}catch{return;}
+ event.preventDefault();ipcRenderer.invoke('orbit:link-open',url.href).catch(()=>{});
+}
+document.addEventListener('click',openWorkspaceLink,true);
+document.addEventListener('auxclick',openWorkspaceLink,true);
+
 // This bridge stays in the isolated world and accepts only same-origin forms.
 if(location.protocol==='https:'){
  const watched=new WeakSet(),filled=new WeakMap();let busy=false,lastUser='',attempted=false,entryCache=null,lastRead=0,manualPassword=false;

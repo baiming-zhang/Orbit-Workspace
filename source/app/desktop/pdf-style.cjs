@@ -3,7 +3,7 @@ const OrbitI18n=require('../dist/i18n.js');
 const fs=require('node:fs'),path=require('node:path');
 const tones={white:{label:'白色',color:'#ffffff'},blue:{label:'浅蓝',color:'#f1f6fc'},green:{label:'浅绿',color:'#f2f8f3'},yellow:{label:'浅黄',color:'#fcf9ef'},red:{label:'浅红',color:'#fcf2f1'}};
 const viewerOrigin='chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/';
-function createPdfStyle({getWindow,getLanguage=()=> 'en'}){
+function createPdfStyle({getWindow,getLanguage=()=> 'en',linkItems=null}){
  const t=value=>OrbitI18n.text(value,getLanguage());
  const preference=path.join(app.getPath('userData'),'pdf-preferences.json'),script=fs.readFileSync(path.join(__dirname,'pdf-chrome.js'),'utf8'),contents=new Map();let tone='blue';
  try{const saved=JSON.parse(fs.readFileSync(preference,'utf8'));if(tones[saved.background])tone=saved.background;}catch{}
@@ -19,7 +19,7 @@ function createPdfStyle({getWindow,getLanguage=()=> 'en'}){
   wc.on('did-frame-finish-load',()=>{for(const delay of [0,150,700,1800])setTimeout(()=>apply(wc),delay).unref?.();});
   wc.on('context-menu',(event,params)=>{
    if(!wc.mainFrame.framesInSubtree.some(frame=>frame.url.startsWith(viewerOrigin)))return;
-   const items=[];if(params.selectionText)items.push({label:t('复制'),role:'copy'},{type:'separator'});if(params.linkURL)items.push({label:t('复制链接地址'),click:()=>clipboard.writeText(params.linkURL)},{type:'separator'});
+   const items=[];if(params.selectionText)items.push({label:t('复制'),role:'copy'},{type:'separator'});if(params.linkURL){const links=linkItems?.(wc,params);items.push(...(links?.length?links:[{label:t('复制链接地址'),click:()=>clipboard.writeText(params.linkURL)}]),{type:'separator'});}
    event.preventDefault();Menu.buildFromTemplate([...items,{label:t('阅读背景'),enabled:false},{type:'separator'},...Object.entries(tones).map(([id,item])=>({id:'pdf-background-'+id,label:t(item.label),type:'radio',checked:tone===id,click:()=>choose(id)}))]).popup({window:getWindow()});
   });
  }

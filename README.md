@@ -23,7 +23,7 @@ HD: 2560 × 1646 · 30 fps. Standard: 1280 × 822 · 24 fps. Both are approximat
 - **Google-friendly workflow.** Quick access to Google Search, Gmail, Calendar, and Analytics. Optional Gmail and Calendar summaries use official Google APIs, with OAuth authorization completed in your system browser.
 - **Multiple ways to work with ChatGPT.** Use a dedicated ChatGPT page, open several conversation tabs, or keep ChatGPT beside a PDF or website. ChatGPT views share the same local sign-in session.
 - **Literature-friendly reading.** Open local or online PDFs, switch between papers, resize the reading/chat split, and attach the current PDF to ChatGPT when its upload interface and your account support it.
-- **One navigation bar.** Browser and PDF addresses, Back, Forward, Refresh, and Open File share the top workspace bar. The inner row keeps document/page tabs, the + button, and ChatGPT controls.
+- **One navigation bar.** Every workspace, including Overview and meeting reminders, shows its address and supports multiple browser tabs. Links open in a new tab within the current workspace. Right-click a link to open it in the current tab, copy its address, or pin it to the sidebar. Built-in pages retain their original tab.
 - **A workspace that feels like yours.** Press and hold workspace navigation items to reorder them, customize their names and icons, adjust spacing and text size, and fold away reading controls when you want more room for the page.
 - **A fast PDF workflow.** Direct PDF opening and a compact reader aim to make paper reading feel quicker than opening a full browser window. In the author's everyday workflow it feels faster than Edge; no controlled rendering-speed benchmark has been published. Actual performance depends on the PDF, hardware, and cache state.
 - **Pages that stay with you.** Frequently used pages can remain open while you switch workspace sections or keep Orbit in the system tray. Persistent sessions retain login state across launches, subject to each website's session expiry and security checks.
@@ -103,6 +103,14 @@ THIRD-PARTY-NOTICES.txt
 See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also includes the Electron runtime template. Large binary files are distributed as release assets rather than committed to Git.
 
 ## What's new
+
+### 1.8.7 · October 8, 2026
+
+- Unified addresses and browser tab groups across all workspaces, including built-in pages. Original built-in tabs remain available.
+- Links open in a new tab in their originating workspace, preserving the source page.
+- Added link context-menu actions: open in the current tab, copy the address, and pin to the sidebar. Pinned links are saved as editable navigation items.
+- Preserved shared Google / ChatGPT sign-in sessions, PDF reading and ChatGPT split views, and local page-text APIs.
+- Updated tab and link-menu controls for English and Chinese.
 
 ### 1.8.6 · October 8, 2026
 
