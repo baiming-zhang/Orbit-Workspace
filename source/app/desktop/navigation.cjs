@@ -1,3 +1,4 @@
+const {normalizeWebUrl}=require('../dist/url-utils.js');
 const fs=require('node:fs');const path=require('node:path');const crypto=require('node:crypto');const {defaults,restoreRequired}=require('../dist/navigation.js');
 const base=new Map(defaults.map(item=>[item.id,item]));
 function cleanItem(input,previous){
@@ -6,7 +7,7 @@ function cleanItem(input,previous){
  if(!name||Array.from(name).length>40)throw Error('名称需为 1–40 个字。');
  const iconData=input.iconData??previous?.iconData??'';
  if(typeof iconData!=='string'||iconData.length>262144||iconData&&(!/^data:image\/png;base64,[A-Za-z0-9+/]+=*$/.test(iconData)||!Buffer.from(iconData.split(',')[1],'base64').subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]))))throw Error('请选择有效的本地图标。');
- let url='';if(!original?.internal){try{const raw=String(input.url??previous?.url??'');const u=new URL(id==='gmail'&&raw==='https://mail.google.com/'?'https://mail.google.com/mail/u/0/':raw);if(!['https:','http:'].includes(u.protocol)||u.username||u.password||!u.hostname||u.href.length>16384)throw Error();url=u.href;}catch{throw Error('请输入完整的 http:// 或 https:// 网页地址。');}}
+ let url='';if(!original?.internal){try{const raw=normalizeWebUrl(String(input.url??previous?.url??''));const u=new URL(id==='gmail'&&raw==='https://mail.google.com/'?'https://mail.google.com/mail/u/0/':raw);if(!['https:','http:'].includes(u.protocol)||u.username||u.password||!u.hostname||u.href.length>16384)throw Error();url=u.href;}catch{throw Error('请输入完整的 http:// 或 https:// 网页地址。');}}
  return {...original,id,name,...(!original?.internal?{url}:{}),iconData,custom:!original};
 }
 function createNavigation({app}){

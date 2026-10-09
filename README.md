@@ -104,6 +104,11 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### 1.8.9 · October 9, 2026
+
+- Website addresses entered without a protocol are automatically completed with `https://`, including sidebar navigation creation and editing. Explicit HTTP addresses, searches and local file paths keep their existing behavior.
+- The project homepage identifies Orbit as a public beta with frequent updates and maintenance.
+
 ### 1.8.8 · October 9, 2026
 
 - Clicking the workspace address bar selects its full address, ready for replacement or pasting.

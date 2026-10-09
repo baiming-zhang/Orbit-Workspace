@@ -1,3 +1,4 @@
+const {normalizeWebUrl,isWebsiteAddress}=require('../dist/url-utils.js');
 const {WebContentsView,ipcMain,dialog,Menu,clipboard}=require('electron');
 const path=require('node:path'),fs=require('node:fs');
 const {pathToFileURL,fileURLToPath}=require('node:url');
@@ -9,12 +10,13 @@ function webUrl(value){try{if(typeof value!=='string'||value.length>16384)return
 function launchTargets(argv,cwd=process.cwd()){return argv.filter(v=>typeof v==='string'&&!v.startsWith('--')&&(/^https?:\/\//i.test(v)||localExtensions.has(path.extname(v).toLowerCase()))).map(v=>/^https?:\/\//i.test(v)?v:path.resolve(cwd,v));}
 function targetUrl(value){
  if(typeof value!=='string'||value.length>16384)throw Error('Invalid address.');
+ value=value.trim();
  if(/^https?:\/\//i.test(value)){const u=webUrl(value);if(!u)throw Error('Use an address without a password.');return u;}
  if(/^[a-z][a-z\d+.-]*:/i.test(value)&&!value.startsWith('file:')&&!path.isAbsolute(value)&&!/^(localhost|[\w-]+(?:\.[\w-]+)+):\d+(?:[/?#]|$)/i.test(value))throw Error('Unsupported address scheme.');
  const local=value.startsWith('file:')?fileURLToPath(value):value;
  if(path.isAbsolute(local)&&localExtensions.has(path.extname(local).toLowerCase())){try{if(fs.statSync(local).isFile())return pathToFileURL(local).href;}catch{}throw Error('File not found. Check its address.');}
  if(!value.trim())return 'https://www.google.com/';
- if(!/\s/.test(value)&&/^(localhost(?::\d+)?|[\w-]+(?:\.[\w-]+)+)(?:[:/].*)?$/.test(value))return 'https://'+value;
+ if(!/\s/.test(value)&&isWebsiteAddress(value))return normalizeWebUrl(value);
  return 'https://www.google.com/search?q='+encodeURIComponent(value);
 }
 function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{},getLanguage=()=> 'en',onState=()=>{},onPin=()=>{}}){
