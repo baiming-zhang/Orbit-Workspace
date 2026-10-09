@@ -104,6 +104,13 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### 1.8.10 · October 9, 2026
+
+- Reviewed English and Chinese interface text, including settings, navigation editing, Downloads and PDF attachment status. Only the language label stays bilingual.
+
+- Opening ChatGPT beside a PDF automatically attaches the current file in every workspace, including Overview, Browser and custom navigation pages. PDF attachment follows the file when navigation changes and retries after ChatGPT reloads.
+- Attachment status checks the composer for the file before reusing an earlier success, so a removed attachment can be added again. No prompt is sent automatically.
+
 ### 1.8.9 · October 9, 2026
 
 - Website addresses entered without a protocol are automatically completed with `https://`, including sidebar navigation creation and editing. Explicit HTTP addresses, searches and local file paths keep their existing behavior.

@@ -20,7 +20,7 @@
   }
  }
  document.getElementById('close').onclick=()=>window.orbitDownloads.close();document.getElementById('folder').onclick=()=>act(null,'folder');
- async function act(id,action){try{const result=await window.orbitDownloads.action(id,action);if(!result.ok)throw Error(result.error);error.hidden=true;}catch(e){error.textContent=e.message;error.hidden=false;}}
+ async function act(id,action){try{const result=await window.orbitDownloads.action(id,action);if(!result.ok)throw Error(result.error);error.hidden=true;}catch(e){error.textContent=OrbitI18n.text(e.message,latest.language);error.hidden=false;}}
  list.addEventListener('click',event=>{const button=event.target.closest('[data-action]');if(button)act(button.closest('[data-id]').dataset.id,button.dataset.action);});
  document.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();window.orbitDownloads.close();}});
  window.orbitDownloads.onChange(render);window.orbitDownloads.get().then(render).catch(()=>{error.hidden=false;error.textContent=tr('Unable to load downloads.','无法加载下载记录。');});

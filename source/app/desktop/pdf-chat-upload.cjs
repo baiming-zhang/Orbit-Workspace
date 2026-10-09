@@ -42,7 +42,7 @@ async function localPdf(t){
 }
 function createPdfChatUpload({publish,timeout=45000}){
  async function attach(t,{force=false}={}){
-  if(t.workspace!=='pdf'||!t.chatVisible||!t.chat||t.chat.webContents.isDestroyed())return;
+  if(!t.pdf||!t.chatVisible||!t.chat||t.chat.webContents.isDestroyed())return;
   if(t.uploadTask)return t.uploadTask;
   const wc=t.chat.webContents,requestedUrl=t.url;
   const active=()=>!wc.isDestroyed()&&t.url===requestedUrl&&t.chatVisible;
@@ -58,7 +58,7 @@ function createPdfChatUpload({publish,timeout=45000}){
      probe=await wc.executeJavaScript(inspectScript).catch(()=>null);
      if(probe?.login)throw Error('Sign in to ChatGPT on the right, then retry.');
      if(probe?.editor){
-      if(!force&&t.uploaded?.key===pdf.key&&t.uploaded.href===probe.href){status('attached','PDF attached');return;}
+      if(!force&&t.uploaded?.key===pdf.key&&t.uploaded.href===probe.href&&probe.text.includes(pdf.name)&&!probe.busy){status('attached','PDF attached');return;}
       if(probe.input)break;
       if(!wc.debugger.isAttached()){wc.debugger.attach('1.3');attachedHere=true;}
       if(!intercepting){await wc.debugger.sendCommand('Page.setInterceptFileChooserDialog',{enabled:true});intercepting=true;}
@@ -91,7 +91,7 @@ function createPdfChatUpload({publish,timeout=45000}){
     if(!wc.isDestroyed()&&intercepting)await wc.debugger.sendCommand('Page.setInterceptFileChooserDialog',{enabled:false}).catch(()=>{});
     if(!wc.isDestroyed()&&attachedHere&&wc.debugger.isAttached())wc.debugger.detach();
    }
-  })().finally(()=>{t.uploadTask=null;if(!active()&&t.upload?.state==='loading'){t.upload=null;publish();}});
+  })().finally(()=>{t.uploadTask=null;if(!active()&&t.upload?.state==='loading'){t.upload=null;publish();}if(t.url!==requestedUrl&&t.pdf&&t.chatVisible&&t.view&&!t.view.webContents.isDestroyed())queueMicrotask(()=>attach(t));});
   return t.uploadTask;
  }
  return {attach};

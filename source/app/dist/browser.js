@@ -22,15 +22,15 @@ window.orbitTabs.onState(s=>{
  }
  fitTabs();
  $('#chat').title=active?.pdf?tr('Open ChatGPT and attach the current PDF','打开 ChatGPT 并附上当前 PDF'):tr('Open ChatGPT','打开 ChatGPT');
- const upload=$('#pdf-upload-status');upload.hidden=!active?.pdf||!active?.chat||!active?.upload;upload.textContent=active?.upload?.state==='error'?tr('Attachment failed · Retry','附件发送失败 · 重试'):active?.upload?.text||'';upload.title=active?.upload?.text||'';upload.dataset.state=active?.upload?.state||'';upload.disabled=active?.upload?.state!=='error';
- $('#chat').setAttribute('aria-pressed',!!active?.chat);$('#chat-reload').hidden=!active?.chat;$('#error').textContent=s.error;
+ const upload=$('#pdf-upload-status');upload.hidden=!active?.pdf||!active?.chat||!active?.upload;upload.textContent=active?.upload?.state==='error'?tr('Attachment failed · Retry','附件发送失败 · 重试'):OrbitI18n.text(active?.upload?.text||'',current.language);upload.title=OrbitI18n.text(active?.upload?.text||'',current.language);upload.dataset.state=active?.upload?.state||'';upload.disabled=active?.upload?.state!=='error';
+ $('#chat').setAttribute('aria-pressed',!!active?.chat);$('#chat-reload').hidden=!active?.chat;$('#error').textContent=OrbitI18n.text(s.error,current.language);
 });
 for(const action of ['new','chat','chat-reload'])$('#'+action).onclick=()=>window.orbitTabs.action(action);
 $('#pdf-upload-status').onclick=()=>window.orbitTabs.action('pdf-chat-retry');
 function cancelAddress(){if($('#file-address-dialog').open)$('#file-address-dialog').close();addressId=null;window.orbitTabs.action('pdf-address-close');}
 window.orbitTabs.onPdfAddress(value=>{addressId=value.id;$('#file-address-title').textContent=value.title;$('#file-address').value=value.address;$('#file-address-error').textContent='';if(!$('#file-address-dialog').open)$('#file-address-dialog').showModal();$('#file-address').focus();$('#file-address').select();});
 $('#file-address-cancel').onclick=cancelAddress;$('#file-address-dialog').oncancel=event=>{event.preventDefault();cancelAddress();};
-$('#file-address-form').onsubmit=async event=>{event.preventDefault();const result=await window.orbitTabs.action('pdf-address-save',{id:addressId,address:$('#file-address').value});if(result.ok){$('#file-address-dialog').close();addressId=null;}else $('#file-address-error').textContent=result.error||tr('Unable to open this address.','无法打开此地址。');};
+$('#file-address-form').onsubmit=async event=>{event.preventDefault();const result=await window.orbitTabs.action('pdf-address-save',{id:addressId,address:$('#file-address').value});if(result.ok){$('#file-address-dialog').close();addressId=null;}else $('#file-address-error').textContent=OrbitI18n.text(result.error,current.language)||tr('Unable to open this address.','无法打开此地址。');};
 function focusAddress(){window.orbitTabs.action('focus-address');}
 window.orbitTabs.onFocus(focusAddress);
 addEventListener('keydown',event=>{if($('#file-address-dialog').open)return;if(event.ctrlKey&&event.key.toLowerCase()==='t'){event.preventDefault();window.orbitTabs.action('new');}if(event.ctrlKey&&event.key.toLowerCase()==='l'){event.preventDefault();focusAddress();}if(event.ctrlKey&&event.key.toLowerCase()==='w'){event.preventDefault();window.orbitTabs.action('close',current?.activeId);}});
