@@ -23,6 +23,9 @@
     document.title = language === 'zh' ? 'Orbit Workspace · 让每一天更从容' : 'Orbit Workspace · A calmer space for your day';
     document.querySelector('meta[name="description"]').content = language === 'zh' ? 'Orbit 将 PDF 阅读、ChatGPT 与 Google 工具整合到一个开源桌面工作空间，在线观看演示。' : 'Orbit brings PDF reading, ChatGPT and Google tools into one open-source desktop workspace. Watch the demo online.';
   }
+  messages.likeQueued = {en: 'Saved on this device · syncing automatically', zh: '已保存在此设备，正在自动同步'};
+  messages.likeStorageError = {en: 'Unable to store this like. Please allow site storage and try again.', zh: '无法保存此点赞，请允许网站存储后重试。'};
+  messages.downloadQueued = {en: 'Download click saved on this device · syncing automatically', zh: '下载点击已保存在此设备，正在自动同步'};
   window.OrbitI18n = { t, apply, videoMeta };
   document.getElementById('language-toggle').addEventListener('click', () => {
     language = language === 'en' ? 'zh' : 'en';
