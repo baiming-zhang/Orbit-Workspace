@@ -138,7 +138,7 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
   const index=tabs.indexOf(t);if(index<0)return;tabs.splice(index,1);views.delete(t.id);views.delete(t.id+'-chat');
   for(const v of [t.view,t.chat]){if(attached.has(v)){getWindow()?.contentView.removeChildView(v);attached.delete(v);}if(!destroyed||v===t.chat){if(v?.webContents&&!v.webContents.isDestroyed())v.webContents.close();}}
   if(lastActive.get(t.workspace)===t.id)lastActive.delete(t.workspace);
-  if(activeId===t.id){const parent=tabs.find(p=>p.id===t.parentId),next=parent||tabs.filter(p=>p.workspace===t.workspace).at(-1)||ensureHome(t.workspace);activeId=next?.id||null;if(next)lastActive.set(t.workspace,next.id);}
+  if(activeId===t.id){const parent=tabs.find(p=>p.id===t.parentId),next=parent||tabs.filter(p=>p.workspace===t.workspace).at(-1)||(t.workspace==='browser'?add(blankUrl,{workspace:'browser',primary:true,activate:false,loadUrl:blankUrl}):ensureHome(t.workspace));activeId=next?.id||null;if(next)lastActive.set(t.workspace,next.id);}
   layout();focusCurrent();publish();
  }
  function close(id){const t=tabs.find(t=>t.id===id);if(t&&!t.internal)removeTab(t);}

@@ -106,6 +106,8 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ### v1.8.14
 
+- Closing the last browser tab creates a fresh Google homepage instead of restoring the closed address.
+
 - Opening a PDF automatically closes the PDF Reader welcome tab. The welcome tab returns only after the last document in that workspace is closed; switching away and back does not recreate it alongside an open PDF.
 - Recycle Bin confirmation opens directly below the selected trash button in the download panel, with Confirm delete and Keep. No system message dialog is used. Confirmation is still required before the file is recycled.
 - An X button to the right of the trash icon clears a finished download record while retaining the file. Active downloads must finish or be cancelled first.
