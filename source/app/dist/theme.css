@@ -1,0 +1,14 @@
+:root[data-theme="dark"]{color-scheme:dark;--bg:#171b22;--paper:#222831;--ink:#e5eaf0;--muted:#9ba8b8;--line:#37414e;--green:#8ab4f8;--accent:#2d425d;background:#171b22;color:#e5eaf0}
+html[data-theme="dark"] body{background:#171b22;color:#e5eaf0}
+html[data-theme="dark"] :is(.topbar,.app-titlebar,.sidebar,.desktop-titlebar,.panel,.metric-card,.meeting-card,.summary-panel,.service-card,.calendar-panel,.mail-panel,dialog,.tabbar,.hero-search,.preference-card){background:#222831!important;border-color:#37414e!important;color:#e5eaf0!important}
+html[data-theme="dark"] :is(h1,h2,h3,h4,strong,.brand,.brand-text,.crumb-home,.nav-label,.nav-item,.shortcut-link,.sender-name,.mail-subject,.summary-stat,.metric-value,.profile,.bottom-link,.modal-head,.preference,.calendar-cell,.event-title){color:#e5eaf0!important}
+html[data-theme="dark"] :is(p,small,label,.intro,.connection-help,.date-badge,.mail-time,.text-link,.nav-caption,.summary-stat .metric-meta,.footer){color:#aeb9c8!important}
+html[data-theme="dark"] :is(input:not([type="range"]),select,textarea,.secondary-btn,.account-option){background:#1b222b!important;color:#e5eaf0!important;border-color:#465467!important}
+html[data-theme="dark"] :is(.nav-item.active,.nav-item:hover,.shortcut-link:hover,.bottom-link:hover,.profile:hover,.icon-btn:hover,button:hover,.calendar-cell:hover,.mail-preview:hover,.tab.active){background:#30425a!important}
+html[data-theme="dark"] :is(.panel-top,.preference,.modal-head,header,.favorite-row,.download-row,.tab,.calendar-grid,.schedule-item,.mail-table-row){border-color:#37414e!important}
+html[data-theme="dark"] :is(.primary-btn,.settings-save){background:#3b82cf!important;color:white!important}
+html[data-theme="dark"] :is(.avatar,.sender-avatar,.native-label,.date-badge,.zoom-banner,.modal-note,.login-warning,.saved-login,.empty,.file-icon,.favorite-image,.download-row .editor,.delete-popover){background:#2b3645!important}
+html[data-theme="dark"] :is(.favorite-content,.file-name,.name-link,#title,.download-name,.status-text){color:#e5eaf0!important}
+html[data-theme="dark"] :is(.favorite-source,button,a){color:#a3c5f3}html[data-theme="dark"] :is(.tabbar,#tabs,#empty,#error,.panel){background:#222831;border-color:#37414e}html[data-theme="dark"] :is(.settings-close,.account-option){background:#222831!important;color:#e5eaf0!important}
+
+html[data-theme="dark"] .settings-head-actions .secondary-btn{background:white!important;color:#334155!important}

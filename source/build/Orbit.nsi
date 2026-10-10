@@ -9,11 +9,11 @@ SetCompressor zlib
 SetCompress off
 !addplugindir /x86-unicode "${NSIS_PLUGIN_DIR}"
 Icon "${APP_ICON}"
-VIProductVersion "1.8.15.0"
+VIProductVersion "1.8.16.0"
 VIAddVersionKey "ProductName" "Orbit"
 VIAddVersionKey "FileDescription" "Orbit — Designed by Baiming Zhang"
-VIAddVersionKey "ProductVersion" "1.8.15"
-VIAddVersionKey "FileVersion" "1.8.15.0"
+VIAddVersionKey "ProductVersion" "1.8.16"
+VIAddVersionKey "FileVersion" "1.8.16.0"
 VIAddVersionKey "LegalCopyright" "Copyright (c) 2026 Baiming Zhang. MIT License."
 !include "FileFunc.nsh"
 !insertmacro GetParameters

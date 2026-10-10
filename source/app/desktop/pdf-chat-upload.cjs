@@ -96,4 +96,4 @@ function createPdfChatUpload({publish,timeout=45000}){
  }
  return {attach};
 }
-module.exports={createPdfChatUpload,isChatGpt,localPdf};
+module.exports={createPdfChatUpload,isChatGpt,localPdf,revealFileInput};

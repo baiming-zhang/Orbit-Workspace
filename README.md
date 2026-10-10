@@ -28,7 +28,7 @@ HD: 2560 × 1646 · 30 fps. Standard: 1280 × 822 · 24 fps. Both are approximat
 - **A fast PDF workflow.** Direct PDF opening and a compact reader aim to make paper reading feel quicker than opening a full browser window. In the author's everyday workflow it feels faster than Edge; no controlled rendering-speed benchmark has been published. Actual performance depends on the PDF, hardware, and cache state.
 - **Pages that stay with you.** Frequently used pages can remain open while you switch workspace sections or keep Orbit in the system tray. Persistent sessions retain login state across launches, subject to each website's session expiry and security checks.
 - **A homepage that acts like a small personal assistant.** See today's schedule and unread-email summary, add local plans or meeting links, and receive reminders five minutes before events. Google summaries are optional; local planning works independently.
-- **Downloads within reach.** The download button sits immediately left of the notification bell. Check progress, open completed files, reveal their location, or open the Downloads folder. Download history stays on this device.
+- **Downloads within reach.** The download button sits left of Favorites and the notification bell. Check progress, open completed files, reveal their location, or open the Downloads folder. Download history stays on this device.
 - **Useful extras.** Zoom meeting links, browser tabs, time-zone preferences, English/Chinese interface settings, and an optional local API/MCP bridge.
 
 ## Why Orbit alongside Edge?
@@ -104,10 +104,18 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.16
+
+- Select text or right-click an image to copy, search with Google, prepare a ChatGPT draft in the sidebar or a new tab, or save a local favorite. Favorites include the source page and saved date. ChatGPT drafts are never sent automatically; image attachment depends on the website's current composer and account capabilities.
+- Upload a local avatar and set a display name. Settings adds Light, Dark and Follow system appearance, top-right Close / Save and close actions, and Check for updates. The updater verifies SHA-256 before replacing the same portable EXE and restarting.
+- A separate, sanitized personal update package retains personal-only application management modules. Existing catalogs stay on the device, alongside settings and sign-in data; the public package remains free of personal catalogs and credentials.
+- Small refresh and home controls are available on all workspaces, including the Orbit project page and built-in pages. The home button returns to the workspace's configured home page.
+- Verified with native desktop fixtures for bilingual settings, avatar resizing, theme persistence, local favorites, selection drafts/images, edition selection and rejection of corrupted updates. The real ChatGPT service is not covered by the composer fixtures.
+
 ### v1.8.15
 
 - Download links start the transfer directly without opening a new webpage. Redirected attachment links keep the original page visible, while ordinary webpage links still open in a new workspace tab. No extra request is made to probe the file.
-- The project homepage shows its last update in Vancouver time with the UTC offset and a collapsed What's new button containing five grouped, dated updates in English and Chinese.
+- The project homepage shows its last update in Vancouver time with the UTC offset and a collapsed What's new button containing three grouped, dated updates in English and Chinese.
 - Verified with native HTTP downloads, redirect and popup fixtures, file-byte checks, ordinary-link navigation, and responsive bilingual homepage checks.
 
 ### v1.8.14

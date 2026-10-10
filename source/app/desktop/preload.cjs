@@ -1,6 +1,10 @@
 const {contextBridge,ipcRenderer}=require('electron');
 contextBridge.exposeInMainWorld('orbitDesktop',Object.freeze({
   platform:'windows',
+  showFavorites:bounds=>ipcRenderer.invoke('orbit:favorites-show',bounds),
+  closeFavorites:()=>ipcRenderer.invoke('orbit:favorites-close'),
+  onFavoritesVisibility:callback=>{const handler=(_event,value)=>callback(value);ipcRenderer.on('orbit:favorites-visibility',handler);return ()=>ipcRenderer.removeListener('orbit:favorites-visibility',handler);},
+  onNotice:callback=>{const handler=(_event,message)=>callback(message);ipcRenderer.on('orbit:notice',handler);return ()=>ipcRenderer.removeListener('orbit:notice',handler);},
   downloadMenu:()=>ipcRenderer.invoke('orbit:downloads-menu'),
   showDownloads:bounds=>ipcRenderer.invoke('orbit:downloads-show',bounds),
   closeDownloads:()=>ipcRenderer.invoke('orbit:downloads-close'),
@@ -19,6 +23,11 @@ contextBridge.exposeInMainWorld('orbitDesktop',Object.freeze({
   pickNavigationIcon:()=>ipcRenderer.invoke('orbit:navigation-icon'),
   showNavigationMenu:id=>ipcRenderer.invoke('orbit:navigation-menu',id),
   onNavigationAction:callback=>{const handler=(_event,action)=>callback(action);ipcRenderer.on('orbit:navigation-action',handler);return ()=>ipcRenderer.removeListener('orbit:navigation-action',handler);},
+  savePreferences:input=>ipcRenderer.invoke('orbit:preferences-save',input),
+  saveProfile:input=>ipcRenderer.invoke('orbit:profile-save',input),
+  pickAvatar:()=>ipcRenderer.invoke('orbit:avatar-pick'),
+  checkUpdate:()=>ipcRenderer.invoke('orbit:update-check'),
+  onUpdateStatus:fn=>ipcRenderer.on('orbit:update-status',(_e,data)=>fn(data)),
   saveLanguage:language=>ipcRenderer.invoke('orbit:language-save',language),
   getTimeZone:()=>ipcRenderer.invoke('orbit:time-zone'),
   saveTimeZone:zone=>ipcRenderer.invoke('orbit:save-time-zone',zone),
@@ -46,3 +55,5 @@ contextBridge.exposeInMainWorld('orbitDesktop',Object.freeze({
   getSummary:()=>ipcRenderer.invoke('orbit:google-summary'),
   syncMeetings:(events)=>ipcRenderer.invoke('orbit:sync-meetings',events)
 }));
+
+contextBridge.exposeInMainWorld('orbitTheme',Object.freeze({get:()=>ipcRenderer.invoke('orbit:theme-get'),onChanged:fn=>ipcRenderer.on('orbit:theme-changed',(_event,data)=>fn(data))}));

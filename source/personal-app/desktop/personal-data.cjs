@@ -1,0 +1,5 @@
+const fs=require('node:fs'),path=require('node:path'),{app}=require('electron');
+const names={'application-data.json':'desktop/application-data.json','application-emails.json':'desktop/application-emails.json','data.js':'dist/applications/data.js'};
+function getPersonalDataPath(name){if(!names[name])throw Error('Unknown personal data file.');const stored=path.join(app.getPath('userData'),'personal-addons',name);return fs.existsSync(stored)?stored:path.resolve(__dirname,'..',names[name]);}
+function preparePersonalData(){const directory=path.join(app.getPath('userData'),'personal-addons');fs.mkdirSync(directory,{recursive:true});for(const [name,relative] of Object.entries(names)){const target=path.join(directory,name);if(!fs.existsSync(target)){const source=path.resolve(__dirname,'..',relative);if(name==='application-data.json'){const value=JSON.parse(fs.readFileSync(source,'utf8'));fs.writeFileSync(target,JSON.stringify(value));}else fs.copyFileSync(source,target,fs.constants.COPYFILE_EXCL);}}}
+module.exports={getPersonalDataPath,preparePersonalData};

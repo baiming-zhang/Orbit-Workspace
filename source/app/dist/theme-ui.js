@@ -1,0 +1,1 @@
+(()=>{const apply=data=>{if(!data)return;const theme=data.theme==='dark'?'dark':'light';document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme;};window.orbitTheme?.onChanged(apply);window.orbitTheme?.get().then(apply).catch(()=>{});})();
