@@ -104,6 +104,10 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.18
+
+- Files and links opened outside Orbit are classified by workspace: PDFs open in PDF Reader and web links open in Browser, including when Orbit is already running or starting. Links and PDFs opened within a workspace stay in that workspace. The fast launcher and PDF loading surface are retained.
+
 ### v1.8.17
 
 - PDF requests go directly to the running Orbit window instead of unpacking the entire portable runtime again. Repeated request identifiers prevent fallback delivery from opening duplicate tabs; requests received during startup are queued.
