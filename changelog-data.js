@@ -1,5 +1,12 @@
 window.OrbitChangelog = [
   {
+    "version": "1.8.19",
+    "date": "2026-10-10",
+    "kind": "fix",
+    "en": "Ordinary links continue in the current tab with Back history. Reuse existing destinations, including pages still loading. Ctrl-click or middle-click opens a background tab; Ctrl+Shift-click and the context menu explicitly open a foreground tab. Downloads retain the source page, and external PDFs and links keep their dedicated workspaces.",
+    "zh": "普通链接在当前标签继续浏览并保留后退历史；已有网址及正在加载的页面直接复用。Ctrl 点击或中键在后台新开，Ctrl+Shift 点击及右键明确新开则切换过去；下载保留原页，外部 PDF 和网址仍按工作台分类。"
+  },
+  {
     "version": "1.8.18",
     "date": "2026-10-10",
     "kind": "fix",
