@@ -49,7 +49,7 @@ function navigationContextMenu(id){const entries=[{id:"edit",label:OrbitI18n.tex
 const serviceViews=new Map();
 const serviceUrls={...Object.fromEntries(portals.map(p=>[p.id,p.url])),gmail:'https://mail.google.com/mail/u/0/',calendar:'https://calendar.google.com/',analytics:'https://analytics.google.com/',search:'https://www.google.com/',chatgpt:'https://chatgpt.com/'};
 function trusted(event){return mainWindow&&!mainWindow.isDestroyed()&&event.sender===mainWindow.webContents&&event.senderFrame?.url.startsWith('orbit://app/');}
-async function openSafe(url){const safe=webUrl(url);if(!safe)throw new Error('不支持此链接。');return tabbedBrowser.open(safe);}
+async function openSafe(url){const safe=webUrl(url);if(!safe)throw new Error('不支持此链接。');return tabbedBrowser.open(safe,{reuseCurrent:true});}
 function createWindow(){
   mainWindow=new BrowserWindow({width:1440,height:1000,minWidth:1080,minHeight:720,backgroundColor:'#f6f7f4',title:'Orbit Workspace',icon:path.join(__dirname,'assets/icon.png'),autoHideMenuBar:true,titleBarStyle:'hidden',titleBarOverlay:{color:'#fafbf8',symbolColor:'#617055',height:48},show:!verify,webPreferences:{backgroundThrottling:!verify,preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true}});
   brandWindow(mainWindow);if(!verify)registerShortcut();
@@ -89,7 +89,7 @@ app.whenReady().then(()=>{
     if(!file.startsWith(root+path.sep))return new Response('Forbidden',{status:403});
     return net.fetch(pathToFileURL(file).href);
   });
-  ipcMain.handle('orbit:open-website',async(event,url)=>{if(!trusted(event))return {ok:false,error:'未经授权的窗口。'};try{return tabbedBrowser.open(url);}catch{return {ok:false,error:'无法打开此网页。'};}});
+  ipcMain.handle('orbit:open-website',async(event,url)=>{if(!trusted(event))return {ok:false,error:'未经授权的窗口。'};try{return tabbedBrowser.open(url,{reuseCurrent:true});}catch{return {ok:false,error:'无法打开此网页。'};}});
   ipcMain.handle('orbit:join-zoom',async(event,value,mode)=>{
     if(!trusted(event))return {ok:false,error:'未经授权的窗口。'};
     const meeting=parseMeetingLink(value);if(!meeting)return {ok:false,error:'请输入有效的 Zoom 会议链接。'};
@@ -107,7 +107,7 @@ app.whenReady().then(()=>{
   ipcMain.handle('orbit:downloads-close',downloadGuard(()=>downloadsFlyout.close()));
   const favoriteGuard=handler=>async(event,...args)=>{if(!trusted(event)&&!favoritesFlyout.trusted(event))return {ok:false,error:'Unauthorized window.'};try{return await handler(...args);}catch(error){return {ok:false,error:OrbitI18n.text(error.message,settings.get().language)};}};
   ipcMain.handle('orbit:favorites-get',favoriteGuard(()=>({...favorites.list(),timeZone:settings.get().timeZone})));
-  ipcMain.handle('orbit:favorites-action',favoriteGuard((id,action)=>{const item=favorites.list().items.find(item=>item.id===id);if(!item)throw Error(settings.get().language==='zh'?'未找到收藏。':'Favorite not found.');if(action==='remove')return favorites.remove(id);if(action==='open'){favoritesFlyout.close();return tabbedBrowser.open(item.sourceUrl);}throw Error(settings.get().language==='zh'?'不支持此收藏操作。':'Unsupported favorite action.');}));
+  ipcMain.handle('orbit:favorites-action',favoriteGuard((id,action)=>{const item=favorites.list().items.find(item=>item.id===id);if(!item)throw Error(settings.get().language==='zh'?'未找到收藏。':'Favorite not found.');if(action==='remove')return favorites.remove(id);if(action==='open'){favoritesFlyout.close();return tabbedBrowser.open(item.sourceUrl,{reuseCurrent:true});}throw Error(settings.get().language==='zh'?'不支持此收藏操作。':'Unsupported favorite action.');}));
   ipcMain.handle('orbit:favorites-show',guard(bounds=>{downloadsFlyout.close();return favoritesFlyout.show(bounds);}));
   ipcMain.handle('orbit:favorites-close',favoriteGuard(()=>favoritesFlyout.close()));
   ipcMain.handle('orbit:navigation-get',guard(()=>navigation.get()));

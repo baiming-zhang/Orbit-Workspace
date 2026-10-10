@@ -10,11 +10,11 @@ SetCompressor zlib
 SetCompress off
 !addplugindir /x86-unicode "${NSIS_PLUGIN_DIR}"
 Icon "${APP_ICON}"
-VIProductVersion "1.8.18.0"
+VIProductVersion "1.8.19.0"
 VIAddVersionKey "ProductName" "Orbit"
 VIAddVersionKey "FileDescription" "Orbit Workspace"
-VIAddVersionKey "ProductVersion" "1.8.18"
-VIAddVersionKey "FileVersion" "1.8.18.0"
+VIAddVersionKey "ProductVersion" "1.8.19"
+VIAddVersionKey "FileVersion" "1.8.19.0"
 VIAddVersionKey "LegalCopyright" "Copyright (c) 2026 Baiming Zhang. MIT License."
 !include "${__FILEDIR__}\launcher-cache.nsh"
 Function .onInit

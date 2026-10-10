@@ -92,8 +92,8 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
   const url=webUrl(params.linkURL);if(!url)return [];
   const owner=tabs.find(t=>t.view?.webContents===wc||t.chat?.webContents===wc),mode=owner?.workspace||workspace;
   return [
-   {id:'link-new',label:local('Open link in new tab','在新标签页打开链接'),click:()=>openLink(wc,url,{workspace:mode})},
-   {id:'link-current',label:local('Open link in current tab','在当前标签页打开链接'),click:()=>{if(owner){activate(owner.id);if(owner.view?.webContents===wc)loadTab(owner,url);else wc.loadURL(url).catch(error=>{owner.error=error.message;publish();});}else {if(workspace!==mode)show(bounds,mode);performAction('navigate',url);}}},
+   {id:'link-new',label:local('Open link in new tab','在新标签页打开链接'),click:()=>owner?openLink(wc,url,{newTab:true}):open(url,{workspace:mode})},
+   {id:'link-current',label:local('Open link in current tab','在当前标签页打开链接'),click:()=>{if(owner)openLink(wc,url);else {if(workspace!==mode)show(bounds,mode);performAction('navigate',url);}}},
    {id:'link-copy',label:local('Copy link address','复制链接地址'),click:()=>clipboard.writeText(url)},
    {type:'separator'},
    {id:'link-pin',label:local('Pin link to sidebar','将链接固定到左侧栏'),click:()=>Promise.resolve().then(()=>onPin({url,name:Array.from(String(params.linkText||params.titleText||new URL(url).hostname).trim()||new URL(url).hostname).slice(0,40).join('')})).catch(error=>{if(current())current().error=error.message;publish();})}
@@ -128,6 +128,9 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
   if(foreground)activate(t.id);else publish();
  }
  function failedNavigation(t){if(!t.provisional){publish();return;}clearTimeout(t.failureTimer);t.failureTimer=setTimeout(()=>{if(!disposed&&tabs.includes(t)&&!t.downloading){promote(t);publish();}},200);}
+ function addressKey(value){try{return new URL(value).href;}catch{return value;}}
+ function existingTab(mode,url,except=null){const key=addressKey(url);return tabs.find(t=>t!==except&&t.workspace===mode&&!t.internal&&t.view&&!t.view.webContents.isDestroyed()&&!t.downloading&&addressKey(t.pendingUrl||t.url)===key);}
+ function reuseTab(t){if(t.provisional){t.foreground=true;}else activate(t.id);return {ok:true,id:t.workspace,tabId:t.id,title:title(t.workspace),reused:true};}
  function openLink(wc,url,options={}){
   const owner=tabs.find(t=>t.view?.webContents===wc||t.chat?.webContents===wc);
   if(!owner||!webUrl(url))return {ok:false};
@@ -135,7 +138,11 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
    Promise.resolve(owner.ready).then(()=>{if(!disposed&&!wc.isDestroyed())wc.downloadURL(url);}).catch(error=>{owner.error=error.message;publish();});
    return {ok:true,download:true};
   }
-  return open(url,{workspace:owner.workspace,session:wc.session,ready:owner.ready,parentId:owner.id,provisional:true,foreground:true,activate:false});
+  const existing=existingTab(owner.workspace,url);if(existing)return reuseTab(existing);
+  if(options.newTab===true)return open(url,{workspace:owner.workspace,session:wc.session,ready:owner.ready,parentId:owner.id,provisional:true,foreground:options.background!==true,activate:false});
+  activate(owner.id);
+  if(owner.view.webContents===wc)loadTab(owner,url);else wc.loadURL(url).catch(error=>{if(!disposed&&!wc.isDestroyed()){owner.error=error.message;publish();}});
+  return {ok:true,id:owner.workspace,tabId:owner.id,currentTab:true};
  }
  function setup(wc,t){
   wc.on('context-menu',(event,params)=>{if(!wc.mainFrame.framesInSubtree.some(frame=>frame.url.startsWith('chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/')))showLinkMenu(wc,params,event);});
@@ -151,7 +158,10 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
   }
   wc.on('focus',()=>{if(current()===t)t.focusedPane=wc===t.chat?.webContents?'chat':'page';});
   wc.on('before-mouse-event',(_event,mouse)=>{if(mouse.type==='mouseDown'&&shown&&!addressEditing&&current()===t&&attached.has(wc===t.chat?.webContents?t.chat:t.view)&&!wc.isFocused())wc.focus();});
+  wc.on('before-input-event',(_event,input)=>{wc.orbitLinkModifiers={control:!!(input.control||input.meta),shift:!!input.shift};});
   wc.setWindowOpenHandler(details=>{
+   if(wc===t.view.webContents&&t.pdf&&!details.postBody&&webUrl(details.url)){const modifier=wc.orbitLinkModifiers||{};openLink(wc,details.url,{newTab:details.disposition==='background-tab'||modifier.control,background:details.disposition==='background-tab'||modifier.control&&!modifier.shift});return {action:'deny'};}
+   if(!details.postBody&&webUrl(details.url)){const existing=existingTab(t.workspace,details.url);if(existing){reuseTab(existing);return {action:'deny'};}}
    if(downloadLink(details.url)){openLink(wc,details.url,{download:true});return {action:'deny'};}
    if(!webUrl(details.url)&&details.url!=='about:blank')return {action:'deny'};
    return {action:'allow',createWindow:options=>{
@@ -160,8 +170,8 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
     return child.view.webContents;
    }};
   });
-  wc.on('will-navigate',(e,url)=>{if(!webUrl(url)&&!url.startsWith('file:')&&!url.startsWith('chrome-extension:')&&url!=='about:blank')e.preventDefault();});
-  wc.on('did-fail-load',(_e,code,message,_url,main)=>{if(main&&code!==-3){t.error=local('Load failed: ','加载失败：')+message;failedNavigation(t);}});
+  wc.on('will-navigate',(e,url)=>{if(wc===t.view.webContents&&webUrl(url)){const existing=existingTab(t.workspace,url,t);if(existing){e.preventDefault();reuseTab(existing);return;}}if(!webUrl(url)&&!url.startsWith('file:')&&!url.startsWith('chrome-extension:')&&url!=='about:blank')e.preventDefault();});
+  wc.on('did-fail-load',(_e,code,message,_url,main)=>{if(main&&code!==-3){t.pendingUrl=null;t.error=local('Load failed: ','加载失败：')+message;failedNavigation(t);}});
   wc.on('dom-ready',()=>{if(wc.getURL().startsWith('https://chatgpt.com/')){wc.insertCSS('html,body,body *,body *::before,body *::after{-webkit-app-region:no-drag!important;app-region:no-drag!important}').catch(()=>{});wc.executeJavaScript(fs.readFileSync(path.join(__dirname,'chatgpt-sidebar.js'),'utf8')).catch(()=>{});}});
  }
  function add(url,options={}){
@@ -170,24 +180,24 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
   const t={id,homeUrl:url,url:options.loadUrl||url,workspace:mode,title:tabTitle(url,local),view,pdf:/\.pdf(?:[?#]|$)/i.test(url),chat:null,chatVisible:false,ratio:.62,error:'',loading:options.load!==false,partition,parentId:options.parentId||null,provisional:!!options.provisional,foreground:!!options.foreground};
   view.orbitWorkspace=mode;view.orbitUrl=t.url;tabs.push(t);views.set(id,view);setup(wc,t);
   t.ready=options.ready||(sessions?.prepare(partition,wc.session)||Promise.resolve());
-  function commit(url){t.url=url;view.orbitUrl=url;t.pdf=/\.pdf(?:[?#]|$)/i.test(url);t.error='';if(url!=='about:blank')promote(t);if(!t.provisional&&spec(mode)?.url)sessions?.remember(mode,spec(mode).url,url);publish();}
+  function commit(url){t.pendingUrl=null;t.url=url;view.orbitUrl=url;t.pdf=/\.pdf(?:[?#]|$)/i.test(url);t.error='';if(url!=='about:blank')promote(t);if(!t.provisional&&spec(mode)?.url)sessions?.remember(mode,spec(mode).url,url);publish();}
   wc.on('did-navigate',(_e,url)=>commit(url));wc.on('did-navigate-in-page',(_e,url,main)=>{if(main)commit(url);});wc.on('page-title-updated',(_e,value)=>{t.title=value||t.title;publish();});
   wc.once('destroyed',()=>{if(!disposed&&tabs.includes(t))removeTab(t,true);});
   pdfStyle.attach(wc,view);
   wc.on('did-finish-load',()=>{wc.executeJavaScript("!!document.querySelector('embed[type=\"application/pdf\"]')").then(pdf=>{if(pdf)t.pdf=true;publish();if(t.pdf&&t.chatVisible)pdfChatUpload.attach(t);}).catch(()=>{});});
   wc.on('before-input-event',(e,input)=>{if(!input.control)return;const key=input.key.toLowerCase();if(['t','w','l'].includes(key)){e.preventDefault();if(key==='t'){activate(t.id);performAction('new');}if(key==='w')close(t.id);if(key==='l')focusAddress();}});
   wc.on('did-frame-finish-load',()=>{if(!t.pdf||t.pdfUiReady||wc.isDestroyed())return;const frame=wc.mainFrame.framesInSubtree.find(frame=>frame.url.startsWith('chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/'));if(frame)frame.executeJavaScript("!!document.querySelector('pdf-viewer')").then(ready=>{if(ready&&!wc.isDestroyed()){t.pdfUiReady=true;layout();publish();}}).catch(()=>{});});
-  wc.on('did-start-loading',()=>{t.loading=true;t.pdfUiReady=false;layout();publish();});wc.on('did-stop-loading',()=>{t.loading=false;layout();publish();});
+  wc.on('did-start-loading',()=>{t.loading=true;t.pdfUiReady=false;layout();publish();});wc.on('did-stop-loading',()=>{t.pendingUrl=null;t.loading=false;layout();publish();});
   if(options.load!==false)loadTab(t,t.url);
   if(mode==='pdf'&&t.pdf&&!t.provisional){const placeholder=tabs.find(tab=>tab.workspace===mode&&tab.internal);if(placeholder)removeTab(placeholder,true);}
   if(options.activate!==false)activate(id);return t;
  }
- function loadTab(t,url){const wc=t.view.webContents,sequence=t.loadSequence=(t.loadSequence||0)+1;t.loading=true;t.pdfUiReady=false;t.error='';layout();publish();const ready=url.startsWith('file:')?Promise.resolve():t.ready;return ready.then(()=>{if(sequence===t.loadSequence&&!disposed&&!wc.isDestroyed())return wc.loadURL(url);}).catch(error=>{if(sequence===t.loadSequence&&!disposed&&!wc.isDestroyed()&&error.code!=='ERR_ABORTED'){t.loading=false;t.error=error.message;failedNavigation(t);}});}
+ function loadTab(t,url){t.pendingUrl=url;const wc=t.view.webContents,sequence=t.loadSequence=(t.loadSequence||0)+1;t.loading=true;t.pdfUiReady=false;t.error='';layout();publish();const ready=url.startsWith('file:')?Promise.resolve():t.ready;return ready.then(()=>{if(sequence===t.loadSequence&&!disposed&&!wc.isDestroyed())return wc.loadURL(url);}).catch(error=>{if(sequence===t.loadSequence&&!disposed&&!wc.isDestroyed()&&error.code!=='ERR_ABORTED'){t.loading=false;t.error=error.message;failedNavigation(t);}});}
  function internalTarget(value){if(typeof value!=='string'||!value.startsWith('orbit:'))return null;let u;try{u=new URL(value);}catch{throw Error('Invalid Orbit address.');}const mode=u.hash.slice(1);if(u.protocol!=='orbit:'||u.hostname!=='app'||u.username||u.password||u.port||u.pathname!=='/index.html'||u.search||!spec(mode)?.internal)throw Error('Unknown Orbit page.');return mode;}
  function open(value,options={}){
   const internal=internalTarget(value);if(internal){const t=ensureHome(internal);activate(t.id);return {ok:true,id:internal,tabId:t.id,title:title(internal)};}
   const url=targetUrl(value),mode=options.workspace||(tabs.length?workspace:(/\.pdf(?:[?#]|$)/i.test(url)?'pdf':'browser'));
-  if(!spec(mode))throw Error('Unknown workspace.');if(!(mode==='pdf'&&/\.pdf(?:[?#]|$)/i.test(url)))ensureHomeIfInternal(mode);if(options.reveal!==false)getWindow()?.show();
+  if(!spec(mode))throw Error('Unknown workspace.');const existing=options.forceNew?null:existingTab(mode,url);if(existing)return reuseTab(existing);const active=current();if(options.reuseCurrent&&active?.workspace===mode&&active.view){activate(active.id);loadTab(active,url);return {ok:true,id:mode,tabId:active.id,title:title(mode)};}if(!(mode==='pdf'&&/\.pdf(?:[?#]|$)/i.test(url)))ensureHomeIfInternal(mode);if(options.reveal!==false)getWindow()?.show();
   const t=add(url,{...options,workspace:mode});return {ok:true,id:mode,tabId:t.id,title:title(mode)};
  }
  function ensureHomeIfInternal(mode){if(spec(mode)?.internal)ensureHome(mode);}
@@ -217,7 +227,7 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
  async function performAction(action,value){try{
   const t=current(),wc=t?.view?.webContents;
   if(action==='focus-address')focusAddress();
-  else if(action==='new'){if(spec(workspace)?.pdfWorkspace)await pick(workspace);else open(value||(spec(workspace)?.internal?blankUrl:spec(workspace)?.url)||blankUrl,{workspace});}
+  else if(action==='new'){if(spec(workspace)?.pdfWorkspace)await pick(workspace);else open(value||(spec(workspace)?.internal?blankUrl:spec(workspace)?.url)||blankUrl,{workspace,forceNew:true});}
   else if(action==='select')activate(value);
   else if(action==='close')close(value);
   else if(action==='tab-menu'||action==='pdf-file-menu')tabMenu(value);
@@ -225,7 +235,7 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
   else if(action==='pdf-address-close'){addressEditing=false;layout();}
   else if(action==='pdf-address-save'){const selected=tabs.find(tab=>tab.id===value?.id&&tab.pdf);if(!selected)throw Error('This file is closed.');const url=targetUrl(value.address);selected.url=url;selected.error='';loadTab(selected,url);addressEditing=false;layout();}
   else if(action==='open-file')await pick(workspace);
-  else if(action==='navigate'){const internal=internalTarget(value);if(internal)open(value);else {const url=targetUrl(value);if(wc){t.url=url;t.error='';loadTab(t,url);}else open(url,{workspace});}}
+  else if(action==='navigate'){const internal=internalTarget(value);if(internal)open(value);else {const url=targetUrl(value);const existing=existingTab(workspace,url);if(existing)reuseTab(existing);else if(wc){t.error='';loadTab(t,url);}else open(url,{workspace});}}
   else if(action==='chat')toggleChat();
   else if(action==='pdf-chat-retry'&&t?.pdf){t.chatVisible=true;layout();pdfChatUpload.attach(t,{force:true});}
   else if(action==='ratio'&&t&&Number.isFinite(value)){t.ratio=Math.max(.3,Math.min(.75,value));layout();}
@@ -239,7 +249,7 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
  function navigate(mode,action,value){if(disposed||!shown||mode!==workspace||!spec(mode))return {ok:false,error:'Workspace is not active.'};if(!['back','forward','reload','home','navigate','open-file','new','select','close'].includes(action))return {ok:false,error:'Unsupported navigation action.'};return performAction(action,value);}
  function trustedToolbar(e){return toolbar&&e.sender===toolbar.webContents&&e.senderFrame===e.sender.mainFrame&&e.senderFrame.url===toolbarUrl;}
  ipcMain.handle('orbit:tabs-action',(e,a,v)=>trustedToolbar(e)?performAction(a,v):{ok:false});
- ipcMain.handle('orbit:link-open',(e,url,options)=>{const t=tabs.find(tab=>tab.view?.webContents===e.sender||tab.chat?.webContents===e.sender);if(!t||e.senderFrame!==e.sender.mainFrame||!webUrl(url))return {ok:false};try{return openLink(e.sender,url,{download:options?.download===true});}catch(error){return {ok:false,error:error.message};}});
+ ipcMain.handle('orbit:link-open',(e,url,options)=>{const t=tabs.find(tab=>tab.view?.webContents===e.sender||tab.chat?.webContents===e.sender);if(!t||e.senderFrame!==e.sender.mainFrame||!webUrl(url))return {ok:false};try{return openLink(e.sender,url,{download:options?.download===true,newTab:options?.newTab===true,background:options?.background===true});}catch(error){return {ok:false,error:error.message};}});
  ipcMain.handle('orbit:split-drag',(e,action,value)=>{if(!splitter||e.sender!==splitter.webContents||e.senderFrame!==e.sender.mainFrame||e.senderFrame.url!==splitterUrl)return {ok:false};const t=current();if(!shown||!bounds||!t?.chatVisible)return {ok:false};const valid=Number.isFinite(value)&&Math.abs(value)<100000;if(action==='start'&&valid)drag={id:t.id,screenX:value,ratio:t.ratio};else if(action==='move'&&valid&&drag?.id===t.id)t.ratio=Math.max(.3,Math.min(.75,drag.ratio+(value-drag.screenX)/Math.max(1,bounds.width-8)));else if(action==='end')drag=null;else if(action==='reset'){drag=null;t.ratio=.62;}else if(action==='step'&&valid&&Math.abs(value)<=.1)t.ratio=Math.max(.3,Math.min(.75,t.ratio+value));else return {ok:false};layout();publish();return {ok:true,ratio:t.ratio};});
  function pages(){return tabs.filter(t=>!t.provisional&&t.view&&!t.view.webContents.isDestroyed()).map(t=>({id:t.id,workspace:t.workspace,title:t.title,url:t.view.webContents.getURL()||t.url,active:shown&&t.id===activeId}));}
  async function pageText(id){const wc=views.get(id)?.webContents;if(!wc||wc.isDestroyed())throw Object.assign(Error('Please open this page in Orbit first.'),{code:'PAGE_NOT_FOUND',statusCode:404});const data=await wc.executeJavaScript(`(()=>{const parts=[document.body?.innerText||''];for(const frame of document.querySelectorAll('iframe'))try{if(frame.contentDocument?.body?.innerText)parts.push(frame.contentDocument.body.innerText);}catch{}const raw=parts.join('\\n');return {title:document.title,url:location.href,text:raw.slice(0,1000000),truncated:raw.length>1000000};})()`);return {id,...data,source:'untrusted-webpage-text',readAt:Date.now()};}

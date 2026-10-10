@@ -104,6 +104,11 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.19
+
+- Ordinary links continue in the current tab with usable Back history. Ctrl-click or middle-click explicitly opens a background tab; Ctrl+Shift-click and the link context menu open a foreground tab. Existing destinations in the same workspace are reused, including requests still loading, while fragments and query parameters remain distinct.
+- Downloads retain the current page without extra tabs. External PDFs and web links keep their dedicated PDF Reader and Browser workspaces. The + action still creates an intentionally fresh tab.
+
 ### v1.8.18
 
 - Files and links opened outside Orbit are classified by workspace: PDFs open in PDF Reader and web links open in Browser, including when Orbit is already running or starting. Links and PDFs opened within a workspace stay in that workspace. The fast launcher and PDF loading surface are retained.
