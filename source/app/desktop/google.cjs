@@ -20,6 +20,8 @@ function createGoogle({app,safeStorage,shell,getLanguage=()=> 'en',getTimeZone=(
  let config={...defaults};let access=null;let authorizeCancel=null;let generation=0;let refreshPromise=null;let profileCache=null;
  try{if(fs.existsSync(filename)&&safeStorage.isEncryptionAvailable()){const saved=JSON.parse(safeStorage.decryptString(fs.readFileSync(filename)));config={...defaults,...saved};if(saved.clientId&&saved.clientId!==defaults.clientId)config.clientSecret=saved.clientSecret||'';}}catch{config={...defaults};}
  function save(){delete config.propertyId;if(!safeStorage.isEncryptionAvailable())throw new Error('Windows 凭据加密暂时不可用，无法保存授权。');fs.mkdirSync(path.dirname(filename),{recursive:true});const tmp=filename+'.tmp';fs.writeFileSync(tmp,safeStorage.encryptString(JSON.stringify(config)));fs.renameSync(tmp,filename);}
+ const profileReader=require('./google-profile.cjs').createGoogleProfile({api,connected:()=>!!config.refreshToken,generation:()=>generation});
+ function getProfile(){return profileReader.get();}
  function connection(){return {clientId:config.clientId||'',hasSecret:!!config.clientSecret,connected:!!config.refreshToken,calendarWrite:!!config.calendarWrite};}
  function saveConnection(input){
   const id=String(input?.clientId||'').trim(),secret=String(input?.clientSecret||'').trim();
@@ -28,7 +30,7 @@ function createGoogle({app,safeStorage,shell,getLanguage=()=> 'en',getTimeZone=(
   if(config.clientId&&config.clientId!==id){meetingReader.clear();config.refreshToken=null;config.calendarWrite=false;config.clientSecret='';access=null;generation++;}
   config={...config,clientId:id,...(secret?{clientSecret:secret}:{})};save();return {ok:true};
  }
- async function jsonFetch(url,options={}){let response;try{response=await fetch(url,{...options,signal:AbortSignal.timeout(25000)});}catch{throw new Error('无法连接 Google，请检查网络连接。');}if(response.status===204)return {ok:true};let data;try{data=await response.json();}catch{throw new Error('Google 返回了无法读取的响应。');}if(!response.ok){if([404,409,410].includes(response.status)){const error=new Error('Google 日程状态 '+response.status);error.status=response.status;throw error;}if(response.status===401)throw new Error('Google 授权已失效，请重新连接。');if(response.status===403)throw new Error('Google 未允许访问，请检查 API 是否启用及账号权限。');if(response.status===429)throw new Error('Google 请求过于频繁，请稍后刷新。');if(data.error==='invalid_grant')throw new Error('授权已过期或撤回，请重新连接 Google。');throw new Error('Google 请求失败，请检查授权配置。');}return data;}
+ async function jsonFetch(url,options={}){let response;try{response=await fetch(url,{...options,signal:AbortSignal.timeout(25000)});}catch{throw new Error('无法连接 Google，请检查网络连接。');}if(response.status===204)return {ok:true};let data;try{data=await response.json();}catch{throw new Error('Google 返回了无法读取的响应。');}if(!response.ok){if([404,409,410].includes(response.status)){const error=new Error('Google 日程状态 '+response.status);error.status=response.status;throw error;}if(response.status===401)throw new Error('Google 授权已失效，请重新连接。');if(response.status===403){const error=new Error('Google 未允许访问，请检查 API 是否启用及账号权限。');error.status=403;throw error;}if(response.status===429)throw new Error('Google 请求过于频繁，请稍后刷新。');if(data.error==='invalid_grant')throw new Error('授权已过期或撤回，请重新连接 Google。');throw new Error('Google 请求失败，请检查授权配置。');}return data;}
  async function token(){if(access&&access.expires>Date.now()+60000)return access.value;if(refreshPromise)return refreshPromise;if(!config.refreshToken)throw new Error('尚未连接 Google。');const ownGeneration=generation;refreshPromise=(async()=>{const params=new URLSearchParams({client_id:config.clientId,refresh_token:config.refreshToken,grant_type:'refresh_token'});if(config.clientSecret)params.set('client_secret',config.clientSecret);const data=await jsonFetch('https://oauth2.googleapis.com/token',{method:'POST',body:params});if(ownGeneration!==generation)throw new Error('授权已变更，请重新刷新。');access={value:data.access_token,expires:Date.now()+Number(data.expires_in||3600)*1000};return access.value;})();try{return await refreshPromise;}finally{refreshPromise=null;}}
  async function api(url,options={}){const bearer=await token();return jsonFetch(url,{...options,headers:{Authorization:'Bearer '+bearer,'Content-Type':'application/json',...options.headers}});}
  async function connect({calendarWrite=false}={}){
@@ -57,7 +59,7 @@ function createGoogle({app,safeStorage,shell,getLanguage=()=> 'en',getTimeZone=(
         if(allowWrite&&data.scope&&!data.scope.split(' ').some(s=>s==='https://www.googleapis.com/auth/calendar.events'||s==='https://www.googleapis.com/auth/calendar'))throw new Error('Google 尚未授予日历写入权限，请勾选相应授权后重试。');
         if(ownGeneration!==generation)throw new Error('连接配置已变更，请重新授权。');
         if(!data.refresh_token&&!config.refreshToken)throw new Error('Google 未提供持久授权，请重新连接。');
-        config.refreshToken=data.refresh_token||config.refreshToken;config.calendarWrite=allowWrite;access={value:data.access_token,expires:Date.now()+Number(data.expires_in||3600)*1000};save();
+        config.refreshToken=data.refresh_token||config.refreshToken;config.calendarWrite=allowWrite;access={value:data.access_token,expires:Date.now()+Number(data.expires_in||3600)*1000};save();generation++;
         res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'}).end('<!doctype html><meta charset="utf-8"><title>'+t('Orbit 已连接')+'</title><body style="font-family:system-ui;padding:80px;background:#f8fafd;color:#202124"><h1>'+t('Google 已连接。')+'</h1><p>'+t('请返回 Orbit Workspace。这一页面可以关闭。')+'</p></body>');finish(null,{ok:true});
       }catch(error){res.writeHead(500,{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store'}).end(t('授权未完成。请返回 Orbit 查看连接配置。'));finish(error);}
     });
@@ -75,15 +77,7 @@ function createGoogle({app,safeStorage,shell,getLanguage=()=> 'en',getTimeZone=(
   let pageToken,events=[],pages=0,truncated=false;
   do{const u=new URL('https://www.googleapis.com/calendar/v3/calendars/primary/events');Object.entries({timeMin:window.start,timeMax:window.end,singleEvents:'true',orderBy:'startTime',maxResults:'250',timeZone:OrbitTime.offset(getTimeZone())===null?getTimeZone():'UTC'}).forEach(([k,v])=>u.searchParams.set(k,v));if(pageToken)u.searchParams.set('pageToken',pageToken);const data=await api(u.href);events.push(...(data.items||[]).filter(e=>e.status!=='cancelled').map(e=>{const start=e.start?.dateTime,end=e.end?.dateTime;return {id:'google:'+e.id,title:e.summary||t('（无标题）'),date:start?dayWindow(new Date(start),getTimeZone()).date:(e.start?.date||window.date),startAt:start||null,allDay:!start,time:start?OrbitTime.clock(start,getTimeZone()):'全天',duration:start&&end?Math.max(0,Math.round((new Date(end)-new Date(start))/60000)):1440,location:e.location||'',notes:(e.description||'').replace(/<[^>]*>/g,''),zoomLink:zoomInEvent(e),htmlLink:e.htmlLink||'',type:'blue',remote:true};}));pageToken=data.nextPageToken;pages++;if(pages>=10&&pageToken){truncated=true;break;}}while(pageToken);return {status:'success',events,truncated};
  }
- async function getProfile(){
-  if(!config.refreshToken)return null;
-  if(profileCache?.generation===generation&&profileCache.expires>Date.now())return profileCache.profile;
-  const ownGeneration=generation;let profile=null;
-  try{const data=await api('https://openidconnect.googleapis.com/v1/userinfo');const name=typeof data.name==='string'?data.name.trim().slice(0,100):'';if(name)profile={name};}catch{}
-  if(ownGeneration!==generation)return null;
-  profileCache={generation,profile,expires:Date.now()+(profile?300000:60000)};
-  return profile;
- }
+
  async function getSummary(){const window=dayWindow(new Date(),getTimeZone());if(!config.refreshToken)return {connected:false,profile:null,date:window.date,gmail:{status:'not_connected'},calendar:{status:'not_connected'}};const catchSource=fn=>fn().catch(error=>({status:'error',error:error.message}));const [g,c,profile]=await Promise.all([catchSource(()=>gmail(window)),catchSource(()=>calendar(window)),getProfile()]);return {connected:true,profile,date:window.date,updatedAt:Date.now(),gmail:g,calendar:c};}
  async function disconnect(){meetingReader.clear();generation++;authorizeCancel?.();access=null;const refreshToken=config.refreshToken;config.refreshToken=null;config.calendarWrite=false;save();if(refreshToken){try{await fetch('https://oauth2.googleapis.com/revoke',{method:'POST',body:new URLSearchParams({token:refreshToken}),signal:AbortSignal.timeout(10000)});}catch{}}return {ok:true};}
  function calendarUrl(calendarId,eventId){if(typeof calendarId!=='string'||!calendarId||calendarId.length>1024)throw Error('日历 ID 不正确。');if(eventId!==undefined&&(typeof eventId!=='string'||!eventId||eventId.length>1024))throw Error('日程 ID 不正确。');return 'https://www.googleapis.com/calendar/v3/calendars/'+encodeURIComponent(calendarId)+'/events'+(eventId?'/'+encodeURIComponent(eventId):'');}
@@ -95,6 +89,6 @@ function createGoogle({app,safeStorage,shell,getLanguage=()=> 'en',getTimeZone=(
  const meetingReader=createMeetingReader({api,getLanguage,getTimeZone});
  async function getMeetings(){if(!config.refreshToken)return {status:'not_connected',events:[]};return meetingReader.getMeetings();}
  async function getReminderEvents(){return config.refreshToken?meetingReader.getReminderEvents():[];}
- return {connection,saveConnection,connect,getSummary,getMeetings,getReminderEvents,readCalendar,writeCalendar,readMails,readMail,disconnect,dispose:()=>authorizeCancel?.()};
+ return {connection,saveConnection,connect,getProfile,getSummary,getMeetings,getReminderEvents,readCalendar,writeCalendar,readMails,readMail,disconnect,dispose:()=>authorizeCancel?.()};
 }
 module.exports={createGoogle,dayWindow,zoomInEvent};
