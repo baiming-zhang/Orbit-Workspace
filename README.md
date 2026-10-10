@@ -104,6 +104,12 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.15
+
+- Download links start the transfer directly without opening a new webpage. Redirected attachment links keep the original page visible, while ordinary webpage links still open in a new workspace tab. No extra request is made to probe the file.
+- The project homepage shows its last update in Vancouver time with the UTC offset and a collapsed What's new button containing five grouped, dated updates in English and Chinese.
+- Verified with native HTTP downloads, redirect and popup fixtures, file-byte checks, ordinary-link navigation, and responsive bilingual homepage checks.
+
 ### v1.8.14
 
 - Closing the last browser tab creates a fresh Google homepage instead of restoring the closed address.
