@@ -12,11 +12,11 @@ function createPdfStyle({getWindow,getLanguage=()=> 'en',linkItems=null}){
   // plugin and briefly resize it so Chromium recalculates those background parts.
   frame.executeJavaScript(`(()=>{const plugin=document.querySelector('embed[type="application/x-google-chrome-pdf"]');if(typeof plugin?.postMessage!=='function')return false;plugin.postMessage({type:'setBackgroundColor',color:${color}});const previous=plugin.style.width;plugin.style.width=Math.max(1,plugin.getBoundingClientRect().width-2)+'px';setTimeout(()=>{if(plugin.isConnected)plugin.style.width=previous;},120);return true;})()`).catch(()=>{});
  }}
- function apply(wc){if(wc.isDestroyed())return;for(const frame of wc.mainFrame.framesInSubtree){if(frame.url.startsWith(viewerOrigin))frame.executeJavaScript('window.__orbitPdfBackground='+JSON.stringify(tones[tone].color)+';'+script).then(changed=>{if(changed)repaint(wc);}).catch(()=>{});}}
- function choose(value){if(!tones[value])return;tone=value;fs.mkdirSync(path.dirname(preference),{recursive:true});fs.writeFileSync(preference+'.tmp',JSON.stringify({background:tone}));fs.renameSync(preference+'.tmp',preference);for(const wc of contents.keys())apply(wc);}
+ function apply(wc,refresh=false){if(wc.isDestroyed())return;for(const frame of wc.mainFrame.framesInSubtree){if(frame.url.startsWith(viewerOrigin))frame.executeJavaScript('window.__orbitPdfBackground='+JSON.stringify(tones[tone].color)+';'+script).then(changed=>{if(changed&&refresh)repaint(wc);}).catch(()=>{});}}
+ function choose(value){if(!tones[value])return;tone=value;fs.mkdirSync(path.dirname(preference),{recursive:true});fs.writeFileSync(preference+'.tmp',JSON.stringify({background:tone}));fs.renameSync(preference+'.tmp',preference);for(const wc of contents.keys())apply(wc,true);}
  function attach(wc,view){
   contents.set(wc,view);wc.once('destroyed',()=>contents.delete(wc));
-  wc.on('did-frame-finish-load',()=>{for(const delay of [0,150,700,1800])setTimeout(()=>apply(wc),delay).unref?.();});
+  let pending=[];wc.on('did-frame-finish-load',()=>{for(const timer of pending)clearTimeout(timer);pending=[0,150,700,1800].map(delay=>setTimeout(()=>apply(wc),delay));for(const timer of pending)timer.unref?.();});wc.once('destroyed',()=>{for(const timer of pending)clearTimeout(timer);});
   wc.on('context-menu',(event,params)=>{
    if(!wc.mainFrame.framesInSubtree.some(frame=>frame.url.startsWith(viewerOrigin)))return;
    const items=[];if(params.selectionText)items.push({label:t('复制'),role:'copy'},{type:'separator'});if(params.linkURL){const links=linkItems?.(wc,params);items.push(...(links?.length?links:[{label:t('复制链接地址'),click:()=>clipboard.writeText(params.linkURL)}]),{type:'separator'});}

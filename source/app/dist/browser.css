@@ -17,3 +17,5 @@ button{color:#5c8bbc}#reload,#chat-reload{color:#60947c}#chat{background:#fcf2f1
 .tabbar.compact-tabs .tab:not(.active)>button:last-child{display:none}
 .tabbar.tiny-tabs .tab>button:last-child{display:none}
 .tabbar.tiny-tabs .tab>button:first-child{padding:7px 1px}
+
+#pdf-load-status{flex-shrink:0;font-size:12px;color:#6f88a7;padding:0 5px}#pdf-load-status::before{content:"";display:inline-block;width:9px;height:9px;margin-right:6px;border:1.5px solid #d6e1ee;border-top-color:#6285b0;border-radius:50%;animation:pdf-loading 1s linear infinite}@keyframes pdf-loading{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){#pdf-load-status::before{animation:none}}

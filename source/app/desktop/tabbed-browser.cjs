@@ -44,7 +44,7 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
  function snapshot(){
   const t=current(),wc=t?.view?.webContents,live=wc&&!wc.isDestroyed();
   return {workspace,visible:shown,language:getLanguage(),internalActive:!!t?.internal,address:t?.url?.startsWith('file:')?fileURLToPath(t.url):t?.url||spec(workspace)?.url||'',addressEditing,
-   tabs:tabs.filter(t=>t.workspace===workspace).map(t=>({id:t.id,title:t.internal?title(t.workspace):t.title,url:t.url,pdf:t.pdf,internal:!!t.internal,chat:!!t.chatVisible,upload:t.upload||null})),activeId,ratio:t?.ratio||.62,
+   tabs:tabs.filter(t=>t.workspace===workspace).map(t=>({id:t.id,title:t.internal?title(t.workspace):t.title,url:t.url,pdf:t.pdf,internal:!!t.internal,chat:!!t.chatVisible,upload:t.upload||null,loading:!!t.loading})),activeId,ratio:t?.ratio||.62,
    canBack:!!(live&&wc.navigationHistory.canGoBack()),canForward:!!(live&&wc.navigationHistory.canGoForward()),error:t?.error||''};
  }
  function publish(){if(disposed)return;const state=snapshot(),wc=toolbar?.webContents;if(toolbarReady&&wc&&!wc.isDestroyed())wc.send('orbit:tabs-state',state);onState(state);}
@@ -83,7 +83,7 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
   const owner=tabs.find(t=>t.view?.webContents===wc||t.chat?.webContents===wc),mode=owner?.workspace||workspace;
   return [
    {id:'link-new',label:local('Open link in new tab','在新标签页打开链接'),click:()=>open(url,{workspace:mode})},
-   {id:'link-current',label:local('Open link in current tab','在当前标签页打开链接'),click:()=>{if(owner){activate(owner.id);wc.loadURL(url).catch(error=>{owner.error=error.message;publish();});}else {if(workspace!==mode)show(bounds,mode);performAction('navigate',url);}}},
+   {id:'link-current',label:local('Open link in current tab','在当前标签页打开链接'),click:()=>{if(owner){activate(owner.id);if(owner.view?.webContents===wc)loadTab(owner,url);else wc.loadURL(url).catch(error=>{owner.error=error.message;publish();});}else {if(workspace!==mode)show(bounds,mode);performAction('navigate',url);}}},
    {id:'link-copy',label:local('Copy link address','复制链接地址'),click:()=>clipboard.writeText(url)},
    {type:'separator'},
    {id:'link-pin',label:local('Pin link to sidebar','将链接固定到左侧栏'),click:()=>Promise.resolve().then(()=>onPin({url,name:Array.from(String(params.linkText||params.titleText||new URL(url).hostname).trim()||new URL(url).hostname).slice(0,40).join('')})).catch(error=>{if(current())current().error=error.message;publish();})}
@@ -111,7 +111,7 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
  function add(url,options={}){
   initToolbar();const mode=options.workspace||workspace,partition=partitionFor(mode,url),id=options.primary&&!tabs.some(t=>t.id===mode)?mode:'tab-'+(++counter);
   const view=new WebContentsView({...(options.webContents?{webContents:options.webContents}:{}),webPreferences:{...(options.session?{session:options.session}:{partition}),plugins:true,preload:path.join(__dirname,'website-preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true}}),wc=view.webContents;
-  const t={id,url:options.loadUrl||url,workspace:mode,title:url.startsWith('file:')?path.basename(fileURLToPath(url)):local('New tab','新标签页'),view,pdf:/\.pdf(?:[?#]|$)/i.test(url),chat:null,chatVisible:false,ratio:.62,error:'',partition,parentId:options.parentId||null};
+  const t={id,url:options.loadUrl||url,workspace:mode,title:url.startsWith('file:')?path.basename(fileURLToPath(url)):local('New tab','新标签页'),view,pdf:/\.pdf(?:[?#]|$)/i.test(url),chat:null,chatVisible:false,ratio:.62,error:'',loading:options.load!==false,partition,parentId:options.parentId||null};
   view.orbitWorkspace=mode;view.orbitUrl=t.url;tabs.push(t);views.set(id,view);setup(wc,t);
   t.ready=options.ready||(sessions?.prepare(partition,wc.session)||Promise.resolve());
   function commit(url){t.url=url;view.orbitUrl=url;t.pdf=/\.pdf(?:[?#]|$)/i.test(url);t.error='';if(spec(mode)?.url)sessions?.remember(mode,spec(mode).url,url);publish();}
@@ -120,9 +120,11 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
   pdfStyle.attach(wc,view);
   wc.on('did-finish-load',()=>{wc.executeJavaScript("!!document.querySelector('embed[type=\"application/pdf\"]')").then(pdf=>{if(pdf)t.pdf=true;publish();if(t.pdf&&t.chatVisible)pdfChatUpload.attach(t);}).catch(()=>{});});
   wc.on('before-input-event',(e,input)=>{if(!input.control)return;const key=input.key.toLowerCase();if(['t','w','l'].includes(key)){e.preventDefault();if(key==='t'){activate(t.id);performAction('new');}if(key==='w')close(t.id);if(key==='l')focusAddress();}});
-  if(options.load!==false)t.ready.then(()=>{if(!wc.isDestroyed())return wc.loadURL(t.url);}).catch(e=>{t.error=e.message;publish();});
+  wc.on('did-start-loading',()=>{t.loading=true;publish();});wc.on('did-stop-loading',()=>{t.loading=false;publish();});
+  if(options.load!==false)loadTab(t,t.url);
   if(options.activate!==false)activate(id);return t;
  }
+ function loadTab(t,url){const sequence=t.loadSequence=(t.loadSequence||0)+1;t.loading=true;t.error='';publish();const ready=url.startsWith('file:')?Promise.resolve():t.ready;return ready.then(()=>{if(sequence===t.loadSequence&&!t.view.webContents.isDestroyed())return t.view.webContents.loadURL(url);}).catch(error=>{if(sequence===t.loadSequence&&!t.view.webContents.isDestroyed()&&error.code!=='ERR_ABORTED'){t.loading=false;t.error=error.message;publish();}});}
  function internalTarget(value){if(typeof value!=='string'||!value.startsWith('orbit:'))return null;let u;try{u=new URL(value);}catch{throw Error('Invalid Orbit address.');}const mode=u.hash.slice(1);if(u.protocol!=='orbit:'||u.hostname!=='app'||u.username||u.password||u.port||u.pathname!=='/index.html'||u.search||!spec(mode)?.internal)throw Error('Unknown Orbit page.');return mode;}
  function open(value,options={}){
   const internal=internalTarget(value);if(internal){const t=ensureHome(internal);activate(t.id);return {ok:true,id:internal,tabId:t.id,title:title(internal)};}
@@ -163,9 +165,9 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
   else if(action==='tab-menu'||action==='pdf-file-menu')tabMenu(value);
   else if(action==='pdf-address-open')openAddress(tabs.find(tab=>tab.id===value));
   else if(action==='pdf-address-close'){addressEditing=false;layout();}
-  else if(action==='pdf-address-save'){const selected=tabs.find(tab=>tab.id===value?.id&&tab.pdf);if(!selected)throw Error('This file is closed.');const url=targetUrl(value.address);selected.url=url;selected.error='';selected.view.webContents.loadURL(url).catch(error=>{selected.error=error.message;publish();});addressEditing=false;layout();}
+  else if(action==='pdf-address-save'){const selected=tabs.find(tab=>tab.id===value?.id&&tab.pdf);if(!selected)throw Error('This file is closed.');const url=targetUrl(value.address);selected.url=url;selected.error='';loadTab(selected,url);addressEditing=false;layout();}
   else if(action==='open-file')await pick(workspace);
-  else if(action==='navigate'){const internal=internalTarget(value);if(internal)open(value);else {const url=targetUrl(value);if(wc){t.url=url;t.error='';wc.loadURL(url).catch(error=>{t.error=error.message;publish();});}else open(url,{workspace});}}
+  else if(action==='navigate'){const internal=internalTarget(value);if(internal)open(value);else {const url=targetUrl(value);if(wc){t.url=url;t.error='';loadTab(t,url);}else open(url,{workspace});}}
   else if(action==='chat')toggleChat();
   else if(action==='pdf-chat-retry'&&t?.pdf){t.chatVisible=true;layout();pdfChatUpload.attach(t,{force:true});}
   else if(action==='ratio'&&t&&Number.isFinite(value)){t.ratio=Math.max(.3,Math.min(.75,value));layout();}

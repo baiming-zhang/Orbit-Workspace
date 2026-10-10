@@ -6,7 +6,8 @@ function createDownloads({app,shell,dialog,Menu,getWindow=()=>undefined,getLangu
  const tr=(en,zh)=>getLanguage()==='zh'?zh:en;
  try{history=JSON.parse(fs.readFileSync(file,'utf8'));if(!Array.isArray(history))history=[];history=history.slice(0,200).map(x=>({...x,fileBusy:false,state:['progressing','paused','awaiting-confirmation'].includes(x.state)?'interrupted':x.state}));}catch{}
  try{const value=JSON.parse(fs.readFileSync(preferencesFile,'utf8'));if(typeof value.folder==='string'&&path.isAbsolute(value.folder))prefs.folder=value.folder;prefs.askBeforeDownload=value.askBeforeDownload===true;}catch{}
- const list=()=>({ok:true,...prefs,items:history.map(x=>({...x})),active:active.size});
+ function reconcile(){let changed=false;for(const row of history){if(!['completed','moved'].includes(row.state))continue;try{fs.statSync(row.path);}catch(error){if(['ENOENT','ENOTDIR'].includes(error.code)){row.state='deleted';row.deletedAt=new Date().toISOString();changed=true;}}}if(changed){fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,JSON.stringify(history.slice(0,200),null,2));}}
+ const list=()=>{reconcile();return {ok:true,...prefs,items:history.map(x=>({...x})),active:active.size};};
  function publish(){fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,JSON.stringify(history.slice(0,200),null,2));onChange(list());}
  function savePreferences(){fs.mkdirSync(path.dirname(preferencesFile),{recursive:true});fs.writeFileSync(preferencesFile,JSON.stringify(prefs,null,2));publish();}
  function uniquePath(folder,name){const ext=path.extname(name),stem=path.basename(name,ext);let dest=path.join(folder,name),i=1;while(fs.existsSync(dest)||history.some(row=>row.path===dest&&active.has(row.id)))dest=path.join(folder,stem+' ('+(i++)+')'+ext);return dest;}
@@ -22,7 +23,7 @@ function createDownloads({app,shell,dialog,Menu,getWindow=()=>undefined,getLangu
  });}
  app.on('web-contents-created',(_event,wc)=>attach(wc.session));
  async function chooseFolder(){const result=await dialog.showOpenDialog(getWindow(),{title:tr('Choose default download folder','选择默认下载目录'),defaultPath:prefs.folder,properties:['openDirectory','createDirectory']});if(!result.canceled&&result.filePaths[0]){prefs.folder=result.filePaths[0];savePreferences();}return {ok:true,canceled:result.canceled};}
- function completeFile(row){if(row.state!=='completed'||!fs.existsSync(row.path))throw Error(tr('Download is not available.','下载文件不可用。'));if(!fs.lstatSync(row.path).isFile())throw Error(tr('This download is not a regular file.','此下载不是普通文件。'));}
+ function completeFile(row){if(!['completed','moved'].includes(row.state)||!fs.existsSync(row.path))throw Error(tr('Download is not available.','下载文件不可用。'));if(!fs.lstatSync(row.path).isFile())throw Error(tr('This download is not a regular file.','此下载不是普通文件。'));}
  async function moveFile(row,dest){
   if(path.resolve(row.path)===path.resolve(dest))return;
   if(process.platform==='win32'&&path.resolve(row.path).toLowerCase()===path.resolve(dest).toLowerCase()){await fs.promises.rename(row.path,dest);row.path=dest;row.name=path.basename(dest);return;}
@@ -34,14 +35,15 @@ function createDownloads({app,shell,dialog,Menu,getWindow=()=>undefined,getLangu
   if(action==='folder'){const error=await shell.openPath(prefs.folder);if(error)throw Error(error);return {ok:true};}
   if(action==='choose-folder')return chooseFolder();
   if(action==='toggle-confirmation'){prefs.askBeforeDownload=!prefs.askBeforeDownload;savePreferences();return {ok:true,askBeforeDownload:prefs.askBeforeDownload};}
-  const row=history.find(x=>x.id===id);if(!row)throw Error(tr('Download not found.','找不到此下载。'));
+  reconcile();const row=history.find(x=>x.id===id);if(!row)throw Error(tr('Download not found.','找不到此下载。'));
+  if(row.state==='deleted'&&['open','show','rename','move','trash'].includes(action)){publish();return {ok:true,deleted:true};}
   if(action==='show'){if(!fs.existsSync(row.path))throw Error(tr('File no longer exists.','文件已不存在。'));shell.showItemInFolder(row.path);return {ok:true};}
   if(action==='open'){completeFile(row);const error=await shell.openPath(row.path);if(error)throw Error(error);return {ok:true};}
   if(action==='cancel'){active.get(id)?.cancel();return {ok:true};}
   if(action==='keep'){const item=active.get(id);if(row.state!=='awaiting-confirmation'||!item)throw Error(tr('Download is no longer awaiting confirmation.','此下载已不再等待确认。'));row.state='progressing';item.resume();publish();return {ok:true};}
-  if(!['rename','move'].includes(action))throw Error(tr('Unsupported download action.','不支持此下载操作。'));
+  if(!['rename','move','trash'].includes(action))throw Error(tr('Unsupported download action.','不支持此下载操作。'));
   completeFile(row);if(locks.has(id))throw Error(tr('A file operation is already in progress.','此文件正在处理，请稍候。'));locks.add(id);row.fileBusy=true;publish();
-  try{if(action==='rename')await moveFile(row,path.join(path.dirname(row.path),validName(value)));else {const result=await dialog.showOpenDialog(getWindow(),{title:tr('Move download to another folder','将下载文件移动到新目录'),defaultPath:path.dirname(row.path),properties:['openDirectory','createDirectory']});if(result.canceled||!result.filePaths[0])return {ok:true,canceled:true};await moveFile(row,path.join(result.filePaths[0],row.name));}return {ok:true,path:row.path,name:row.name};}finally{locks.delete(id);row.fileBusy=false;publish();}
+  try{if(action==='trash'){const result=await dialog.showMessageBox(getWindow(),{type:'question',title:tr('Move file to Recycle Bin','将文件放入回收站'),message:tr('Move this file to the Recycle Bin?','是否将此文件放入回收站？'),detail:row.name+'\n'+row.path,buttons:[tr('Cancel','取消'),tr('Move to Recycle Bin','放入回收站')],defaultId:0,cancelId:0,noLink:true});if(result.response!==1)return {ok:true,canceled:true};completeFile(row);await shell.trashItem(row.path);row.state='deleted';row.deletedAt=new Date().toISOString();return {ok:true,deleted:true};}if(action==='rename')await moveFile(row,path.join(path.dirname(row.path),validName(value)));else {const result=await dialog.showOpenDialog(getWindow(),{title:tr('Move download to another folder','将下载文件移动到新目录'),defaultPath:path.dirname(row.path),properties:['openDirectory','createDirectory']});if(result.canceled||!result.filePaths[0])return {ok:true,canceled:true};const previous=row.path;await moveFile(row,path.join(result.filePaths[0],row.name));if(row.path!==previous){row.state='moved';row.movedAt=new Date().toISOString();}}return {ok:true,path:row.path,name:row.name};}finally{locks.delete(id);row.fileBusy=false;publish();}
  }
  function menu(){Menu.buildFromTemplate([{label:tr('Ask before downloading','下载前确认'),type:'checkbox',checked:prefs.askBeforeDownload,click:()=>action(null,'toggle-confirmation')},{label:tr('Change default download folder…','更改默认下载目录…'),click:()=>chooseFolder().catch(()=>{})}]).popup({window:getWindow()});return {ok:true};}
  return {list,action,menu};

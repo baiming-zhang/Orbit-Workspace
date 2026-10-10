@@ -20,7 +20,7 @@ window.orbitTabs.onState(s=>{
   const close=document.createElement('button');close.textContent='×';close.title=tr('Close tab','关闭标签页');close.setAttribute('aria-label',close.title);close.onclick=()=>window.orbitTabs.action('close',t.id);close.hidden=!!t.internal;
   box.append(select,close);root.append(box);
  }
- fitTabs();
+ fitTabs();const loading=$('#pdf-load-status');loading.hidden=!active?.pdf||!active?.loading;loading.textContent=tr('Opening PDF…','正在打开 PDF…');
  $('#chat').title=active?.pdf?tr('Open ChatGPT and attach the current PDF','打开 ChatGPT 并附上当前 PDF'):tr('Open ChatGPT','打开 ChatGPT');
  const upload=$('#pdf-upload-status');upload.hidden=!active?.pdf||!active?.chat||!active?.upload;upload.textContent=active?.upload?.state==='error'?tr('Attachment failed · Retry','附件发送失败 · 重试'):OrbitI18n.text(active?.upload?.text||'',current.language);upload.title=OrbitI18n.text(active?.upload?.text||'',current.language);upload.dataset.state=active?.upload?.state||'';upload.disabled=active?.upload?.state!=='error';
  $('#chat').setAttribute('aria-pressed',!!active?.chat);$('#chat-reload').hidden=!active?.chat;$('#error').textContent=OrbitI18n.text(s.error,current.language);
