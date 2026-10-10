@@ -6,7 +6,8 @@ const {pathToFileURL}=require('node:url');
 const {externalUrl,parseMeetingLink,zoomAppUrl}=require('./links.cjs');
 const {createGoogle}=require('./google.cjs');
 const {createTabbedBrowser,launchTargets,webUrl}=require('./tabbed-browser.cjs');
-let tabbedBrowser;
+let tabbedBrowser,launchBridge;const pendingLaunches=[];
+const {createLaunchBridge,acceptLaunchRequest}=require('./launch-bridge.cjs');
 const {createSettings}=require('./settings.cjs');
 const {createUpdater}=require('./updater.cjs');
 const {createEvents}=require('./events.cjs');
@@ -30,7 +31,7 @@ configureBranding();
 app.commandLine.appendSwitch('lang','en-US');
 const verify=false;
 if(verify){app.disableHardwareAcceleration();app.setPath('userData',path.join(app.getPath('temp'),'orbit-build-verification-'+Date.now()));}
-if(!app.requestSingleInstanceLock()){app.quit();return;}
+if(!app.requestSingleInstanceLock()){app.quit();return;}acceptLaunchRequest(process.argv);
 let mainWindow;
 downloads=createDownloads({app,shell,dialog,Menu,getWindow:()=>mainWindow,getLanguage:()=>settings?.get().language||'en',onChange:data=>{downloadsFlyout?.update();if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('orbit:downloads-changed',data);}});
 let google;
@@ -56,7 +57,7 @@ function createWindow(){
   mainWindow.webContents.setWindowOpenHandler(({url})=>{openSafe(url).catch(()=>{});return {action:'deny'};});
   mainWindow.webContents.on('context-menu',(event,params)=>tabbedBrowser?.showLinkMenu(mainWindow.webContents,params,event));
   mainWindow.webContents.on('will-navigate',(event,url)=>{if(!url.startsWith('orbit://app/')){event.preventDefault();openSafe(url).catch(()=>{});}});
-  mainWindow.loadURL('orbit://app/index.html');
+  const startupTargets=launchTargets(process.argv);mainWindow.loadURL('orbit://app/index.html'+(startupTargets.length?(/\.pdf(?:[?#]|$)/i.test(startupTargets[0])?'#pdf':'#browser'):''));
   mainWindow.on('close',event=>{if(!quitting&&background){event.preventDefault();background.closeToTray();}});
   mainWindow.on('closed',()=>{mainWindow=null;});
 }
@@ -158,7 +159,12 @@ app.whenReady().then(()=>{
   ipcMain.handle('orbit:workspace-action',guard((mode,action,value)=>tabbedBrowser.navigate(mode,action,value)));
   createWindow();refreshPresentation();
   tabbedBrowser=createTabbedBrowser({favorites,onNotice:message=>{if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('orbit:notice',message);},onPin:input=>{const existing=navigation.get().items.find(item=>item.url===input.url);const result=existing?{...navigation.get(),item:existing}:navigation.save(input);browser.configure(result.items);tabbedBrowser.configure(result.items);mainWindow.webContents.send('orbit:navigation-action',{action:'saved',result});return result;},workspaceItems:navigation.get().items,getLanguage:()=>settings.get().language,getWindow:()=>mainWindow,sessions:browserSessions,onState:state=>{downloadsFlyout.raise();favoritesFlyout.raise();if(!quitting&&mainWindow&&!mainWindow.isDestroyed()&&!mainWindow.webContents.isDestroyed())mainWindow.webContents.send('orbit:workspace-state',state);},onPage:page=>{if(!quitting&&mainWindow&&!mainWindow.isDestroyed()&&mainWindow.webContents&&!mainWindow.webContents.isDestroyed())mainWindow.webContents.send('orbit:open-page',page);}});
-  mainWindow.webContents.once('did-finish-load',()=>{for(const target of launchTargets(process.argv))tabbedBrowser.open(target);});
+  const initialTargets=launchTargets(process.argv);
+  let initialSelection;for(const target of initialTargets)initialSelection=tabbedBrowser.open(target,{reveal:!verify});
+  if(initialSelection){const {width,height}=mainWindow.getContentBounds();tabbedBrowser.show({x:0,y:48,width,height:Math.max(1,height-48)},initialSelection.id);}
+  mainWindow.webContents.once('did-finish-load',()=>{const id=initialSelection?.id||tabbedBrowser.current()?.workspace;if(id)mainWindow.webContents.send('orbit:open-page',{id});tabbedBrowser.warmUp();});
+  for(const request of pendingLaunches.splice(0))receiveLaunch(request.argv,request.cwd);
+  launchBridge=createLaunchBridge({app,onOpen:receiveLaunch});
   ipcMain.handle('orbit:pdf-open',guard(()=>tabbedBrowser.pick('pdf')));
   mainWindow.webContents.on('before-input-event',(event,input)=>{if(input.control&&input.key.toLowerCase()==='o'){event.preventDefault();tabbedBrowser.pick();}});
   background=createBackground({app,safeStorage,shell,google,getWindow:()=>mainWindow,getTimeZone:()=>settings.get().timeZone,getLanguage:()=>settings.get().language,openWebsite:async url=>{if(mainWindow.isMinimized())mainWindow.restore();mainWindow.show();return tabbedBrowser.open(url);},verify});background.start();
@@ -166,7 +172,9 @@ app.whenReady().then(()=>{
   localApi.start();
   app.on('activate',()=>{if(BrowserWindow.getAllWindows().length===0)createWindow();});
 });
-app.on('second-instance',(_event,argv,cwd)=>{const targets=launchTargets(argv,cwd);if(targets.length&&tabbedBrowser){for(const target of targets)tabbedBrowser.open(target);if(mainWindow.isMinimized())mainWindow.restore();mainWindow.show();mainWindow.focus();return;}if(mainWindow&&!mainWindow.isDestroyed()){if(mainWindow.isMinimized())mainWindow.restore();mainWindow.show();mainWindow.focus();}});
+function receiveLaunch(argv,cwd){if(!tabbedBrowser){if(pendingLaunches.length<64)pendingLaunches.push({argv,cwd});return;}if(!acceptLaunchRequest(argv))return;const targets=launchTargets(argv,cwd);for(const target of targets){try{tabbedBrowser.open(target);}catch(error){mainWindow?.webContents.send('orbit:notice',OrbitI18n.text(error.message,settings?.get().language));}}if(mainWindow&&!mainWindow.isDestroyed()){if(mainWindow.isMinimized())mainWindow.restore();mainWindow.show();mainWindow.focus();}}
+app.on('second-instance',(_event,argv,cwd)=>receiveLaunch(argv,cwd));
+app.on('will-quit',()=>launchBridge?.dispose());
 app.on('before-quit',event=>{
   quitting=true;
   if(quitFlushed)return;

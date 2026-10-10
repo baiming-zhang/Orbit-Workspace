@@ -104,6 +104,14 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.17
+
+- PDF requests go directly to the running Orbit window instead of unpacking the entire portable runtime again. Repeated request identifiers prevent fallback delivery from opening duplicate tabs; requests received during startup are queued.
+- A file opens into the reading interface immediately, with a localized loading surface while Chromium loads and renders the document. Startup selects the requested workspace before restoring the main interface; ChatGPT attachment and reading preferences remain available.
+- The portable runtime is cached by application content, with a completion marker, missing-core-file recovery and an extraction mutex. Update packages still require SHA-256 verification. Relative command-line paths retain the caller's working directory.
+- An isolated Windows launcher benchmark showed the reading interface in 211–250 ms for five requests while Orbit was running. The one-page PDF viewer became ready in 581–687 ms. First extraction and fully cold startup are separate cases and are not guaranteed to finish within 500 ms; the measurement does not represent a mouse-to-screen benchmark.
+
+
 ### v1.8.16
 
 - Select text or right-click an image to copy, search with Google, prepare a ChatGPT draft in the sidebar or a new tab, or save a local favorite. Favorites include the source page and saved date. ChatGPT drafts are never sent automatically; image attachment depends on the website's current composer and account capabilities.
