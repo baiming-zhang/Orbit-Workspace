@@ -43,6 +43,7 @@ function createBrowser({getWindow,views=new Map(),serviceUrls,portals,onPage,ses
   view.orbitReady=session?(ready||Promise.resolve()):(sessions?.prepare(partition,wc.session)||Promise.resolve());
   if(serviceUrls[id]){view.orbitWorkspace=id;workspaces.set(id,view);}
   enableMicrophone(wc.session);
+  wc.on('before-mouse-event',(_event,mouse)=>{if(mouse.type==='mouseDown'&&active===view&&getWindow()?.contentView.children.includes(view)&&!wc.isFocused())wc.focus();});
   wc.setWindowOpenHandler(details=>{
    if(!webUrl(details.url)&&details.url!=='about:blank')return {action:'deny'};
    return {action:'allow',createWindow:options=>{

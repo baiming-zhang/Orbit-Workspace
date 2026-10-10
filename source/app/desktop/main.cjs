@@ -29,7 +29,7 @@ const verify=false;
 if(verify){app.disableHardwareAcceleration();app.setPath('userData',path.join(app.getPath('temp'),'orbit-build-verification-'+Date.now()));}
 if(!app.requestSingleInstanceLock()){app.quit();return;}
 let mainWindow;
-downloads=createDownloads({app,shell,onChange:data=>{downloadsFlyout?.update();if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('orbit:downloads-changed',data);}});
+downloads=createDownloads({app,shell,dialog,Menu,getWindow:()=>mainWindow,getLanguage:()=>settings?.get().language||'en',onChange:data=>{downloadsFlyout?.update();if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('orbit:downloads-changed',data);}});
 let google;
 let settings;
 let localEvents;
@@ -93,8 +93,9 @@ app.whenReady().then(()=>{
   const guard=(handler)=>async(event,...args)=>{if(!trusted(event))return {ok:false,error:'未经授权的窗口。'};try{return await handler(...args);}catch(error){return {ok:false,error:OrbitI18n.text(error.message||'操作未完成，请重试。',settings.get().language)};}};
   const downloadGuard=handler=>async(event,...args)=>{if(!trusted(event)&&!downloadsFlyout.trusted(event))return {ok:false,error:'Unauthorized download window.'};try{return await handler(...args);}catch(error){return {ok:false,error:OrbitI18n.text(error.message,settings.get().language)};}};
   ipcMain.handle('orbit:downloads-get',downloadGuard(()=>({...downloads.list(),language:settings.get().language})));
-  ipcMain.handle('orbit:downloads-action',downloadGuard((id,action)=>downloads.action(id,action)));
+  ipcMain.handle('orbit:downloads-action',downloadGuard((id,action,value)=>downloads.action(id,action,value)));
   ipcMain.handle('orbit:downloads-show',guard(bounds=>downloadsFlyout.show(bounds)));
+  ipcMain.handle('orbit:downloads-menu',downloadGuard(()=>downloads.menu()));
   ipcMain.handle('orbit:downloads-close',downloadGuard(()=>downloadsFlyout.close()));
   ipcMain.handle('orbit:navigation-get',guard(()=>navigation.get()));
   ipcMain.handle('orbit:navigation-save',guard(input=>{const result=navigation.save(input);browser.configure(result.items);tabbedBrowser?.configure(result.items);return result;}));

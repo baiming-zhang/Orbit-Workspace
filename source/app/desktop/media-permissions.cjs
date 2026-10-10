@@ -1,4 +1,4 @@
-// Grant microphone access to trustworthy web documents; keep other permissions denied.
+// Allow microphone access and focused clipboard writes in trustworthy web documents.
 const installed=new WeakSet();
 function trustworthy(value){
  try{const u=new URL(value);return !u.username&&!u.password&&(u.protocol==='https:'||(u.protocol==='http:'&&['localhost','127.0.0.1','[::1]'].includes(u.hostname)));}catch{return false;}
@@ -14,10 +14,13 @@ function allowRequest(permission,details={}){
 function allowCheck(permission,origin,details={}){
  return permission==='media'&&details.mediaType==='audio'&&documentAllowed(details,origin);
 }
+function allowClipboardWrite(permission,origin,details={},wc){
+ return permission==='clipboard-sanitized-write'&&!!wc&&!wc.isDestroyed()&&wc.isFocused()&&documentAllowed(details,origin);
+}
 function enableMicrophone(session){
  if(installed.has(session))return;
- session.setPermissionRequestHandler((_wc,permission,callback,details)=>callback(allowRequest(permission,details)));
- session.setPermissionCheckHandler((_wc,permission,origin,details)=>allowCheck(permission,origin,details));
+ session.setPermissionRequestHandler((wc,permission,callback,details)=>callback(allowRequest(permission,details)||allowClipboardWrite(permission,null,details,wc)));
+ session.setPermissionCheckHandler((wc,permission,origin,details)=>allowCheck(permission,origin,details)||allowClipboardWrite(permission,origin,details,wc));
  installed.add(session);
 }
-module.exports={enableMicrophone,allowRequest,allowCheck};
+module.exports={enableMicrophone,allowRequest,allowCheck,allowClipboardWrite};

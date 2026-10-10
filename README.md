@@ -104,6 +104,13 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### 1.8.12 · October 9, 2026
+
+- Completed downloads can be renamed directly in the flyout or moved to another folder. Existing files are preserved when a name conflicts.
+- Right-click the Downloads button, or open its options menu, to change the default folder or enable download confirmation. Confirmation is off by default; when enabled, the flyout shows file size, source URL and save path before you choose to keep or cancel. Unknown sizes are explicitly indicated.
+- Fixed copy buttons in ChatGPT and other secure webpages by permitting clipboard writes in the focused page. Clipboard reading remains denied.
+- Switching tabs and opening or closing a ChatGPT split now restores focus to the appropriate page. Resizing the workspace preserves the current focus, including the address bar.
+
 ### 1.8.11 · October 9, 2026
 
 - Enabled microphone access for secure webpages, including ChatGPT pages and reading/chat splits. Windows microphone access must also be enabled. Camera and other unrelated permissions remain denied.

@@ -1,6 +1,7 @@
 const {contextBridge,ipcRenderer}=require('electron');
 contextBridge.exposeInMainWorld('orbitDesktop',Object.freeze({
   platform:'windows',
+  downloadMenu:()=>ipcRenderer.invoke('orbit:downloads-menu'),
   showDownloads:bounds=>ipcRenderer.invoke('orbit:downloads-show',bounds),
   closeDownloads:()=>ipcRenderer.invoke('orbit:downloads-close'),
   onDownloadsVisibility:callback=>{const handler=(_event,value)=>callback(value);ipcRenderer.on('orbit:downloads-visibility',handler);return ()=>ipcRenderer.removeListener('orbit:downloads-visibility',handler);},

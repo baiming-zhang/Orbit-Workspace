@@ -61,7 +61,8 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
   t.view.setBounds({x:r.x,y:r.y+barHeight,width:Math.max(1,w),height:h});
   if(split){mount(t.chat);t.chat.setBounds({x:r.x+w+8,y:r.y+barHeight,width:Math.max(1,r.width-w-8),height:h});mount(splitter);splitter.setBounds({x:r.x+(drag?0:w),y:r.y+barHeight,width:drag?r.width:8,height:h});if(splitterReady)splitter.webContents.send('orbit:split-state',{dragging:!!drag,x:drag?w:0,ratio:t.ratio});}
  }
- function activate(id,notify=true){const t=tabs.find(t=>t.id===id);if(!t)return;drag=null;addressEditing=false;workspace=t.workspace;activeId=id;lastActive.set(workspace,id);shown=true;if(notify)onPage({id:workspace,title:title(workspace),navigation:{canGoBack:false,canGoForward:false}});layout();publish();}
+ function focusCurrent(preferChat=false){const win=getWindow(),t=current();if(!shown||addressEditing||!win||win.isDestroyed()||!win.isFocused())return;const target=t?.chatVisible&&(preferChat||t.focusedPane==='chat')?t.chat?.webContents:t?.view?.webContents;if(target&&!target.isDestroyed()&&attached.has(target===t.chat?.webContents?t.chat:t.view))target.focus();else if(t?.internal)win.webContents.focus();}
+ function activate(id,notify=true){const t=tabs.find(t=>t.id===id);if(!t)return;drag=null;addressEditing=false;workspace=t.workspace;activeId=id;lastActive.set(workspace,id);shown=true;if(notify)onPage({id:workspace,title:title(workspace),navigation:{canGoBack:false,canGoForward:false}});layout();focusCurrent();publish();}
  function initToolbar(){
   if(toolbar)return;
   toolbar=new WebContentsView({webPreferences:{preload:path.join(__dirname,'tabs-preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true}});
@@ -93,6 +94,8 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
   wc.on('context-menu',(event,params)=>{if(!wc.mainFrame.framesInSubtree.some(frame=>frame.url.startsWith('chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/')))showLinkMenu(wc,params,event);});
   wc.setUserAgent(wc.getUserAgent().replace(/\sElectron\/[^\s]+/g,'').replace(/\sOrbit(?:%20| )?Workspace\/[^\s]+/gi,''));
   enableMicrophone(wc.session);
+  wc.on('focus',()=>{if(current()===t)t.focusedPane=wc===t.chat?.webContents?'chat':'page';});
+  wc.on('before-mouse-event',(_event,mouse)=>{if(mouse.type==='mouseDown'&&shown&&!addressEditing&&current()===t&&attached.has(wc===t.chat?.webContents?t.chat:t.view)&&!wc.isFocused())wc.focus();});
   wc.setWindowOpenHandler(details=>{
    if(!webUrl(details.url)&&details.url!=='about:blank')return {action:'deny'};
    return {action:'allow',createWindow:options=>{
@@ -133,13 +136,13 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
   for(const v of [t.view,t.chat]){if(attached.has(v)){getWindow()?.contentView.removeChildView(v);attached.delete(v);}if(!destroyed||v===t.chat){if(v?.webContents&&!v.webContents.isDestroyed())v.webContents.close();}}
   if(lastActive.get(t.workspace)===t.id)lastActive.delete(t.workspace);
   if(activeId===t.id){const parent=tabs.find(p=>p.id===t.parentId),next=parent||tabs.filter(p=>p.workspace===t.workspace).at(-1)||ensureHome(t.workspace);activeId=next?.id||null;if(next)lastActive.set(t.workspace,next.id);}
-  layout();publish();
+  layout();focusCurrent();publish();
  }
  function close(id){const t=tabs.find(t=>t.id===id);if(t&&!t.internal)removeTab(t);}
  function toggleChat(){
   const t=current();if(!t?.view)return;t.chatVisible=!t.chatVisible;
   if(t.chatVisible&&!t.chat){t.chat=new WebContentsView({webPreferences:{partition:'persist:chatgpt',preload:path.join(__dirname,'website-preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true}});views.set(t.id+'-chat',t.chat);const wc=t.chat.webContents;setup(wc,t);(sessions?.prepare('persist:chatgpt',wc.session)||Promise.resolve()).then(()=>wc.loadURL(t.pdf?'https://chatgpt.com/':sessions?.startUrl('chatgpt','https://chatgpt.com/')||'https://chatgpt.com/')).catch(()=>{});wc.on('did-navigate',(_e,url)=>sessions?.remember('chatgpt','https://chatgpt.com/',url));wc.on('did-finish-load',()=>{if(t.pdf&&t.chatVisible)pdfChatUpload.attach(t);});}
-  layout();publish();if(t.chatVisible&&t.pdf)pdfChatUpload.attach(t);
+  if(!t.chatVisible)t.focusedPane='page';layout();focusCurrent(t.chatVisible);publish();if(t.chatVisible&&t.pdf)pdfChatUpload.attach(t);
  }
  function focusAddress(){const win=getWindow();if(win&&!win.isDestroyed()){win.webContents.focus();win.webContents.send('orbit:workspace-focus');}}
  function openAddress(t){if(!t?.pdf)return;activate(t.id);addressEditing=true;drag=null;layout();publish();toolbar.webContents.send('orbit:pdf-address',{id:t.id,title:t.title,address:t.url.startsWith('file:')?fileURLToPath(t.url):t.url});}
@@ -180,7 +183,7 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
  function pages(){return tabs.filter(t=>t.view&&!t.view.webContents.isDestroyed()).map(t=>({id:t.id,workspace:t.workspace,title:t.title,url:t.view.webContents.getURL()||t.url,active:shown&&t.id===activeId}));}
  async function pageText(id){const wc=views.get(id)?.webContents;if(!wc||wc.isDestroyed())throw Object.assign(Error('Please open this page in Orbit first.'),{code:'PAGE_NOT_FOUND',statusCode:404});const data=await wc.executeJavaScript(`(()=>{const parts=[document.body?.innerText||''];for(const frame of document.querySelectorAll('iframe'))try{if(frame.contentDocument?.body?.innerText)parts.push(frame.contentDocument.body.innerText);}catch{}const raw=parts.join('\\n');return {title:document.title,url:location.href,text:raw.slice(0,1000000),truncated:raw.length>1000000};})()`);return {id,...data,source:'untrusted-webpage-text',readAt:Date.now()};}
  const pageActions=Object.fromEntries(['readPageEditor','writePageEditor','uploadPageFiles','clickPageElement','describePageDom'].map(method=>[method,(id,input)=>{if(!pageEdit)throw Error('Page editing is unavailable in this build.');return pageEdit[method](views.get(id)?.webContents,id,input);} ]));
- function show(next,mode='browser'){if(!spec(mode))return {ok:false,error:'Unknown workspace.'};if(!next||!['x','y','width','height'].every(k=>Number.isFinite(next[k])))return {ok:false,error:'Invalid workspace bounds.'};initToolbar();bounds=next;shown=true;workspace=mode;ensureHome(mode);activeId=tabs.find(t=>t.id===lastActive.get(mode)&&t.workspace===mode)?.id||tabs.find(t=>t.workspace===mode)?.id||null;layout();publish();const state=snapshot();return {ok:true,workspaceState:state,navigation:{canGoBack:state.canBack,canGoForward:state.canForward}};}
+ function show(next,mode='browser'){if(!spec(mode))return {ok:false,error:'Unknown workspace.'};if(!next||!['x','y','width','height'].every(k=>Number.isFinite(next[k])))return {ok:false,error:'Invalid workspace bounds.'};const changing=!shown||workspace!==mode;initToolbar();bounds=next;shown=true;workspace=mode;ensureHome(mode);activeId=tabs.find(t=>t.id===lastActive.get(mode)&&t.workspace===mode)?.id||tabs.find(t=>t.workspace===mode)?.id||null;layout();if(changing)focusCurrent();publish();const state=snapshot();return {ok:true,workspaceState:state,navigation:{canGoBack:state.canBack,canGoForward:state.canForward}};}
  function remove(mode){for(const t of [...tabs].filter(t=>t.workspace===mode)){tabs.splice(tabs.indexOf(t),1);views.delete(t.id);views.delete(t.id+'-chat');for(const v of [t.view,t.chat]){if(attached.has(v)){getWindow()?.contentView.removeChildView(v);attached.delete(v);}if(v?.webContents&&!v.webContents.isDestroyed())v.webContents.close();}}specs.delete(mode);lastActive.delete(mode);if(workspace===mode){shown=false;activeId=null;detach();}publish();}
  function dispose(){if(disposed)return;disposed=true;drag=null;shown=false;detach();const all=[...views.values(),toolbar,splitter];views.clear();tabs.length=0;activeId=null;toolbar=null;splitter=null;for(const v of all){const wc=v?.webContents;if(wc&&!wc.isDestroyed())wc.close();}for(const channel of ['orbit:tabs-action','orbit:split-drag','orbit:link-open'])ipcMain.removeHandler(channel);}
  return {open,pick,views,tabs,current,linkItems,showLinkMenu,snapshot,navigate,show,configure,remove,toggleChat,pages,pageText,...pageActions,refresh:publish,hide(){drag=null;addressEditing=false;shown=false;detach();publish();},dispose};
