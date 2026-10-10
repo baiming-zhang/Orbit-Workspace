@@ -1,4 +1,5 @@
 'use strict';
+const {nativeImage}=require('electron');
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 function createDownloads({app,shell,dialog,Menu,getWindow=()=>undefined,getLanguage=()=> 'en',onChange=()=>{}}){
  const file=path.join(app.getPath('userData'),'downloads.json'),preferencesFile=path.join(app.getPath('userData'),'download-settings.json');
@@ -7,7 +8,10 @@ function createDownloads({app,shell,dialog,Menu,getWindow=()=>undefined,getLangu
  try{history=JSON.parse(fs.readFileSync(file,'utf8'));if(!Array.isArray(history))history=[];history=history.slice(0,200).map(x=>({...x,fileBusy:false,state:['progressing','paused','awaiting-confirmation'].includes(x.state)?'interrupted':x.state}));}catch{}
  try{const value=JSON.parse(fs.readFileSync(preferencesFile,'utf8'));if(typeof value.folder==='string'&&path.isAbsolute(value.folder))prefs.folder=value.folder;prefs.askBeforeDownload=value.askBeforeDownload===true;}catch{}
  function reconcile(){let changed=false;for(const row of history){if(!['completed','moved'].includes(row.state))continue;try{fs.statSync(row.path);}catch(error){if(['ENOENT','ENOTDIR'].includes(error.code)){row.state='deleted';row.deletedAt=new Date().toISOString();changed=true;}}}if(changed){fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,JSON.stringify(history.slice(0,200),null,2));}}
- const list=()=>{reconcile();return {ok:true,...prefs,items:history.map(x=>({...x})),active:active.size};};
+ const iconCache=new Map(),orbitIcon=nativeImage.createFromPath(path.join(__dirname,'assets/icon.png')).resize({width:24,height:24}).toDataURL();let iconTimer=null;
+ function iconsChanged(){if(iconTimer)return;iconTimer=setTimeout(()=>{iconTimer=null;onChange(list());},60);iconTimer.unref?.();}
+ function fileIcon(row){if(path.extname(row.name).toLowerCase()==='.pdf')return orbitIcon;if(typeof app.getFileIcon!=='function')return '';const key=row.path+'|'+(['completed','moved'].includes(row.state)?'ready':'pending');if(iconCache.has(key))return iconCache.get(key)||'';iconCache.set(key,null);if(iconCache.size>400)iconCache.delete(iconCache.keys().next().value);app.getFileIcon(row.path,{size:'small'}).then(image=>{const value=image.isEmpty()?'':image.toDataURL();iconCache.set(key,value);if(value)iconsChanged();}).catch(()=>iconCache.set(key,''));return '';}
+ const list=()=>{reconcile();return {ok:true,...prefs,items:history.map(x=>({...x,icon:fileIcon(x)})),active:active.size};};
  function publish(){fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,JSON.stringify(history.slice(0,200),null,2));onChange(list());}
  function savePreferences(){fs.mkdirSync(path.dirname(preferencesFile),{recursive:true});fs.writeFileSync(preferencesFile,JSON.stringify(prefs,null,2));publish();}
  function uniquePath(folder,name){const ext=path.extname(name),stem=path.basename(name,ext);let dest=path.join(folder,name),i=1;while(fs.existsSync(dest)||history.some(row=>row.path===dest&&active.has(row.id)))dest=path.join(folder,stem+' ('+(i++)+')'+ext);return dest;}

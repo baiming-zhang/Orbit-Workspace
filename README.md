@@ -107,6 +107,7 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 ### v1.8.13
 
 - Local PDFs start loading without waiting for website cookie restoration, with immediate workspace navigation and an Opening PDF indicator. Initial PDF styling avoids an extra plugin resize and merges duplicate style retries. Web navigation still waits for its saved sign-in session.
+- Download entries use a compact two-line layout: click the filename to open it, use the folder icon beside the Recycle Bin button, or right-click the filename to Open, Rename or Move. File icons come from Windows, with Orbit icons for PDFs and a document fallback. Paths and source addresses are omitted from the list.
 - Each download row includes a Recycle Bin button and a confirmation dialog. Cancel keeps the file; confirm uses the Windows Recycle Bin. Missing completed files appear gray with a crossed-out filename and Deleted status. Cancelled downloads also appear gray and crossed out while retaining Cancelled status.
 - Moving a file through the download panel remembers its new path and shows Moved, retaining Open, Show in folder, Rename and Move actions. Download status refreshes while the panel is open.
 - Verified with native PDF document-loading tests, PDF/ChatGPT fixture uploads in four workspaces, real download and Recycle Bin operations, and English/Chinese panel checks. A two-second simulated cookie-restore delay was removed from local PDF startup; this is not a benchmark against Edge or a promise about every PDF's rendering time.
