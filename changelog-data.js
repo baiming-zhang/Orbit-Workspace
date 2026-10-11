@@ -1,5 +1,19 @@
 window.OrbitChangelog = [
   {
+    "version": "1.8.25",
+    "date": "2026-10-10",
+    "kind": "feature",
+    "en": "Welcome new users once with a smooth, localized introduction to three core workflows. Later launches and external PDF/web requests bypass it.",
+    "zh": "新用户首次启动显示流畅的双语欢迎动画，介绍三条核心功能；后续启动及外部 PDF／网页请求跳过动画。"
+  },
+  {
+    "version": "1.8.25",
+    "date": "2026-10-10",
+    "kind": "feature",
+    "en": "Recycle downloads immediately with the trash button, then restore through its slashed icon, including after restarting. The X still confirms recycling and removing the record; restoration never overwrites an existing file.",
+    "zh": "垃圾桶直接回收文件，变为斜杠图标后可恢复，重启后仍可恢复；X 仍需确认后回收并清除记录，恢复不会覆盖原目录已有文件。"
+  },
+  {
     "version": "1.8.24",
     "date": "2026-10-10",
     "kind": "fix",
