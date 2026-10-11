@@ -58,7 +58,7 @@
   async function record(metric) {
     if (!live) { nodes[metric].textContent = format.format(Number(nodes[metric].textContent.replace(/,/g, '')) + 1);return; }
     try {
-      await store.enqueue({ id: crypto.randomUUID(), metric });storageFailure = false;
+      await store.enqueue({ id: crypto.randomUUID(), metric, createdAt: Date.now() });storageFailure = false;
       await paint();channel?.postMessage('queued');sync();
     } catch {
       storageFailure = true;if (metric === 'likes') message('likeStorageError');
