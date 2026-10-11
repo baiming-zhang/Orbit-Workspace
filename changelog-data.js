@@ -9,6 +9,20 @@ window.OrbitChangelog = [
   {
     "version": "1.8.26",
     "date": "2026-10-10",
+    "kind": "feature",
+    "en": "Remove category directly below Category in the sidebar menu. Clear its color while retaining the workspace’s pinned or bottom position.",
+    "zh": "工作台右键菜单在分类下方新增独立取消分类选项，清除分类及颜色，并保留置顶或置底位置。"
+  },
+  {
+    "version": "1.8.26",
+    "date": "2026-10-10",
+    "kind": "feature",
+    "en": "Check for software updates automatically every week while Orbit is running, or on the next launch when due. New versions show red dots on the avatar and the explicitly named software-update button in Your profile. Automatic checks only notify; manual checking retains the verified installation workflow.",
+    "zh": "软件运行时每周自动检查更新；关闭期间到期则在下次启动检查。有新版时头像和个人页面的检查软件更新按钮显示红点；自动检查仅提示，手动点击保留校验后安装流程。"
+  },
+  {
+    "version": "1.8.26",
+    "date": "2026-10-10",
     "kind": "fix",
     "en": "Show native PNG, SVG and ICO favicons in top tabs, with a dot only when no usable icon exists. Follow navigation and live page titles, ignore stale icons and retain icons across same-document routing.",
     "zh": "顶部标签显示 PNG、SVG、ICO 原生图标，无有效图标时回退圆点；标题跟随跳转和实时变化，忽略旧网页图标返回，同文档路由保留图标。"
@@ -19,6 +33,13 @@ window.OrbitChangelog = [
     "kind": "fix",
     "en": "Clear inactive address-bar selection when clicking the webpage or other controls. Clicking the address still selects the entire URL for replacement.",
     "zh": "点击网页或其他控件后清除地址栏非活动选区；点击网址仍全选，便于替换。"
+  },
+  {
+    "version": "1.8.26",
+    "date": "2026-10-10",
+    "kind": "fix",
+    "en": "Display each language option in its native name, regardless of the current interface language, so users can recognize how to switch.",
+    "zh": "语言选项始终用对应母语显示，英文为 English，中文为简体中文，不随当前界面语言翻译，方便识别切换。"
   },
   {
     "version": "1.8.25",
