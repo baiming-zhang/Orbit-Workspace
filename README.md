@@ -104,6 +104,10 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.22
+
+- The sidebar context menu shows a single Pin to top / Unpin action that changes with the tab state, removing duplicate pin actions.
+
 ### v1.8.21
 
 - Mark pinned tabs with solid yellow stars with rounded corners. Match the Pinned heading to Workspace and add more space between the headings.

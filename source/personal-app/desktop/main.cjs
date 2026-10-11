@@ -59,8 +59,7 @@ function navigationContextMenu(id){
  return Menu.buildFromTemplate([
   {id:'edit',label:label('编辑','Edit'),click:()=>send('edit')},
   {type:'separator'},
-  {id:'pin-top',label:label('置顶','Pin to top'),type:'checkbox',checked:item.position==='pinned',click:()=>update({position:item.position==='pinned'?'normal':'pinned'})},
-  ...(item.position==='pinned'?[{id:'unpin',label:label('取消置顶','Unpin'),click:()=>update({position:'normal'})}]:[]),
+  {id:'pin-top',label:item.position==='pinned'?label('取消置顶','Unpin'):label('置顶','Pin to top'),click:()=>update({position:item.position==='pinned'?'normal':'pinned'})},
   {id:'move-bottom',label:label('置底','Move to bottom'),type:'checkbox',checked:item.position==='bottom',click:()=>update({position:item.position==='bottom'?'normal':'bottom'})},
   {id:'category',label:label('分类','Category'),submenu:[{id:'category-none',label:label('未分类','Uncategorized'),type:'radio',checked:!item.category,click:()=>update({category:''})},...categories.map(category=>({id:'category-'+category.id,label:category.id==='work'?label('工作 · 红色','Work · Red'):category.id==='study'?label('学习 · 蓝色','Study · Blue'):category.id==='life'?label('生活 · 黄色','Life · Yellow'):category.name,type:'radio',checked:item.category===category.id,click:()=>update({category:category.id})})),{type:'separator'},{id:'new-category',label:label('新增分类…','Add category…'),click:()=>send('new-category')}]},
   {type:'separator'},
