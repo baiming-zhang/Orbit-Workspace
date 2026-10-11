@@ -1,5 +1,40 @@
 window.OrbitChangelog = [
   {
+    "version": "1.8.28",
+    "date": "2026-10-11",
+    "kind": "feature",
+    "en": "Show current download speed and estimated time remaining beside the received and total sizes. Paused or stalled transfers never retain a stale speed estimate.",
+    "zh": "下载栏在已下载大小和总大小旁显示当前速度与预计剩余时间；暂停或停滞时不保留过期速度。"
+  },
+  {
+    "version": "1.8.28",
+    "date": "2026-10-11",
+    "kind": "fix",
+    "en": "Decode native ICO, PNG and SVG website icons, refresh icons after page load and save them to sidebar workspaces. If the website has no usable icon, use the uploaded workspace icon, then a dot. Simplify web-tab menus to Reload, Copy link, Close tab and Add to sidebar workspace.",
+    "zh": "修复网页原生 ICO、PNG 和 SVG 图标解析，加载完成后更新并保存到左侧工作台；无可用网页图标时使用工作台上传图标，否则显示圆点。网页标签右键统一为刷新、复制链接、关闭标签页及加入左侧工作台。"
+  },
+  {
+    "version": "1.8.28",
+    "date": "2026-10-11",
+    "kind": "fix",
+    "en": "Open outgoing ChatGPT webpage links in new workspace tabs, preserving the conversation in browser, ChatGPT workspace and side panes. Reuse an existing tab for the same address; downloads remain in the downloads panel.",
+    "zh": "ChatGPT 外部网页链接在新标签页打开，保留浏览器、ChatGPT 工作台和侧栏中的对话；同网址复用已有标签，下载仍进入下载栏。"
+  },
+  {
+    "version": "1.8.28",
+    "date": "2026-10-11",
+    "kind": "fix",
+    "en": "Clear gray deleted download records immediately with X, without another confirmation or touching replacement files. Downloads with remaining files still require confirmation before recycling and removing the record.",
+    "zh": "灰色已删除下载记录点击 × 直接清除，不重复确认，也不影响原目录的替代文件；仍有文件的记录继续确认后回收文件并清除。"
+  },
+  {
+    "version": "1.8.28",
+    "date": "2026-10-11",
+    "kind": "fix",
+    "en": "Open the selected unread Overview email directly in its Gmail conversation, selecting the connected mailbox and reusing the existing Gmail workspace tab.",
+    "zh": "点击概览中的未读邮件直接打开对应 Gmail 邮件会话，选择已连接的邮箱并复用已有 Gmail 工作台标签。"
+  },
+  {
     "version": "1.8.26",
     "date": "2026-10-10",
     "kind": "feature",
