@@ -68,13 +68,14 @@ const serviceUrls={...Object.fromEntries(portals.map(p=>[p.id,p.url])),gmail:'ht
 function trusted(event){return mainWindow&&!mainWindow.isDestroyed()&&event.sender===mainWindow.webContents&&event.senderFrame?.url.startsWith('orbit://app/');}
 async function openSafe(url){const safe=webUrl(url);if(!safe)throw new Error('不支持此链接。');return tabbedBrowser.open(safe,{reuseCurrent:true});}
 function createWindow(){
-  mainWindow=new BrowserWindow({width:1440,height:1000,minWidth:1080,minHeight:720,backgroundColor:'#f6f7f4',title:'Orbit Workspace',icon:path.join(__dirname,'assets/icon.png'),autoHideMenuBar:true,titleBarStyle:'hidden',titleBarOverlay:{color:'#fafbf8',symbolColor:'#617055',height:48},show:!verify,webPreferences:{backgroundThrottling:!verify,preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true}});
-  brandWindow(mainWindow);if(!verify){mainWindow.maximize();registerShortcut();}
+  const startupTargets=launchTargets(process.argv),welcomePending=welcome.shouldShow({external:startupTargets.length>0||pendingLaunches.length>0});
+  mainWindow=new BrowserWindow({width:1440,height:1000,minWidth:1080,minHeight:720,backgroundColor:'#f6f7f4',title:'Orbit Workspace',icon:path.join(__dirname,'assets/icon.png'),autoHideMenuBar:true,titleBarStyle:'hidden',titleBarOverlay:{color:'#fafbf8',symbolColor:'#617055',height:48},show:false,webPreferences:{additionalArguments:welcomePending?['--orbit-welcome-pending']:[],backgroundThrottling:!verify,preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true}});
+  brandWindow(mainWindow);if(!verify){registerShortcut();mainWindow.once('ready-to-show',()=>{if(!mainWindow||mainWindow.isDestroyed())return;mainWindow.maximize();mainWindow.show();});}
   enableMicrophone(mainWindow.webContents.session);
   mainWindow.webContents.setWindowOpenHandler(({url})=>{openSafe(url).catch(()=>{});return {action:'deny'};});
   mainWindow.webContents.on('context-menu',async(event,params)=>{const wc=mainWindow?.webContents;if(!wc||wc.isDestroyed())return;try{if(params.isEditable&&await wc.executeJavaScript("document.activeElement?.id==='workspace-address'&&!document.getElementById('workspace-address-form').hidden")){tabbedBrowser?.showAddressMenu();return;}}catch{}if(!wc.isDestroyed())tabbedBrowser?.showLinkMenu(wc,params,event);});
   mainWindow.webContents.on('will-navigate',(event,url)=>{if(!url.startsWith('orbit://app/')){event.preventDefault();openSafe(url).catch(()=>{});}});
-  const startupTargets=launchTargets(process.argv);mainWindow.loadURL('orbit://app/index.html'+(startupTargets.length?(/\.pdf(?:[?#]|$)/i.test(startupTargets[0])?'#pdf':'#browser'):''));
+  mainWindow.loadURL('orbit://app/index.html'+(startupTargets.length?(/\.pdf(?:[?#]|$)/i.test(startupTargets[0])?'#pdf':'#browser'):''));
   mainWindow.on('close',event=>{if(!quitting&&background){event.preventDefault();background.closeToTray();}});
   mainWindow.on('closed',()=>{mainWindow=null;});
 }
@@ -118,6 +119,7 @@ app.whenReady().then(()=>{
   });
   const guard=(handler)=>async(event,...args)=>{if(!trusted(event))return {ok:false,error:'未经授权的窗口。'};try{return await handler(...args);}catch(error){return {ok:false,error:OrbitI18n.text(error.message||'操作未完成，请重试。',settings.get().language)};}};
   ipcMain.handle('orbit:welcome-claim',guard(()=>welcome.claim({external:launchTargets(process.argv).length>0||pendingLaunches.length>0,language:settings.get().language})));
+  ipcMain.handle('orbit:welcome-complete',guard(()=>welcome.complete()));
   const downloadGuard=handler=>async(event,...args)=>{if(!trusted(event)&&!downloadsFlyout.trusted(event))return {ok:false,error:'Unauthorized download window.'};try{return await handler(...args);}catch(error){return {ok:false,error:OrbitI18n.text(error.message,settings.get().language)};}};
   ipcMain.handle('orbit:downloads-get',downloadGuard(()=>({...downloads.list(),language:settings.get().language})));
   ipcMain.handle('orbit:downloads-action',downloadGuard((id,action,value)=>downloads.action(id,action,value)));
@@ -181,7 +183,7 @@ app.whenReady().then(()=>{
   createWindow();refreshPresentation();
   tabbedBrowser=createTabbedBrowser({favorites,onNotice:message=>{if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('orbit:notice',message);},onPin:input=>{const existing=navigation.get().items.find(item=>item.url===input.url);const result=existing?(input.iconData&&!existing.iconData?navigation.save({id:existing.id,iconData:input.iconData}):{...navigation.get(),item:existing}):navigation.save(input);browser.configure(result.items);tabbedBrowser.configure(result.items);mainWindow.webContents.send('orbit:navigation-action',{action:'saved',result});return result;},workspaceItems:navigation.get().items,getLanguage:()=>settings.get().language,getWindow:()=>mainWindow,sessions:browserSessions,onState:state=>{downloadsFlyout.raise();favoritesFlyout.raise();if(!quitting&&mainWindow&&!mainWindow.isDestroyed()&&!mainWindow.webContents.isDestroyed())mainWindow.webContents.send('orbit:workspace-state',state);},onPage:page=>{if(!quitting&&mainWindow&&!mainWindow.isDestroyed()&&mainWindow.webContents&&!mainWindow.webContents.isDestroyed())mainWindow.webContents.send('orbit:open-page',page);}});
   const initialTargets=launchTargets(process.argv);
-  let initialSelection;for(const target of initialTargets)initialSelection=tabbedBrowser.open(target,{workspace:externalWorkspace(target),reveal:!verify});
+  let initialSelection;for(const target of initialTargets)initialSelection=tabbedBrowser.open(target,{workspace:externalWorkspace(target),reveal:false});
   if(initialSelection){const {width,height}=mainWindow.getContentBounds();tabbedBrowser.show({x:0,y:48,width,height:Math.max(1,height-48)},initialSelection.id);}
   mainWindow.webContents.once('did-finish-load',()=>{const id=initialSelection?.id||tabbedBrowser.current()?.workspace;if(id)mainWindow.webContents.send('orbit:open-page',{id});tabbedBrowser.warmUp();});
   for(const request of pendingLaunches.splice(0))receiveLaunch(request.argv,request.cwd);

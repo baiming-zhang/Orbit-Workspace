@@ -132,3 +132,5 @@ html[data-theme="dark"] .nav-group-divider{background:#586577}
 .profile-preview{flex:0 0 64px;aspect-ratio:1}.profile-avatar-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px;flex:1;min-width:0}.profile-update{margin-left:auto;flex-shrink:0;white-space:nowrap;align-self:center}#update-status:empty{display:none}
 
 .top-avatar,.profile-update{position:relative}.top-avatar.has-software-update{overflow:visible!important}.has-software-update::after{content:"";position:absolute;right:-2px;top:-2px;width:8px;height:8px;border:2px solid var(--paper);border-radius:50%;background:#e24b52;pointer-events:none}.profile-update.has-software-update::after{right:-3px;top:-3px}.font-preference input[type=range]{display:block;height:16px}.font-scale-labels{margin-top:0;line-height:1.1}
+
+.profile-edit{display:grid;grid-template-columns:64px minmax(0,1fr) auto;column-gap:18px;row-gap:0}.profile-edit #update-status{grid-column:3;grid-row:2;text-align:right;justify-self:end;max-width:230px;margin:5px 0 0;overflow-wrap:anywhere}

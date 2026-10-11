@@ -1,7 +1,9 @@
 const {contextBridge,ipcRenderer}=require('electron');
 contextBridge.exposeInMainWorld('orbitDesktop',Object.freeze({
   platform:'windows',
-  claimWelcome:()=>ipcRenderer.invoke('orbit:welcome-claim'),
+  welcomePending:process.argv.includes('--orbit-welcome-pending'),
+ claimWelcome:()=>ipcRenderer.invoke('orbit:welcome-claim'),
+ completeWelcome:()=>ipcRenderer.invoke('orbit:welcome-complete'),
   showFavorites:bounds=>ipcRenderer.invoke('orbit:favorites-show',bounds),
   closeFavorites:()=>ipcRenderer.invoke('orbit:favorites-close'),
   onFavoritesVisibility:callback=>{const handler=(_event,value)=>callback(value);ipcRenderer.on('orbit:favorites-visibility',handler);return ()=>ipcRenderer.removeListener('orbit:favorites-visibility',handler);},

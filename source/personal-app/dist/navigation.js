@@ -1,8 +1,8 @@
 (function(root,factory){const api=factory(typeof module==='object'&&module.exports?require('./shortcuts.js'):(typeof shortcuts==='undefined'?[]:shortcuts));if(typeof module==='object'&&module.exports)module.exports=api;else root.OrbitNavigation=api;})(typeof globalThis!=='undefined'?globalThis:this,function(portals){
  const defaults=[
-  {id:'pdf',name:'PDF 阅读',internal:true,iconKey:'archive'},
+  {id:'overview',name:'概览',internal:true,iconKey:'grid',position:'pinned'},
   {id:'browser',name:'浏览器',internal:true,iconKey:'search'},
-  {id:'overview',name:'概览',internal:true,iconKey:'grid'},
+  {id:'pdf',name:'PDF 阅读',internal:true,iconKey:'archive'},
   {id:'gmail',name:'Gmail',url:'https://mail.google.com/mail/u/0/',iconKey:'mail'},
   {id:'calendar',name:'日历',url:'https://calendar.google.com/',iconKey:'calendar'},
   {id:'analytics',name:'Analytics',url:'https://analytics.google.com/',iconKey:'chart'},
