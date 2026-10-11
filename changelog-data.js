@@ -1,5 +1,12 @@
 window.OrbitChangelog = [
   {
+    "version": "1.8.24",
+    "date": "2026-10-10",
+    "kind": "fix",
+    "en": "The download-row X now confirms recycling the file and removes its record only after recycling succeeds. Missing files are cleared directly; moved files use their current location and failures keep the record.",
+    "zh": "下载栏 X 现在确认将文件放入回收站，并仅在成功后清除记录；文件已不存在时直接清除，已移动文件使用新目录，操作失败保留记录。"
+  },
+  {
     "version": "1.8.23",
     "date": "2026-10-10",
     "kind": "feature",
