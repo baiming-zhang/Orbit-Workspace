@@ -29,6 +29,8 @@ contextBridge.exposeInMainWorld('orbitDesktop',Object.freeze({
   savePreferences:input=>ipcRenderer.invoke('orbit:preferences-save',input),
   saveProfile:input=>ipcRenderer.invoke('orbit:profile-save',input),
   pickAvatar:()=>ipcRenderer.invoke('orbit:avatar-pick'),
+  getSoftwareUpdateState:()=>ipcRenderer.invoke('orbit:software-update-state'),
+  onSoftwareUpdateState:fn=>{const handler=(_event,data)=>fn(data);ipcRenderer.on('orbit:software-update-state',handler);return ()=>ipcRenderer.removeListener('orbit:software-update-state',handler);},
   checkUpdate:()=>ipcRenderer.invoke('orbit:update-check'),
   onUpdateStatus:fn=>ipcRenderer.on('orbit:update-status',(_e,data)=>fn(data)),
   saveLanguage:language=>ipcRenderer.invoke('orbit:language-save',language),

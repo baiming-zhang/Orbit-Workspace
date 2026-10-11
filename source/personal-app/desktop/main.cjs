@@ -63,6 +63,7 @@ function navigationContextMenu(id){
   {id:'pin-top',label:item.position==='pinned'?label('取消置顶','Unpin'):label('置顶','Pin to top'),click:()=>update({position:item.position==='pinned'?'normal':'pinned'})},
   {id:'move-bottom',label:label('置底','Move to bottom'),type:'checkbox',checked:item.position==='bottom',click:()=>update({position:item.position==='bottom'?'normal':'bottom'})},
   {id:'category',label:label('分类','Category'),submenu:[{id:'category-none',label:label('未分类','Uncategorized'),type:'radio',checked:!item.category,click:()=>update({category:''})},...categories.map(category=>({id:'category-'+category.id,label:category.id==='work'?label('工作 · 红色','Work · Red'):category.id==='study'?label('学习 · 蓝色','Study · Blue'):category.id==='life'?label('生活 · 黄色','Life · Yellow'):category.name,type:'radio',checked:item.category===category.id,click:()=>update({category:category.id})})),{type:'separator'},{id:'new-category',label:label('新增分类…','Add category…'),click:()=>send('new-category')}]},
+  {id:'clear-category',label:label('取消分类','Remove category'),enabled:!!(item.category||item.color),click:()=>update({category:''})},
   {type:'separator'},
   {id:'delete',label:label('删除','Delete'),click:()=>send('delete')}
  ]);
@@ -87,7 +88,8 @@ app.whenReady().then(()=>{
   // Use the persisted appearance after loading settings.
   Menu.setApplicationMenu(null);
   settings=createSettings(app);nativeTheme.themeSource=settings.get().theme;
-  const updater=createUpdater({app,net,getLanguage:()=>settings.get().language,onStatus:data=>mainWindow?.webContents.send('orbit:update-status',data)});
+  const updater=createUpdater({app,net,getLanguage:()=>settings.get().language,onStatus:data=>mainWindow?.webContents.send('orbit:update-status',data),onAvailability:data=>{if(mainWindow&&!mainWindow.isDestroyed()&&!mainWindow.webContents.isDestroyed())mainWindow.webContents.send('orbit:software-update-state',data);}});
+  updater.startAutomaticChecks();app.once('will-quit',()=>updater.dispose());
   downloadsFlyout=createDownloadsFlyout({getWindow:()=>mainWindow,getData:()=>downloads.list(),getLanguage:()=>settings.get().language,onVisibility:visible=>{if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('orbit:downloads-visibility',visible);}});
   if(verify){fs.mkdirSync(app.getPath('userData'),{recursive:true});fs.writeFileSync(path.join(app.getPath('userData'),'navigation.json'),JSON.stringify({version:1,items:require('../dist/navigation.js').defaults.filter(item=>!['calendar','analytics'].includes(item.id))}));}
   favorites=createFavorites({app,getLanguage:()=>settings.get().language,onChange:()=>favoritesFlyout?.update()});
@@ -171,6 +173,7 @@ app.whenReady().then(()=>{
   ipcMain.handle('orbit:profile-save',guard(input=>settings.saveProfile(input)));
   ipcMain.handle('orbit:avatar-pick',guard(async()=>{const result=await dialog.showOpenDialog(mainWindow,{title:settings.get().language==='en'?'Choose your avatar':'选择头像',properties:['openFile'],filters:[{name:settings.get().language==='en'?'Images':'图片',extensions:['png','jpg','jpeg','webp','bmp','gif']}]});if(result.canceled)return {ok:true,canceled:true};if(fs.statSync(result.filePaths[0]).size>20*1024*1024)throw Error(settings.get().language==='en'?'Choose an image smaller than 20 MB.':'请选择小于 20 MB 的图片。');let image=nativeImage.createFromPath(result.filePaths[0]);if(image.isEmpty())throw Error(settings.get().language==='en'?'Unable to read this image.':'无法读取此图片。');const size=image.getSize(),edge=Math.min(size.width,size.height);image=image.crop({x:Math.floor((size.width-edge)/2),y:Math.floor((size.height-edge)/2),width:edge,height:edge}).resize({width:256,height:256,quality:'best'});return {ok:true,avatar:image.toDataURL()};}));
   ipcMain.handle('orbit:update-check',guard(()=>updater.check()));
+  ipcMain.handle('orbit:software-update-state',guard(()=>updater.getState()));
   ipcMain.handle('orbit:time-zone',guard(()=>settings.get()));
   ipcMain.handle('orbit:save-time-zone',guard(zone=>{const result=settings.save(zone);background?.refreshRemote();return {ok:true,...result};}));
   ipcMain.handle('orbit:google-connection',guard(()=>google.connection()));

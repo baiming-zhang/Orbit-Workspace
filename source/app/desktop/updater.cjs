@@ -24,16 +24,22 @@ try {
  if(Test-Path -LiteralPath $backup){Copy-Item -LiteralPath $backup -Destination $target -Force;Start-Process -FilePath $target}
  Add-Content -LiteralPath $log -Value ((Get-Date).ToUniversalTime().ToString('o')+' '+$_.Exception.Message)
 }`;}
-function createUpdater({app,net,getLanguage=()=> 'en',onStatus=()=>{},fetchImpl,applyInstaller,targetPath,version,personal}={}){
- const pkg=require('../package.json'),fetch=fetchImpl||net.fetch.bind(net);let busy=false;
+function createUpdater({app,net,getLanguage=()=> 'en',onStatus=()=>{},fetchImpl,applyInstaller,targetPath,version,personal,onAvailability=()=>{},now=()=>Date.now()}={}){
+ const pkg=require('../package.json'),fetch=fetchImpl||net.fetch.bind(net),current=version||pkg.version,name=(personal??pkg.private)?'Orbit-Personal-Update.exe':'Orbit.exe',filename=path.join(app.getPath('userData'),'software-update-state.json'),week=7*24*60*60*1000,retry=6*60*60*1000;let busy=false,pending=null,startTimer=null,timer=null;
+ let saved={lastCheckedAt:0,lastAttemptAt:0,latestVersion:current};
+ try{const data=JSON.parse(fs.readFileSync(filename,'utf8'));if(Number.isFinite(data.lastCheckedAt)&&data.lastCheckedAt>=0&&data.lastCheckedAt<=now()+60000&&Number.isFinite(data.lastAttemptAt)&&data.lastAttemptAt>=0&&data.lastAttemptAt<=now()+60000&&/^\d+\.\d+\.\d+$/.test(data.latestVersion))saved={lastCheckedAt:data.lastCheckedAt,lastAttemptAt:data.lastAttemptAt,latestVersion:data.latestVersion};}catch{}
+ function getState(){return {ok:true,currentVersion:current,latestVersion:saved.latestVersion,available:newer(saved.latestVersion,current),lastCheckedAt:saved.lastCheckedAt,nextCheckAt:saved.lastCheckedAt?saved.lastCheckedAt+week:0};}
+ function persist(){try{fs.mkdirSync(path.dirname(filename),{recursive:true});fs.writeFileSync(filename+'.tmp',JSON.stringify({version:1,...saved}));fs.renameSync(filename+'.tmp',filename);}catch{}}
+ async function releaseInfo(){if(pending)return pending;pending=(async()=>{saved.lastAttemptAt=now();persist();const response=await fetch('https://api.github.com/repos/'+repository+'/releases/latest',{headers:{Accept:'application/vnd.github+json','User-Agent':'Orbit-Workspace'},signal:AbortSignal.timeout(30000)});if(!response.ok)throw Error(tr('Unable to check for software updates.','无法检查软件更新。'));const release=await response.json();if(release.draft||release.prerelease||!/^v?\d+\.\d+\.\d+$/.test(release.tag_name))throw Error(tr('Invalid release information.','版本信息无效。'));if(newer(release.tag_name,current)){const asset=release.assets?.find(a=>a.name===name);const prefix='https://github.com/'+repository+'/releases/download/'+release.tag_name+'/';if(!asset)throw Error(tr('An update for this edition is not available yet.','此版本的更新包尚未发布。'));if(asset.browser_download_url!==prefix+name)throw Error(tr('Invalid update address.','更新地址无效。'));}saved.lastCheckedAt=now();saved.latestVersion=release.tag_name.replace(/^v/,'');persist();onAvailability(getState());return release;})().finally(()=>{pending=null;});return pending;}
+ async function inspect({force=false}={}){if(busy)return getState();if(!force&&saved.lastCheckedAt&&now()-saved.lastCheckedAt<week)return getState();if(!force&&saved.lastAttemptAt&&now()-saved.lastAttemptAt<retry)return getState();await releaseInfo();return getState();}
+ function startAutomaticChecks(){if(timer||startTimer)return;startTimer=setTimeout(()=>{startTimer=null;inspect().catch(()=>{});},8000);startTimer.unref?.();timer=setInterval(()=>inspect().catch(()=>{}),60*60*1000);timer.unref?.();}
+ function dispose(){clearTimeout(startTimer);clearInterval(timer);startTimer=null;timer=null;}
  const tr=(en,zh)=>getLanguage()==='zh'?zh:en,report=(en,zh)=>onStatus({message:tr(en,zh)});
  async function check(){
   if(busy)throw Error(tr('An update is already running.','更新已在进行。'));busy=true;let candidate;
   try{
-   const current=version||pkg.version,name=(personal??pkg.private)?'Orbit-Personal-Update.exe':'Orbit.exe';
-   report('Checking for updates…','正在检查更新…');
-   const response=await fetch('https://api.github.com/repos/'+repository+'/releases/latest',{headers:{Accept:'application/vnd.github+json','User-Agent':'Orbit-Workspace'},signal:AbortSignal.timeout(30000)});if(!response.ok)throw Error(tr('Unable to check for updates.','无法检查更新。'));
-   const release=await response.json();if(!/^v?\d+\.\d+\.\d+$/.test(release.tag_name))throw Error(tr('Invalid release information.','版本信息无效。'));if(!newer(release.tag_name,current))return {ok:true,updating:false,version:current};
+   report('Checking for software updates…','正在检查软件更新…');
+   const release=await releaseInfo();if(!newer(release.tag_name,current))return {ok:true,updating:false,version:current};
    const asset=release.assets?.find(a=>a.name===name);if(!asset)throw Error(tr('An update for this edition is not available yet.','此版本的更新包尚未发布。'));
    const prefix='https://github.com/'+repository+'/releases/download/'+release.tag_name+'/';if(asset.browser_download_url!==prefix+name)throw Error(tr('Invalid update address.','更新地址无效。'));
    let hash=asset.digest?.match(/^sha256:([a-f\d]{64})$/i)?.[1];
@@ -53,6 +59,6 @@ function createUpdater({app,net,getLanguage=()=> 'en',onStatus=()=>{},fetchImpl,
    candidate=null;return {ok:true,updating:true,version:release.tag_name.replace(/^v/,'')};
   }finally{busy=false;if(candidate)try{fs.rmSync(candidate,{force:true});}catch{}}
  }
- return {check};
+ return {check,inspect,getState,startAutomaticChecks,dispose};
 }
 module.exports={createUpdater,installerScript,newer};

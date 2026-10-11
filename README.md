@@ -106,6 +106,9 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ### v1.8.26
 
+- Check software releases automatically every seven days while running, or on the next launch when due. Red dots on the avatar and the software-update button announce new versions; automatic checks never install updates.
+- Language options always use their native names, English and 简体中文, regardless of the current interface language.
+- Remove a workspace category directly below Category in its sidebar menu. Clear its category color while retaining its pinned or bottom position.
 - Add the current webpage to a sidebar workspace from the address, webpage or tab context menu, preserving its own title and favicon. Existing shortcuts are reused and their custom names remain intact.
 - Show native webpage icons in the top tabs, with a dot only when no usable favicon exists. Page titles update during navigation and live changes, without retaining the previous page's title.
 - Clear address-bar selection after clicking the webpage or leaving the input; clicking the address still selects the entire URL.
