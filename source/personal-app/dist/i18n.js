@@ -1,5 +1,5 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.OrbitI18n=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
- const en={"Orbit 用户":"Orbit User","主页":"Home","刷新":"Refresh","前进":"Forward","后退":"Back",
+ const en={"分类名称或颜色无效。":"Invalid category name or color.","分类不存在。":"Category does not exist.","分类数量已达到上限。":"Category limit reached.","此分类名称已存在。":"This category name already exists.","导航位置无效。":"Invalid navigation position.","导航颜色无效。":"Invalid navigation color.","Orbit 用户":"Orbit User","主页":"Home","刷新":"Refresh","前进":"Forward","后退":"Back",
 "收藏":"Favorites",
 "已加入收藏":"Added to favorites",
  '下载':'Downloads',

@@ -104,6 +104,10 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.20
+
+- Right-click sidebar tabs to pin them in a separate upper section, move them to the bottom of the regular section, unpin them, or choose a category, shown as a rounded color bar to the left of the icon. Work (red), Study (blue) and Life (yellow) are included; users can create their own categories. Saved order and colors survive restarts; dragging and keyboard reordering stay within the chosen group.
+
 ### v1.8.19
 
 - Ordinary links continue in the current tab with usable Back history. Ctrl-click or middle-click explicitly opens a background tab; Ctrl+Shift-click and the link context menu open a foreground tab. Existing destinations in the same workspace are reused, including requests still loading, while fragments and query parameters remain distinct.

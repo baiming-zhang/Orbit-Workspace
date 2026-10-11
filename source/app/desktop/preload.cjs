@@ -18,6 +18,7 @@ contextBridge.exposeInMainWorld('orbitDesktop',Object.freeze({
   openPdf:()=>ipcRenderer.invoke('orbit:pdf-open'),
   getNavigation:()=>ipcRenderer.invoke('orbit:navigation-get'),
   saveNavigation:input=>ipcRenderer.invoke('orbit:navigation-save',input),
+  addNavigationCategory:input=>ipcRenderer.invoke('orbit:navigation-category-add',input),
   deleteNavigation:id=>ipcRenderer.invoke('orbit:navigation-delete',id),
   reorderNavigation:ids=>ipcRenderer.invoke('orbit:navigation-reorder',ids),
   pickNavigationIcon:()=>ipcRenderer.invoke('orbit:navigation-icon'),

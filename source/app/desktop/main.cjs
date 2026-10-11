@@ -45,7 +45,23 @@ let browser;
 let browserSessions;
 let quitFlushed=false,quitSaving=false;
 let navigation;
-function navigationContextMenu(id){const entries=[{id:"edit",label:OrbitI18n.text("编辑",settings?.get().language),click:()=>mainWindow.webContents.send("orbit:navigation-action",{action:"edit",id})}];entries.push({id:"delete",label:OrbitI18n.text("删除",settings?.get().language),click:()=>mainWindow.webContents.send("orbit:navigation-action",{action:"delete",id})});return Menu.buildFromTemplate(entries);}
+function navigationContextMenu(id){
+ const item=navigation.get().items.find(item=>item.id===id);if(!item)return Menu.buildFromTemplate([]);
+ const en=settings?.get().language==='en',label=(zh,english)=>en?english:zh;
+ const send=action=>mainWindow.webContents.send('orbit:navigation-action',{action,id});
+ const update=patch=>{try{const result=navigation.save({id,...patch});browser?.configure(result.items);tabbedBrowser?.configure(result.items);mainWindow.webContents.send('orbit:navigation-action',{action:'saved',result});}catch(error){mainWindow.webContents.send('orbit:notice',OrbitI18n.text(error.message,settings?.get().language));}};
+ const categories=navigation.get().categories;
+ return Menu.buildFromTemplate([
+  {id:'edit',label:label('编辑','Edit'),click:()=>send('edit')},
+  {type:'separator'},
+  {id:'pin-top',label:label('置顶','Pin to top'),type:'checkbox',checked:item.position==='pinned',click:()=>update({position:item.position==='pinned'?'normal':'pinned'})},
+  ...(item.position==='pinned'?[{id:'unpin',label:label('取消置顶','Unpin'),click:()=>update({position:'normal'})}]:[]),
+  {id:'move-bottom',label:label('置底','Move to bottom'),type:'checkbox',checked:item.position==='bottom',click:()=>update({position:item.position==='bottom'?'normal':'bottom'})},
+  {id:'category',label:label('分类','Category'),submenu:[{id:'category-none',label:label('未分类','Uncategorized'),type:'radio',checked:!item.category,click:()=>update({category:''})},...categories.map(category=>({id:'category-'+category.id,label:category.id==='work'?label('工作 · 红色','Work · Red'):category.id==='study'?label('学习 · 蓝色','Study · Blue'):category.id==='life'?label('生活 · 黄色','Life · Yellow'):category.name,type:'radio',checked:item.category===category.id,click:()=>update({category:category.id})})),{type:'separator'},{id:'new-category',label:label('新增分类…','Add category…'),click:()=>send('new-category')}]},
+  {type:'separator'},
+  {id:'delete',label:label('删除','Delete'),click:()=>send('delete')}
+ ]);
+}
 const serviceViews=new Map();
 const serviceUrls={...Object.fromEntries(portals.map(p=>[p.id,p.url])),gmail:'https://mail.google.com/mail/u/0/',calendar:'https://calendar.google.com/',analytics:'https://analytics.google.com/',search:'https://www.google.com/',chatgpt:'https://chatgpt.com/'};
 function trusted(event){return mainWindow&&!mainWindow.isDestroyed()&&event.sender===mainWindow.webContents&&event.senderFrame?.url.startsWith('orbit://app/');}
@@ -113,6 +129,7 @@ app.whenReady().then(()=>{
   ipcMain.handle('orbit:navigation-get',guard(()=>navigation.get()));
   ipcMain.handle('orbit:navigation-save',guard(input=>{const result=navigation.save(input);browser.configure(result.items);tabbedBrowser?.configure(result.items);return result;}));
   ipcMain.handle('orbit:navigation-delete',guard(id=>{const result=navigation.remove(id);browser.remove(id);tabbedBrowser?.remove(id);return result;}));
+  ipcMain.handle('orbit:navigation-category-add',guard(input=>navigation.addCategory(input)));
   ipcMain.handle('orbit:navigation-reorder',guard(ids=>navigation.reorder(ids)));
   ipcMain.handle('orbit:navigation-icon',guard(()=>chooseNavigationIcon({app,dialog,nativeImage,window:mainWindow,language:settings.get().language})));
   ipcMain.handle('orbit:navigation-menu',guard(id=>{if(!navigation.get().items.some(item=>item.id===id))throw Error('导航项不存在。');navigationContextMenu(id).popup({window:mainWindow});return {ok:true};}));
