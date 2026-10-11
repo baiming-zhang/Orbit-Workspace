@@ -104,6 +104,10 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.24
+
+- The download-row X confirms recycling the file and removes its record only after successful recycling. Deleted or missing files have their records removed directly; active transfers remain protected.
+
 ### v1.8.23
 
 - Start Orbit maximized by default while retaining normal restore controls.

@@ -11,7 +11,8 @@ function createDownloads({app,shell,dialog,Menu,getWindow=()=>undefined,getLangu
  const iconCache=new Map(),orbitIcon=nativeImage.createFromPath(path.join(__dirname,'assets/icon.png')).resize({width:24,height:24}).toDataURL();let iconTimer=null;
  function iconsChanged(){if(iconTimer)return;iconTimer=setTimeout(()=>{iconTimer=null;onChange(list());},60);iconTimer.unref?.();}
  function fileIcon(row){if(path.extname(row.name).toLowerCase()==='.pdf')return orbitIcon;if(typeof app.getFileIcon!=='function')return '';const key=row.path+'|'+(['completed','moved'].includes(row.state)?'ready':'pending');if(iconCache.has(key))return iconCache.get(key)||'';iconCache.set(key,null);if(iconCache.size>400)iconCache.delete(iconCache.keys().next().value);app.getFileIcon(row.path,{size:'small'}).then(image=>{const value=image.isEmpty()?'':image.toDataURL();iconCache.set(key,value);if(value)iconsChanged();}).catch(()=>iconCache.set(key,''));return '';}
- const list=()=>{reconcile();return {ok:true,...prefs,items:history.map(x=>({...x,icon:fileIcon(x)})),active:active.size};};
+ function canRecycle(row){if(row.state==='deleted'||active.has(row.id))return false;try{return fs.lstatSync(row.path).isFile();}catch{return false;}}
+ const list=()=>{reconcile();return {ok:true,...prefs,items:history.map(x=>({...x,icon:fileIcon(x),canRecycle:canRecycle(x)})),active:active.size};};
  function publish(){fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,JSON.stringify(history.slice(0,200),null,2));onChange(list());}
  function savePreferences(){fs.mkdirSync(path.dirname(preferencesFile),{recursive:true});fs.writeFileSync(preferencesFile,JSON.stringify(prefs,null,2));publish();}
  function uniquePath(folder,name){const ext=path.extname(name),stem=path.basename(name,ext);let dest=path.join(folder,name),i=1;while(fs.existsSync(dest)||history.some(row=>row.path===dest&&active.has(row.id)))dest=path.join(folder,stem+' ('+(i++)+')'+ext);return dest;}
@@ -40,7 +41,18 @@ function createDownloads({app,shell,dialog,Menu,getWindow=()=>undefined,getLangu
   if(action==='choose-folder')return chooseFolder();
   if(action==='toggle-confirmation'){prefs.askBeforeDownload=!prefs.askBeforeDownload;savePreferences();return {ok:true,askBeforeDownload:prefs.askBeforeDownload};}
   reconcile();const row=history.find(x=>x.id===id);if(!row)throw Error(tr('Download not found.','找不到此下载。'));
-  if(action==='clear'){if(active.has(id)||locks.has(id))throw Error(tr('Finish or cancel this download before removing its record.','请先完成或取消下载，再清除记录。'));history=history.filter(item=>item.id!==id);publish();return {ok:true};}
+  if(action==='clear'){
+   if(active.has(id)||locks.has(id))throw Error(tr('Finish or cancel this download before removing its record.','请先完成或取消下载，再清除记录。'));
+   const exists=row.state!=='deleted'&&fs.existsSync(row.path);
+   if(exists){
+    if(!canRecycle(row))throw Error(tr('This download is not a regular file.','此下载不是普通文件。'));
+    if(history.some(other=>other.id!==id&&path.resolve(other.path).toLowerCase()===path.resolve(row.path).toLowerCase()&&(active.has(other.id)||['completed','moved'].includes(other.state))))throw Error(tr('This file belongs to another download record.','此文件属于另一条下载记录。'));
+    if(value?.confirmed!==true)return {ok:true,needsConfirmation:true};
+    locks.add(id);row.fileBusy=true;publish();
+    try{await shell.trashItem(row.path);}finally{locks.delete(id);row.fileBusy=false;publish();}
+   }
+   history=history.filter(item=>item.id!==id);publish();return {ok:true,deleted:exists,recordRemoved:true};
+  }
   if(row.state==='deleted'&&['open','show','rename','move','trash'].includes(action)){publish();return {ok:true,deleted:true};}
   if(action==='show'){if(!fs.existsSync(row.path))throw Error(tr('File no longer exists.','文件已不存在。'));shell.showItemInFolder(row.path);return {ok:true};}
   if(action==='open'){completeFile(row);const error=await shell.openPath(row.path);if(error)throw Error(error);return {ok:true};}
