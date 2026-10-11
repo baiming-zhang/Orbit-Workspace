@@ -104,6 +104,11 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.29
+
+- Make the titlebar breadcrumb actionable: Workspace returns to Overview and expands the sidebar; the workspace name and Home button return to that workspace’s initial page while retaining other open tabs and PDFs.
+- Remove both full Recycle Bin scans from deletion, update Deleted status after the native recycle operation, and show immediate working feedback. Look up the recycled file only when Restore is clicked; retain restoration after restart, legacy records and moved locations, and reject conflicting or ambiguous matches.
+
 ### v1.8.28
 
 - Show current download speed and estimated time remaining beside the received and total sizes. Paused or stalled transfers never retain a stale speed estimate.

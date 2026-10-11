@@ -1,5 +1,19 @@
 window.OrbitChangelog = [
   {
+    "version": "1.8.29",
+    "date": "2026-10-11",
+    "kind": "feature",
+    "en": "Make the titlebar breadcrumb actionable: Workspace returns to Overview and expands the sidebar; the workspace name and Home button return to that workspace’s initial page while retaining other open tabs and PDFs.",
+    "zh": "顶部路径支持点击：工作空间返回概览并展开侧栏；工作台名称及主页按钮返回该工作台初始页面，保留其他已打开的网页和 PDF。"
+  },
+  {
+    "version": "1.8.29",
+    "date": "2026-10-11",
+    "kind": "fix",
+    "en": "Remove both full Recycle Bin scans from deletion, update Deleted status after the native recycle operation, and show immediate working feedback. Look up the recycled file only when Restore is clicked; retain restoration after restart, legacy records and moved locations, and reject conflicting or ambiguous matches.",
+    "zh": "删除不再等待两次全量回收站扫描，系统回收完成后立即显示已删除，并即时显示处理状态；只在点击恢复时查找回收站文件。保留重启后恢复、旧版记录及移动目录，拒绝覆盖同名文件或恢复不明确的匹配项。"
+  },
+  {
     "version": "1.8.28",
     "date": "2026-10-11",
     "kind": "feature",

@@ -277,7 +277,7 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
   else if(action==='back'&&wc?.navigationHistory.canGoBack())wc.navigationHistory.goBack();
   else if(action==='forward'&&wc?.navigationHistory.canGoForward())wc.navigationHistory.goForward();
   else if(action==='reload'){if(wc)wc.reload();else getWindow()?.webContents.reload();}
-  else if(action==='home'){if(spec(workspace).internal){const home=ensureHome(workspace);activate(home.id);}else if(t&&wc)loadTab(t,spec(workspace).url);}
+  else if(action==='home'){if(spec(workspace).internal){const home=tabs.find(tab=>tab.workspace===workspace&&tab.internal)||addInternal(workspace);activate(home.id);}else if(t&&wc)loadTab(t,spec(workspace).url);}
   publish();return {ok:true,workspaceState:snapshot()};
  }catch(error){if(current())current().error=error.message;publish();return {ok:false,error:error.message};}}
  function navigate(mode,action,value){if(disposed||!shown||mode!==workspace||!spec(mode))return {ok:false,error:'Workspace is not active.'};if(!['back','forward','reload','home','navigate','open-file','new','select','close'].includes(action))return {ok:false,error:'Unsupported navigation action.'};return performAction(action,value);}
