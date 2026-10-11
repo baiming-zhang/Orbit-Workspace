@@ -1,5 +1,26 @@
 window.OrbitChangelog = [
   {
+    "version": "1.8.23",
+    "date": "2026-10-10",
+    "kind": "feature",
+    "en": "Start Orbit maximized by default, while keeping normal restore and resize controls.",
+    "zh": "Orbit 默认最大化启动，保留正常还原和调整窗口大小的操作。"
+  },
+  {
+    "version": "1.8.23",
+    "date": "2026-10-10",
+    "kind": "feature",
+    "en": "Group all changes for each version in one card, with numbered additions followed by numbered fixes.",
+    "zh": "完整更新日志按版本合并为一个卡片，先列编号新增，再列编号修复。"
+  },
+  {
+    "version": "1.8.23",
+    "date": "2026-10-10",
+    "kind": "feature",
+    "en": "Show a playful animated thank-you when either download button is clicked, following the website language and preserving downloads and click counts.",
+    "zh": "两个下载按钮点击后均显示可爱的感谢动画，跟随网页语言，保留原下载与计数。"
+  },
+  {
     "version": "1.8.22",
     "date": "2026-10-10",
     "kind": "fix",
@@ -9,16 +30,9 @@ window.OrbitChangelog = [
   {
     "version": "1.8.21",
     "date": "2026-10-10",
-    "kind": "fix",
-    "en": "Move the rounded category bar 3 pixels closer to the sidebar left edge, preserving icon and label alignment. Make the gray divider between pinned and regular sections clearer.",
-    "zh": "分类圆角竖线向左移动 3 像素，靠近侧栏标签左边缘，保留图标及文字对齐；加深置顶区与普通区之间的灰色分隔线。"
-  },
-  {
-    "version": "1.8.21",
-    "date": "2026-10-10",
     "kind": "feature",
-    "en": "Mark pinned tabs with solid yellow stars with rounded corners. Use the same heading style for Pinned and Workspace, with more space between them.",
-    "zh": "置顶标签右侧新增黄色实心圆角五角星；置顶标题与工作台使用相同样式，两标题之间增加留白。"
+    "en": "Identify pinned tabs with yellow stars.",
+    "zh": "以黄色五角星标识置顶标签。"
   },
   {
     "version": "1.8.20",
