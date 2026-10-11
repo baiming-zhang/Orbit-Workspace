@@ -104,6 +104,11 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.21
+
+- Mark pinned tabs with solid yellow stars with rounded corners. Match the Pinned heading to Workspace and add more space between the headings.
+- Move category color bars closer to the left edge of sidebar rows, while preserving icon and label alignment. Make the gray divider between pinned and regular tabs clearer.
+
 ### v1.8.20
 
 - Right-click sidebar tabs to pin them in a separate upper section, move them to the bottom of the regular section, unpin them, or choose a category, shown as a rounded color bar to the left of the icon. Work (red), Study (blue) and Life (yellow) are included; users can create their own categories. Saved order and colors survive restarts; dragging and keyboard reordering stay within the chosen group.
