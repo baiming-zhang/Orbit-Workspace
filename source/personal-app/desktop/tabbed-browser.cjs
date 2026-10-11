@@ -26,11 +26,11 @@ function targetUrl(value){
  return 'https://www.google.com/search?q='+encodeURIComponent(value);
 }
 function tabTitle(url,local){if(url.startsWith('file:'))return path.basename(fileURLToPath(url));if(/\.pdf(?:[?#]|$)/i.test(url)){const value=new URL(url).pathname.split('/').pop();try{return decodeURIComponent(value);}catch{return value;}}try{return new URL(url).hostname||local('New tab','新标签页');}catch{return local('New tab','新标签页');}}
-function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{},getLanguage=()=> 'en',onState=()=>{},onPin=()=>{},favorites=null,onNotice=()=>{}}){
+function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{},getLanguage=()=> 'en',onState=()=>{},onPin=()=>{},favorites=null,onNotice=()=>{},onIcon=()=>{}}){
  const pdfStyle=createPdfStyle({getWindow,getLanguage,linkItems:(wc,params)=>linkItems(wc,params),selectionItems:(wc,params)=>selectionItems(wc,params)});
  const pdfChatUpload=createPdfChatUpload({publish:()=>publish()});
  const specs=new Map(),views=new Map(),tabs=[],attached=new Set(),lastActive=new Map(),downloadSessions=new Map(),pageMetadata=new WeakMap();
- const pageIcons=require('./page-icons.cjs').createPageIcons({render:async data=>{if(!toolbarReady||!toolbar||toolbar.webContents.isDestroyed())return '';return toolbar.webContents.executeJavaScript(`(async()=>{const image=new Image();image.src=${JSON.stringify(data)};try{await Promise.race([image.decode(),new Promise((_,reject)=>setTimeout(()=>reject(Error('Icon timeout')),1000))]);if(!image.naturalWidth||Math.max(image.naturalWidth,image.naturalHeight)>4096)return '';const canvas=document.createElement('canvas');canvas.width=32;canvas.height=32;const scale=32/Math.max(image.naturalWidth,image.naturalHeight),width=image.naturalWidth*scale,height=image.naturalHeight*scale;canvas.getContext('2d').drawImage(image,(32-width)/2,(32-height)/2,width,height);return canvas.toDataURL('image/png');}catch{return '';}})()`);}});
+ const pageIcons=require('./page-icons.cjs').createPageIcons({render:async data=>{initToolbar();if(!toolbar||toolbar.webContents.isDestroyed())return '';if(!toolbarReady)await Promise.race([new Promise(resolve=>toolbar.webContents.once('did-finish-load',resolve)),new Promise(resolve=>setTimeout(resolve,3000))]);if(!toolbarReady||disposed||toolbar.webContents.isDestroyed())return '';return toolbar.webContents.executeJavaScript(`(async()=>{const image=new Image();try{await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('Icon timeout')),3000);image.onload=()=>{clearTimeout(timer);resolve();};image.onerror=()=>{clearTimeout(timer);reject(Error('Invalid icon'));};image.src=${JSON.stringify(data)};});if(!image.naturalWidth||Math.max(image.naturalWidth,image.naturalHeight)>4096)return '';const canvas=document.createElement('canvas');canvas.width=32;canvas.height=32;const scale=32/Math.max(image.naturalWidth,image.naturalHeight),width=image.naturalWidth*scale,height=image.naturalHeight*scale;canvas.getContext('2d').drawImage(image,(32-width)/2,(32-height)/2,width,height);return canvas.toDataURL('image/png');}catch{return '';}})()`);}});
  const pageEdit=fs.existsSync(path.join(__dirname,'page-edit.cjs'))?require('./page-edit.cjs'):null;
  let disposed=false,activeId=null,toolbar=null,toolbarReady=false,splitter=null,splitterReady=false;
  let drag=null,addressEditing=false,bounds=null,shown=false,counter=0,workspace='browser';
@@ -42,7 +42,7 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
  function configure(items){
   specs.set('browser',{id:'browser',name:'浏览器',url:blankUrl,internal:false});
   specs.set('pdf',{id:'pdf',name:'PDF 阅读',internal:true,pdfWorkspace:true,url:'orbit://app/index.html#pdf'});
-  for(const item of items){if(['browser','pdf'].includes(item.id)){specs.get(item.id).name=item.name;continue;}const url=item.internal?'orbit://app/index.html#'+item.id:webUrl(item.url);if(!url)continue;const previous=specs.get(item.id);specs.set(item.id,{id:item.id,name:item.name,url,internal:!!item.internal});if(previous&&previous.url!==url&&!item.internal){const home=tabs.find(t=>t.id===item.id);if(home?.view){home.url=url;home.view.webContents.loadURL(url).catch(()=>{});}}}
+  for(const item of items){if(['browser','pdf'].includes(item.id)){specs.get(item.id).name=item.name;specs.get(item.id).iconData=item.iconData||'';continue;}const url=item.internal?'orbit://app/index.html#'+item.id:webUrl(item.url);if(!url)continue;const previous=specs.get(item.id);specs.set(item.id,{id:item.id,name:item.name,url,internal:!!item.internal,iconData:item.iconData||''});if(previous&&previous.url!==url&&!item.internal){const home=tabs.find(t=>t.id===item.id);if(home?.view){home.url=url;home.view.webContents.loadURL(url).catch(()=>{});}}}
   publish();return {ok:true};
  }
  configure(workspaceItems);
@@ -51,7 +51,7 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
  function snapshot(){
   const t=current(),wc=t?.view?.webContents,live=wc&&!wc.isDestroyed();
   return {workspace,visible:shown,language:getLanguage(),internalActive:!!t?.internal,internalChatWidth:t?.internal&&t.chatVisible&&bounds?bounds.width-Math.round((bounds.width-8)*t.ratio):0,address:t?.url?.startsWith('file:')?fileURLToPath(t.url):t?.url||spec(workspace)?.url||'',addressEditing,
-   tabs:tabs.filter(t=>t.workspace===workspace&&!t.provisional).map(t=>({id:t.id,title:t.internal?title(t.workspace):t.title,url:t.url,favicon:t.favicon||'',pdf:t.pdf,internal:!!t.internal,chat:!!t.chatVisible,upload:t.upload||null,loading:!!t.loading,pdfOpening:!!t.pdf&&!!t.loading&&!t.pdfUiReady&&!t.error})),activeId,ratio:t?.ratio||.62,
+   tabs:tabs.filter(t=>t.workspace===workspace&&!t.provisional).map(t=>({id:t.id,title:t.internal?title(t.workspace):t.title,url:t.url,favicon:t.favicon||spec(t.workspace)?.iconData||'',pdf:t.pdf,internal:!!t.internal,chat:!!t.chatVisible,upload:t.upload||null,loading:!!t.loading,pdfOpening:!!t.pdf&&!!t.loading&&!t.pdfUiReady&&!t.error})),activeId,ratio:t?.ratio||.62,
    canBack:!!(live&&wc.navigationHistory.canGoBack()),canForward:!!(live&&wc.navigationHistory.canGoForward()),error:t?.error||''};
  }
  function publish(){if(disposed)return;const state=snapshot(),wc=toolbar?.webContents;if(toolbarReady&&wc&&!wc.isDestroyed())wc.send('orbit:tabs-state',state);onState(state);}
@@ -94,18 +94,33 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
   const owner=tabs.find(t=>t.view?.webContents===wc||t.chat?.webContents===wc),mode=owner?.workspace||workspace;
   return [
    {id:'link-new',label:local('Open link in new tab','在新标签页打开链接'),click:()=>owner?openLink(wc,url,{newTab:true}):open(url,{workspace:mode})},
-   {id:'link-current',label:local('Open link in current tab','在当前标签页打开链接'),click:()=>{if(owner)openLink(wc,url);else {if(workspace!==mode)show(bounds,mode);performAction('navigate',url);}}},
+   {id:'link-current',label:local('Open link in current tab','在当前标签页打开链接'),click:()=>{if(owner)openLink(wc,url,{currentTab:true});else {if(workspace!==mode)show(bounds,mode);performAction('navigate',url);}}},
    {id:'link-copy',label:local('Copy link address','复制链接地址'),click:()=>clipboard.writeText(url)},
    {type:'separator'},
    {id:'link-pin',label:local('Pin link to sidebar','将链接固定到左侧栏'),click:()=>Promise.resolve().then(()=>onPin({url,name:Array.from(String(params.linkText||params.titleText||new URL(url).hostname).trim()||new URL(url).hostname).slice(0,40).join('')})).catch(error=>{if(current())current().error=error.message;publish();})}
   ];
  }
+ async function refreshPageIcon(wc,urls=[],probe=false){
+  const meta=pageMetadata.get(wc),url=wc&&!wc.isDestroyed()?webUrl(wc.getURL()):null;if(!meta||!url||disposed)return '';
+  const revision=++meta.revision;
+  const task=(async()=>{
+   let declared=[];
+   if(probe)try{declared=await wc.executeJavaScript("[...document.querySelectorAll('link[rel]')].filter(l=>/(^|\\s)(?:icon|apple-touch-icon)(?:\\s|$)/i.test(l.rel)).map(l=>l.href).filter(Boolean).slice(0,12)");}catch{}
+   if(disposed||wc.isDestroyed()||pageMetadata.get(wc)!==meta||wc.getURL()!==url||meta.revision!==revision)return '';
+   if(urls.length)meta.urls=urls;
+   const candidates=[...declared,...(meta.urls||[])];
+   const favicon=await pageIcons.read(wc,candidates)||await pageIcons.read(wc,[new URL('/favicon.ico',url).href]);
+   if(disposed||wc.isDestroyed()||pageMetadata.get(wc)!==meta||meta.revision!==revision||wc.getURL()!==url)return '';
+   if(favicon){meta.favicon=favicon;if(wc===meta.tab.view?.webContents){meta.tab.favicon=favicon;publish();onIcon({url,iconData:favicon});}}
+   return meta.favicon;
+  })();meta.pending=task;try{return await task;}finally{if(meta.pending===task)meta.pending=null;}
+ }
  function pageTitle(wc,url){const value=wc&&!wc.isDestroyed()?wc.getTitle().trim():'';return value&&value!==url?value:tabTitle(url,local);}
  async function pinPage(wc){
   if(!wc||wc.isDestroyed())return {ok:false};const url=webUrl(wc.getURL());if(!url)return {ok:false};
-  const meta=pageMetadata.get(wc);if(meta?.pending)await meta.pending;
+  const meta=pageMetadata.get(wc);if(meta?.pending)await meta.pending;if(!pageMetadata.get(wc)?.favicon)await refreshPageIcon(wc,[],true);
   if(wc.isDestroyed()||webUrl(wc.getURL())!==url)return {ok:false};
-  const iconData=pageMetadata.get(wc)?.favicon||'';
+  const iconData=pageMetadata.get(wc)?.favicon||spec(meta?.tab?.workspace)?.iconData||'';
   const result=await onPin({url,name:Array.from(pageTitle(wc,url)).slice(0,40).join(''),...(iconData?{iconData}:{})});
   onNotice(local('Added to sidebar workspace','已加入左侧工作台'));return result;
  }
@@ -153,15 +168,18 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
    return {ok:true,download:true};
   }
   const existing=existingTab(owner.workspace,url);if(existing)return reuseTab(existing);
-  if(options.newTab===true)return open(url,{workspace:owner.workspace,session:wc.session,ready:owner.ready,parentId:owner.id,provisional:true,foreground:options.background!==true,activate:false});
+  const chatSource=isChatAddress(wc.getURL())||wc.getURL().startsWith('https://chat.openai.com/'),chatDestination=isChatAddress(url)||url.startsWith('https://chat.openai.com/');
+  if(options.newTab===true||chatSource&&!chatDestination&&options.currentTab!==true)return open(url,{workspace:owner.workspace,session:wc.session,ready:owner.ready,parentId:owner.id,provisional:true,foreground:options.background!==true,activate:false});
   activate(owner.id);
   if(owner.view.webContents===wc)loadTab(owner,url);else wc.loadURL(url).catch(error=>{if(!disposed&&!wc.isDestroyed()){owner.error=error.message;publish();}});
   return {ok:true,id:owner.workspace,tabId:owner.id,currentTab:true};
  }
  function setup(wc,t){
-  pageMetadata.set(wc,{epoch:0,favicon:''});
-  wc.on('did-start-navigation',(_event,url,inPlace,main)=>{if(!main||inPlace)return;const previous=pageMetadata.get(wc);pageMetadata.set(wc,{epoch:(previous?.epoch||0)+1,favicon:''});if(wc===t.view?.webContents){t.favicon='';t.title=tabTitle(url,local);publish();}});
-  wc.on('page-favicon-updated',(_event,urls)=>{const meta=pageMetadata.get(wc),epoch=++meta.epoch;meta.pending=pageIcons.read(wc,urls).then(favicon=>{if(disposed||wc.isDestroyed()||pageMetadata.get(wc)!==meta||meta.epoch!==epoch)return;meta.favicon=favicon;meta.pending=null;if(wc===t.view?.webContents){t.favicon=favicon;publish();}}).catch(()=>{});});
+  pageMetadata.set(wc,{epoch:0,revision:0,favicon:'',tab:t,urls:[]});
+  wc.on('did-start-navigation',(_event,url,inPlace,main)=>{if(!main||inPlace)return;const previous=pageMetadata.get(wc);pageMetadata.set(wc,{epoch:(previous?.epoch||0)+1,revision:0,favicon:'',tab:t,urls:[]});if(wc===t.view?.webContents){t.favicon='';t.title=tabTitle(url,local);publish();}});
+  wc.on('page-favicon-updated',(_event,urls)=>{refreshPageIcon(wc,urls).catch(()=>{});});
+  wc.on('dom-ready',()=>{refreshPageIcon(wc,[],true).catch(()=>{});});
+  wc.on('did-finish-load',()=>{refreshPageIcon(wc,[],true).catch(()=>{});});
   wc.on('context-menu',(event,params)=>{if(!wc.mainFrame.framesInSubtree.some(frame=>frame.url.startsWith('chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/')))showLinkMenu(wc,params,event);});
   wc.setUserAgent(wc.getUserAgent().replace(/\sElectron\/[^\s]+/g,'').replace(/\sOrbit(?:%20| )?Workspace\/[^\s]+/gi,''));
   enableMicrophone(wc.session);
@@ -187,7 +205,7 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
     return child.view.webContents;
    }};
   });
-  wc.on('will-navigate',(e,url)=>{if(wc===t.view.webContents&&webUrl(url)){const existing=existingTab(t.workspace,url,t);if(existing){e.preventDefault();reuseTab(existing);return;}}if(!webUrl(url)&&!url.startsWith('file:')&&!url.startsWith('chrome-extension:')&&url!=='about:blank')e.preventDefault();});
+  wc.on('will-navigate',(e,url)=>{if(isChatAddress(wc.getURL())&&webUrl(url)&&!isChatAddress(url)){e.preventDefault();openLink(wc,url,{newTab:true});return;}if(wc===t.view.webContents&&webUrl(url)){const existing=existingTab(t.workspace,url,t);if(existing){e.preventDefault();reuseTab(existing);return;}}if(!webUrl(url)&&!url.startsWith('file:')&&!url.startsWith('chrome-extension:')&&url!=='about:blank')e.preventDefault();});
   wc.on('did-fail-load',(_e,code,message,_url,main)=>{if(main&&code!==-3){t.pendingUrl=null;t.error=local('Load failed: ','加载失败：')+message;failedNavigation(t);}});
   wc.on('dom-ready',()=>{if(wc.getURL().startsWith('https://chatgpt.com/')){wc.insertCSS('html,body,body *,body *::before,body *::after{-webkit-app-region:no-drag!important;app-region:no-drag!important}').catch(()=>{});wc.executeJavaScript(fs.readFileSync(path.join(__dirname,'chatgpt-sidebar.js'),'utf8')).catch(()=>{});}});
  }
@@ -214,7 +232,7 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
  function open(value,options={}){
   const internal=internalTarget(value);if(internal){const t=ensureHome(internal);activate(t.id);return {ok:true,id:internal,tabId:t.id,title:title(internal)};}
   const url=targetUrl(value),mode=options.workspace||(tabs.length?workspace:(/\.pdf(?:[?#]|$)/i.test(url)?'pdf':'browser'));
-  if(!spec(mode))throw Error('Unknown workspace.');const existing=options.forceNew?null:existingTab(mode,url);if(existing)return reuseTab(existing);const active=current();if(options.reuseCurrent&&active?.workspace===mode&&active.view){activate(active.id);loadTab(active,url);return {ok:true,id:mode,tabId:active.id,title:title(mode)};}if(!(mode==='pdf'&&/\.pdf(?:[?#]|$)/i.test(url)))ensureHomeIfInternal(mode);if(options.reveal!==false)getWindow()?.show();
+  if(!spec(mode))throw Error('Unknown workspace.');const existing=options.forceNew?null:existingTab(mode,url);if(existing)return reuseTab(existing);const active=current(),reuse=active?.workspace===mode?active:options.reuseWorkspace?tabs.find(t=>t.id===lastActive.get(mode)&&t.view):null;if(options.reuseCurrent&&reuse?.view){activate(reuse.id);loadTab(reuse,url);return {ok:true,id:mode,tabId:reuse.id,title:title(mode)};}if(!(mode==='pdf'&&/\.pdf(?:[?#]|$)/i.test(url)))ensureHomeIfInternal(mode);if(options.reveal!==false)getWindow()?.show();
   const t=add(url,{...options,workspace:mode});return {ok:true,id:mode,tabId:t.id,title:title(mode)};
  }
  function ensureHomeIfInternal(mode){if(spec(mode)?.internal)ensureHome(mode);}
@@ -233,13 +251,11 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
  }
  function focusAddress(){const win=getWindow();if(win&&!win.isDestroyed()){win.webContents.focus();win.webContents.send('orbit:workspace-focus');}}
  function openAddress(t){if(!t?.pdf)return;activate(t.id);addressEditing=true;drag=null;layout();publish();toolbar.webContents.send('orbit:pdf-address',{id:t.id,title:t.title,address:t.url.startsWith('file:')?fileURLToPath(t.url):t.url});}
- function tabMenu(id){const t=tabs.find(t=>t.id===id);if(!t)return;Menu.buildFromTemplate([
-  {label:local('Open another tab','多开一个标签页'),click:()=>open(t.internal?blankUrl:t.url,{workspace:t.workspace})},
-  ...(t.pdf?[{label:local('View / edit file address…','查看 / 修改文件地址…'),click:()=>openAddress(t)}]:[]),
-  {label:local('Copy address','复制地址'),click:()=>clipboard.writeText(t.url.startsWith('file:')?fileURLToPath(t.url):t.url)},
-  ...pageItems(t.view?.webContents),
-  {type:'separator'},{label:local('Reload','刷新'),enabled:!!t.view,click:()=>t.view?.webContents.reload()},
-  {label:local('Close tab','关闭标签页'),enabled:!t.internal,click:()=>close(id)}
+ function tabMenu(id){const t=tabs.find(t=>t.id===id);if(!t)return;const pin=pageItems(t.view?.webContents);Menu.buildFromTemplate([
+  {id:'tab-reload',label:local('Reload','刷新'),enabled:!!t.view,click:()=>t.view?.webContents.reload()},
+  {id:'tab-copy-link',label:local('Copy link','复制链接'),click:()=>clipboard.writeText(t.url.startsWith('file:')?fileURLToPath(t.url):t.url)},
+  {id:'tab-close',label:local('Close tab','关闭标签页'),enabled:!t.internal,click:()=>close(id)},
+  ...(pin.length?[{type:'separator'},...pin]:[])
  ]).popup({window:getWindow()});}
  async function pick(mode=workspace){const pdf=spec(mode)?.pdfWorkspace,result=await dialog.showOpenDialog(getWindow(),{title:local('Open a PDF or webpage file','打开 PDF 或网页文件'),properties:['openFile','multiSelections'],filters:[{name:local('PDF and webpages','PDF 与网页'),extensions:pdf?['pdf']:[...localExtensions].map(x=>x.slice(1))}]});for(const file of result.filePaths||[])open(file,{workspace:mode});return {ok:true};}
  async function performAction(action,value){try{

@@ -6,7 +6,7 @@ function createDownloadsFlyout({getWindow,getData,getLanguage,onVisibility=()=>{
  const state=()=>({...getData(),language:getLanguage()});
  function update(){if(ready&&!view.webContents.isDestroyed())view.webContents.send('orbit:downloads-changed',state());}
  function close(){if(!visible)return {ok:true};visible=false;const win=getWindow(),focused=view.webContents.isFocused();if(win&&!win.isDestroyed()){win.contentView.removeChildView(view);if(focused&&!win.webContents.isDestroyed())win.webContents.focus();}onVisibility(false);return {ok:true};}
- function position(){const win=getWindow();if(!visible||!win||win.isDestroyed())return;const [w,h]=win.getContentSize(),width=Math.min(432,w-16),y=Math.min(Math.max(48,Math.round(anchor.bottom+4)),h-120);view.setBounds({x:Math.max(8,Math.min(w-width-8,Math.round(anchor.right-width+8))),y,width,height:Math.min(528,h-y-8)});}
+ function position(){const win=getWindow();if(!visible||!win||win.isDestroyed())return;const [w,h]=win.getContentSize(),width=Math.min(560,w-16),y=Math.min(Math.max(48,Math.round(anchor.bottom+4)),h-120);view.setBounds({x:Math.max(8,Math.min(w-width-8,Math.round(anchor.right-width+8))),y,width,height:Math.min(528,h-y-8)});}
  function raise(){const win=getWindow();if(visible&&win&&!win.isDestroyed()&&win.contentView.children.at(-1)!==view)win.contentView.addChildView(view);}
  function ensure(){
   if(view)return;

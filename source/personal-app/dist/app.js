@@ -166,7 +166,7 @@ function findEvent(id){return state.events.find(e=>e.id===id)||futureMeetings.ev
 
 function summaryStatistic(value,unit){return '<div class="summary-stat"><div class="metric-value">'+value+'<span class="metric-unit">'+unit+'</span></div></div>';}
 
-function mailSummaryContent(){const g=liveSummary.gmail;if(g?.status==='success')return g.mails.length?g.mails.map(m=>'<a class="mail-preview" href="#gmail"><span class="sender-avatar blue">'+escapeHtml(m.initial)+'</span><div class="mail-info"><div class="mail-line"><span class="sender-name">'+escapeHtml(m.sender)+'</span><span class="mail-time">'+escapeHtml(m.time)+'</span></div><div class="mail-subject">'+escapeHtml(m.subject)+(m.demo?' <small class="label-tag">'+(prefs.language==='en'?'Demo':'演示')+'</small>':'')+'</div></div><span class="unread-dot"></span></a>').join(''):'<div class="summary-empty">'+icon('mail')+'<strong>今日没有未读邮件</strong><p>让收件箱，保持轻盈。</p></div>';return '<div class="summary-empty">'+icon('mail')+'<strong>重要消息，一处掌握</strong><p>'+escapeHtml(g?.status==='error'?g.error:'连接 Google 账号后，这里显示今天收到的未读邮件。')+'</p><button class="secondary-btn" data-action="account">连接 Google '+icon('arrow')+'</button></div>';}
+function mailSummaryContent(){const g=liveSummary.gmail;if(g?.status==='success')return g.mails.length?g.mails.map(m=>'<a class="mail-preview" href="#gmail"'+(!m.demo?' data-action="open-live-mail" data-id="'+escapeHtml(m.id)+'"':'')+'><span class="sender-avatar blue">'+escapeHtml(m.initial)+'</span><div class="mail-info"><div class="mail-line"><span class="sender-name">'+escapeHtml(m.sender)+'</span><span class="mail-time">'+escapeHtml(m.time)+'</span></div><div class="mail-subject">'+escapeHtml(m.subject)+(m.demo?' <small class="label-tag">'+(prefs.language==='en'?'Demo':'演示')+'</small>':'')+'</div></div><span class="unread-dot"></span></a>').join(''):'<div class="summary-empty">'+icon('mail')+'<strong>今日没有未读邮件</strong><p>让收件箱，保持轻盈。</p></div>';return '<div class="summary-empty">'+icon('mail')+'<strong>重要消息，一处掌握</strong><p>'+escapeHtml(g?.status==='error'?g.error:'连接 Google 账号后，这里显示今天收到的未读邮件。')+'</p><button class="secondary-btn" data-action="account">连接 Google '+icon('arrow')+'</button></div>';}
 
 function updateConnectionLabel(){if(typeof applyProfile==='function')applyProfile();const el=$('.demo-indicator');el.innerHTML='<span></span>'+(liveSummary.connected?'Google 已连接':'Google 未连接');el.classList.toggle('is-connected',!!liveSummary.connected);$('.profile small').textContent=liveSummary.connected?'Google 已授权':'个人工作空间';}
 
@@ -307,6 +307,7 @@ document.addEventListener('click',e=>{const el=e.target.closest('[data-action]')
 
  case 'notifications':notificationsModal();break;case 'notifications-read-all':markNotificationsRead();break;case 'notification-read':markNotificationsRead(el.dataset.id);break;case 'toggle-sidebar':toggleSidebar();break;
 
+ case 'open-live-mail':{e.preventDefault();window.orbitDesktop?.openGmailMessage(id).then(result=>{if(!result.ok)toast(result.error);}).catch(()=>toast(prefs.language==='en'?'Unable to open this Gmail message.':'无法打开这封 Gmail 邮件。'));break;}
  case 'read-mail':readMail(id);break;case 'compose':composeModal();break;
 
  case 'reply':composeModal(null,state.mails.find(m=>String(m.id)===id));break;

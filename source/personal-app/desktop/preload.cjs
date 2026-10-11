@@ -12,6 +12,7 @@ contextBridge.exposeInMainWorld('orbitDesktop',Object.freeze({
   showDownloads:bounds=>ipcRenderer.invoke('orbit:downloads-show',bounds),
   closeDownloads:()=>ipcRenderer.invoke('orbit:downloads-close'),
   onDownloadsVisibility:callback=>{const handler=(_event,value)=>callback(value);ipcRenderer.on('orbit:downloads-visibility',handler);return ()=>ipcRenderer.removeListener('orbit:downloads-visibility',handler);},
+  openGmailMessage:id=>ipcRenderer.invoke('orbit:open-gmail-message',id),
   getDownloads:()=>ipcRenderer.invoke('orbit:downloads-get'),
   downloadAction:(id,action)=>ipcRenderer.invoke('orbit:downloads-action',id,action),
   onDownloadsChanged:callback=>{const handler=(_event,data)=>callback(data);ipcRenderer.on('orbit:downloads-changed',handler);return ()=>ipcRenderer.removeListener('orbit:downloads-changed',handler);},

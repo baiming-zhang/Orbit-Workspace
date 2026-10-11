@@ -5,7 +5,10 @@ function openWorkspaceLink(event){
  const anchor=event.composedPath().find(node=>node?.matches?.('a[href]'))||event.target.closest?.('a[href]');if(!anchor)return;
  const raw=anchor.getAttribute('href')?.trim();if(!raw||raw.startsWith('#'))return;
  let url;try{url=new URL(anchor.href,location.href);if(!['http:','https:'].includes(url.protocol)||url.username||url.password)return;const here=new URL(location.href);if(url.origin===here.origin&&url.pathname===here.pathname&&url.search===here.search&&url.hash!==here.hash)return;}catch{return;}
- event.preventDefault();ipcRenderer.invoke('orbit:link-open',url.href,{download:anchor.hasAttribute('download'),newTab:event.type==='auxclick'||event.ctrlKey||event.metaKey,background:(event.type==='auxclick'||event.ctrlKey||event.metaKey)&&!event.shiftKey}).catch(()=>{});
+ const chatSource=location.protocol==='https:'&&['chatgpt.com','chat.openai.com'].includes(location.hostname),chatDestination=['chatgpt.com','chat.openai.com'].includes(url.hostname);
+ const externalChatLink=chatSource&&!chatDestination;
+ event.preventDefault();if(externalChatLink)event.stopImmediatePropagation();
+ ipcRenderer.invoke('orbit:link-open',url.href,{download:anchor.hasAttribute('download'),newTab:externalChatLink||event.type==='auxclick'||event.ctrlKey||event.metaKey,background:(event.type==='auxclick'||event.ctrlKey||event.metaKey)&&!event.shiftKey}).catch(()=>{});
 }
 document.addEventListener('pointerdown',()=>ipcRenderer.send('orbit:workspace-address-blur'),true);
 document.addEventListener('click',openWorkspaceLink,true);

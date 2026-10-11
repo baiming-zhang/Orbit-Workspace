@@ -104,6 +104,15 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.28
+
+- Show current download speed and estimated time remaining beside the received and total sizes. Paused or stalled transfers never retain a stale speed estimate.
+- Decode native ICO, PNG and SVG website icons, refresh icons after page load and save them to sidebar workspaces. If the website has no usable icon, use the uploaded workspace icon, then a dot. Simplify web-tab menus to Reload, Copy link, Close tab and Add to sidebar workspace.
+- Open outgoing ChatGPT webpage links in new workspace tabs, preserving the conversation in browser, ChatGPT workspace and side panes. Reuse an existing tab for the same address; downloads remain in the downloads panel.
+- Clear gray deleted download records immediately with X, without another confirmation or touching replacement files. Downloads with remaining files still require confirmation before recycling and removing the record.
+
+- Open the selected unread Overview email directly in its Gmail conversation, selecting the connected mailbox and reusing the existing Gmail workspace tab.
+
 ### v1.8.26
 
 - Check software releases automatically every seven days while running, or on the next launch when due. Red dots on the avatar and the software-update button announce new versions; automatic checks never install updates.
