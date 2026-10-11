@@ -1,5 +1,12 @@
 window.OrbitChangelog = [
   {
+    "version": "1.8.22",
+    "date": "2026-10-10",
+    "kind": "fix",
+    "en": "Use a single Pin to top / Unpin menu action that changes with the tab state, removing duplicate pin actions.",
+    "zh": "右键菜单仅保留一个置顶／取消置顶操作，并随当前状态切换，移除重复置顶选项。"
+  },
+  {
     "version": "1.8.21",
     "date": "2026-10-10",
     "kind": "fix",
