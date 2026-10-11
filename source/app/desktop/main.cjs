@@ -32,6 +32,7 @@ app.commandLine.appendSwitch('lang','en-US');
 const verify=false;
 if(verify){app.disableHardwareAcceleration();app.setPath('userData',path.join(app.getPath('temp'),'orbit-build-verification-'+Date.now()));}
 if(!app.requestSingleInstanceLock()){app.quit();return;}acceptLaunchRequest(process.argv);
+const welcome=require('./welcome.cjs').createWelcome(app);
 let mainWindow;
 downloads=createDownloads({app,shell,dialog,Menu,getWindow:()=>mainWindow,getLanguage:()=>settings?.get().language||'en',onChange:data=>{downloadsFlyout?.update();if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('orbit:downloads-changed',data);}});
 let google;
@@ -114,6 +115,7 @@ app.whenReady().then(()=>{
     }catch{return {ok:false,error:mode==='app'?'未能打开 Zoom 客户端，请使用浏览器加入。':'未能打开会议链接。'};}
   });
   const guard=(handler)=>async(event,...args)=>{if(!trusted(event))return {ok:false,error:'未经授权的窗口。'};try{return await handler(...args);}catch(error){return {ok:false,error:OrbitI18n.text(error.message||'操作未完成，请重试。',settings.get().language)};}};
+  ipcMain.handle('orbit:welcome-claim',guard(()=>welcome.claim({external:launchTargets(process.argv).length>0||pendingLaunches.length>0,language:settings.get().language})));
   const downloadGuard=handler=>async(event,...args)=>{if(!trusted(event)&&!downloadsFlyout.trusted(event))return {ok:false,error:'Unauthorized download window.'};try{return await handler(...args);}catch(error){return {ok:false,error:OrbitI18n.text(error.message,settings.get().language)};}};
   ipcMain.handle('orbit:downloads-get',downloadGuard(()=>({...downloads.list(),language:settings.get().language})));
   ipcMain.handle('orbit:downloads-action',downloadGuard((id,action,value)=>downloads.action(id,action,value)));

@@ -37,6 +37,7 @@ const {createApplications}=require('./applications.cjs');
 app.commandLine.appendSwitch('lang','en-US');
 const verify=false;
 if(!app.requestSingleInstanceLock()){app.quit();return;}acceptLaunchRequest(process.argv);
+const welcome=require('./welcome.cjs').createWelcome(app);
 let mainWindow;
 downloads=createDownloads({app,shell,dialog,Menu,getWindow:()=>mainWindow,getLanguage:()=>settings?.get().language||'en',onChange:data=>{downloadsFlyout?.update();if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('orbit:downloads-changed',data);}});
 let google;
@@ -124,6 +125,7 @@ app.whenReady().then(()=>{
     }catch{return {ok:false,error:mode==='app'?'未能打开 Zoom 客户端，请使用浏览器加入。':'未能打开会议链接。'};}
   });
   const guard=(handler)=>async(event,...args)=>{if(!trusted(event))return {ok:false,error:'未经授权的窗口。'};try{return await handler(...args);}catch(error){return {ok:false,error:error.message||'操作未完成，请重试。'};}};
+  ipcMain.handle('orbit:welcome-claim',guard(()=>welcome.claim({external:launchTargets(process.argv).length>0||pendingLaunches.length>0,language:settings.get().language})));
   ipcMain.handle('orbit:applications-get',guard(()=>applications.get()));
   ipcMain.handle('orbit:applications-save',guard(input=>applications.update(input)));
   ipcMain.handle('orbit:applications-budget',guard(input=>applications.budget(input)));

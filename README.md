@@ -104,6 +104,11 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.25
+
+- Welcome new users once with a smooth, localized introduction to three core workflows. Subsequent launches and external PDF/web requests bypass it.
+- Trash a download immediately; its gray row shows a slashed trash icon that restores the exact recycled file. The X still confirms recycling and removing the record. Restore never overwrites an existing file.
+
 ### v1.8.24
 
 - The download-row X confirms recycling the file and removes its record only after successful recycling. Deleted or missing files have their records removed directly; active transfers remain protected.

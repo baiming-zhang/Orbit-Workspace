@@ -265,7 +265,7 @@ function overviewPage(){
 
  const mailPanel='<section class="panel summary-panel" data-summary="gmail"><div class="panel-top"><div class="panel-title">'+icon('mail')+'<h2>今日未读邮件</h2></div>'+summaryStatistic(unread,'封')+'</div>'+'<div class="summary-content">'+mailSummaryContent()+'</div></section>';
 
- return heading('',greeting+'，开启你的节奏。','',dateBadge())+'<div class="section-top"><h2>今日汇总</h2><div class="summary-refresh"><button class="text-link" data-action="refresh-summary">'+icon('history')+(summaryLoading?'正在刷新…':'刷新数据')+'</button><span class="last-updated">'+(liveSummary.updatedAt?'更新于 '+OrbitTime.clock(liveSummary.updatedAt,prefs.timeZone):'尚未更新')+'</span></div></div><div class="two-columns summary-grid">'+schedulePanel+mailPanel+'</div>'+OrbitApplications.dashboard()+'<div class="section-top"><h2>我的应用</h2><button class="text-link" data-action="account">连接与管理 '+icon('arrow')+'</button></div>'+servicesGrid();
+ return heading('',greeting+'，开启你的节奏。','',dateBadge())+'<div class="section-top"><h2>今日汇总</h2><div class="summary-refresh"><button class="text-link" data-action="refresh-summary">'+icon('history')+(summaryLoading?'正在刷新…':'刷新数据')+'</button><span class="last-updated">'+(liveSummary.updatedAt?'更新于 '+OrbitTime.clock(liveSummary.updatedAt,prefs.timeZone):'尚未更新')+'</span></div></div><div class="two-columns summary-grid">'+schedulePanel+mailPanel+'</div>'+OrbitApplications.dashboard();
 
 }
 

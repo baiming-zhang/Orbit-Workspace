@@ -1,5 +1,6 @@
 'use strict';
 const {nativeImage}=require('electron');
+const {recycleFile,restoreFile}=require('./recycle-bin.cjs');
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 function createDownloads({app,shell,dialog,Menu,getWindow=()=>undefined,getLanguage=()=> 'en',onChange=()=>{}}){
  const file=path.join(app.getPath('userData'),'downloads.json'),preferencesFile=path.join(app.getPath('userData'),'download-settings.json');
@@ -43,24 +44,31 @@ function createDownloads({app,shell,dialog,Menu,getWindow=()=>undefined,getLangu
   reconcile();const row=history.find(x=>x.id===id);if(!row)throw Error(tr('Download not found.','找不到此下载。'));
   if(action==='clear'){
    if(active.has(id)||locks.has(id))throw Error(tr('Finish or cancel this download before removing its record.','请先完成或取消下载，再清除记录。'));
+   if(value?.confirmed!==true)return {ok:true,needsConfirmation:true};
    const exists=row.state!=='deleted'&&fs.existsSync(row.path);
    if(exists){
     if(!canRecycle(row))throw Error(tr('This download is not a regular file.','此下载不是普通文件。'));
     if(history.some(other=>other.id!==id&&path.resolve(other.path).toLowerCase()===path.resolve(row.path).toLowerCase()&&(active.has(other.id)||['completed','moved'].includes(other.state))))throw Error(tr('This file belongs to another download record.','此文件属于另一条下载记录。'));
-    if(value?.confirmed!==true)return {ok:true,needsConfirmation:true};
     locks.add(id);row.fileBusy=true;publish();
     try{await shell.trashItem(row.path);}finally{locks.delete(id);row.fileBusy=false;publish();}
    }
    history=history.filter(item=>item.id!==id);publish();return {ok:true,deleted:exists,recordRemoved:true};
   }
-  if(row.state==='deleted'&&['open','show','rename','move','trash'].includes(action)){publish();return {ok:true,deleted:true};}
+  if(action==='trash'&&row.state==='deleted')action='restore';
+  if(action==='restore'){
+   if(row.state!=='deleted'||locks.has(id))throw Error(tr('This file cannot be restored right now.','此文件暂时无法恢复。'));
+   if(fs.existsSync(row.path))throw Error(tr('A file with this name already exists. Rename or move it before restoring.','原目录已有同名文件，请先将其重命名或移走，再恢复。'));
+   locks.add(id);row.fileBusy=true;publish();
+   try{await restoreFile(row.path,row.recycleToken);row.state=row.deletedPreviousState==='moved'||row.movedAt?'moved':'completed';delete row.deletedAt;delete row.recycleToken;return {ok:true,restored:true};}catch(error){throw Error(error.code==='restore-target-exists'?tr('A file with this name already exists. Rename or move it before restoring.','原目录已有同名文件，请先将其重命名或移走，再恢复。'):error.code==='recycle-item-missing'?tr('This file is no longer in the Recycle Bin.','此文件已不在回收站中。'):error.code==='recycle-item-ambiguous'?tr('Several recycled files match this record. Restore it from the Windows Recycle Bin.','回收站有多个同名文件，请在 Windows 回收站中选择恢复。'):tr('Unable to restore this file.','无法恢复此文件。'));}finally{locks.delete(id);row.fileBusy=false;publish();}
+  }
+  if(row.state==='deleted'&&['open','show','rename','move'].includes(action)){publish();return {ok:true,deleted:true};}
   if(action==='show'){if(!fs.existsSync(row.path))throw Error(tr('File no longer exists.','文件已不存在。'));shell.showItemInFolder(row.path);return {ok:true};}
   if(action==='open'){completeFile(row);const error=await shell.openPath(row.path);if(error)throw Error(error);return {ok:true};}
   if(action==='cancel'){active.get(id)?.cancel();return {ok:true};}
   if(action==='keep'){const item=active.get(id);if(row.state!=='awaiting-confirmation'||!item)throw Error(tr('Download is no longer awaiting confirmation.','此下载已不再等待确认。'));row.state='progressing';item.resume();publish();return {ok:true};}
   if(!['rename','move','trash'].includes(action))throw Error(tr('Unsupported download action.','不支持此下载操作。'));
-  completeFile(row);if(action==='trash'&&value?.confirmed!==true)return {ok:true,needsConfirmation:true};if(locks.has(id))throw Error(tr('A file operation is already in progress.','此文件正在处理，请稍候。'));locks.add(id);row.fileBusy=true;publish();
-  try{if(action==='trash'){completeFile(row);await shell.trashItem(row.path);row.state='deleted';row.deletedAt=new Date().toISOString();return {ok:true,deleted:true};}if(action==='rename')await moveFile(row,path.join(path.dirname(row.path),validName(value)));else {const result=await dialog.showOpenDialog(getWindow(),{title:tr('Move download to another folder','将下载文件移动到新目录'),defaultPath:path.dirname(row.path),properties:['openDirectory','createDirectory']});if(result.canceled||!result.filePaths[0])return {ok:true,canceled:true};const previous=row.path;await moveFile(row,path.join(result.filePaths[0],row.name));if(row.path!==previous){row.state='moved';row.movedAt=new Date().toISOString();}}return {ok:true,path:row.path,name:row.name};}finally{locks.delete(id);row.fileBusy=false;publish();}
+  completeFile(row);if(locks.has(id))throw Error(tr('A file operation is already in progress.','此文件正在处理，请稍候。'));locks.add(id);row.fileBusy=true;publish();
+  try{if(action==='trash'){completeFile(row);row.deletedPreviousState=row.state;row.recycleToken=await recycleFile(shell,row.path);row.state='deleted';row.deletedAt=new Date().toISOString();return {ok:true,deleted:true};}if(action==='rename')await moveFile(row,path.join(path.dirname(row.path),validName(value)));else {const result=await dialog.showOpenDialog(getWindow(),{title:tr('Move download to another folder','将下载文件移动到新目录'),defaultPath:path.dirname(row.path),properties:['openDirectory','createDirectory']});if(result.canceled||!result.filePaths[0])return {ok:true,canceled:true};const previous=row.path;await moveFile(row,path.join(result.filePaths[0],row.name));if(row.path!==previous){row.state='moved';row.movedAt=new Date().toISOString();}}return {ok:true,path:row.path,name:row.name};}finally{locks.delete(id);row.fileBusy=false;publish();}
  }
  function menu(){Menu.buildFromTemplate([{label:tr('Ask before downloading','下载前确认'),type:'checkbox',checked:prefs.askBeforeDownload,click:()=>action(null,'toggle-confirmation')},{label:tr('Change default download folder…','更改默认下载目录…'),click:()=>chooseFolder().catch(()=>{})}]).popup({window:getWindow()});return {ok:true};}
  return {list,action,menu};
