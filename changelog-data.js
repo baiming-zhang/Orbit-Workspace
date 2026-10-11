@@ -1,5 +1,19 @@
 window.OrbitChangelog = [
   {
+    "version": "1.8.21",
+    "date": "2026-10-10",
+    "kind": "fix",
+    "en": "Move the rounded category bar 3 pixels closer to the sidebar left edge, preserving icon and label alignment. Make the gray divider between pinned and regular sections clearer.",
+    "zh": "分类圆角竖线向左移动 3 像素，靠近侧栏标签左边缘，保留图标及文字对齐；加深置顶区与普通区之间的灰色分隔线。"
+  },
+  {
+    "version": "1.8.21",
+    "date": "2026-10-10",
+    "kind": "feature",
+    "en": "Mark pinned tabs with solid yellow stars with rounded corners. Use the same heading style for Pinned and Workspace, with more space between them.",
+    "zh": "置顶标签右侧新增黄色实心圆角五角星；置顶标题与工作台使用相同样式，两标题之间增加留白。"
+  },
+  {
     "version": "1.8.20",
     "date": "2026-10-10",
     "kind": "feature",
