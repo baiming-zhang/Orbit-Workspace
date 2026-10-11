@@ -1,5 +1,26 @@
 window.OrbitChangelog = [
   {
+    "version": "1.8.26",
+    "date": "2026-10-10",
+    "kind": "feature",
+    "en": "Add the current webpage to a sidebar workspace from address-bar, page and tab context menus. Save its own title and favicon; reuse existing shortcuts without overwriting custom names.",
+    "zh": "网址、网页及顶部标签右键可加入左侧工作台，自动保存当前网页标题和图标；同网址复用已有入口，保留自定义名称。"
+  },
+  {
+    "version": "1.8.26",
+    "date": "2026-10-10",
+    "kind": "fix",
+    "en": "Show native PNG, SVG and ICO favicons in top tabs, with a dot only when no usable icon exists. Follow navigation and live page titles, ignore stale icons and retain icons across same-document routing.",
+    "zh": "顶部标签显示 PNG、SVG、ICO 原生图标，无有效图标时回退圆点；标题跟随跳转和实时变化，忽略旧网页图标返回，同文档路由保留图标。"
+  },
+  {
+    "version": "1.8.26",
+    "date": "2026-10-10",
+    "kind": "fix",
+    "en": "Clear inactive address-bar selection when clicking the webpage or other controls. Clicking the address still selects the entire URL for replacement.",
+    "zh": "点击网页或其他控件后清除地址栏非活动选区；点击网址仍全选，便于替换。"
+  },
+  {
     "version": "1.8.25",
     "date": "2026-10-10",
     "kind": "feature",
