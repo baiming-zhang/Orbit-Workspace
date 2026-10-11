@@ -1,5 +1,12 @@
 window.OrbitChangelog = [
   {
+    "version": "1.8.20",
+    "date": "2026-10-10",
+    "kind": "feature",
+    "en": "Sidebar tabs support Pin to top, Unpin, Move to bottom and categories: Work (red), Study (blue), Life (yellow) and custom additions, shown as rounded color bars before icons. Pinned tabs have their own upper section; ordinary and bottom tabs share the section below. Order and colors persist across restarts, with dragging and keyboard reordering respecting group boundaries.",
+    "zh": "侧栏标签支持置顶、取消置顶、置底及分类（工作红色、学习蓝色、生活黄色及自定义新增），图标左侧以圆角颜色竖线显示。置顶标签独立列在上方，普通和置底标签共同列在下方；顺序与颜色在重启后保留，拖动及键盘排序遵守分组边界。"
+  },
+  {
     "version": "1.8.19",
     "date": "2026-10-10",
     "kind": "fix",
