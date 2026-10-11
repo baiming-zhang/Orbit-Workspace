@@ -15,7 +15,7 @@ window.orbitTabs.onState(s=>{
  const root=$('#tabs');root.replaceChildren();
  for(const [index,t] of s.tabs.entries()){
   const box=document.createElement('div');box.dataset.tone=String(index%4);box.className='tab'+(t.id===s.activeId?' active':'');
-  const select=document.createElement('button');select.textContent=t.title||tr('New tab','新标签页');select.title=(t.title||tr('New tab','新标签页'))+'\n'+t.url;select.role='tab';select.setAttribute('aria-selected',t.id===s.activeId);select.onclick=()=>window.orbitTabs.action('select',t.id);
+  const select=document.createElement('button');const label=document.createElement('span');label.className='tab-label';label.textContent=t.title||tr('New tab','新标签页');if(t.favicon){const icon=document.createElement('img');icon.className='tab-favicon';icon.alt='';icon.src=t.favicon;box.classList.add('has-favicon');icon.onerror=()=>{icon.remove();box.classList.remove('has-favicon');};select.append(icon);}select.append(label);select.title=(t.title||tr('New tab','新标签页'))+'\n'+t.url;select.role='tab';select.setAttribute('aria-selected',t.id===s.activeId);select.onclick=()=>window.orbitTabs.action('select',t.id);
   box.oncontextmenu=event=>{event.preventDefault();window.orbitTabs.action('tab-menu',t.id);};
   const close=document.createElement('button');close.textContent='×';close.title=tr('Close tab','关闭标签页');close.setAttribute('aria-label',close.title);close.onclick=()=>window.orbitTabs.action('close',t.id);close.hidden=!!t.internal;
   box.append(select,close);root.append(box);

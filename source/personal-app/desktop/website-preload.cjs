@@ -7,6 +7,7 @@ function openWorkspaceLink(event){
  let url;try{url=new URL(anchor.href,location.href);if(!['http:','https:'].includes(url.protocol)||url.username||url.password)return;const here=new URL(location.href);if(url.origin===here.origin&&url.pathname===here.pathname&&url.search===here.search&&url.hash!==here.hash)return;}catch{return;}
  event.preventDefault();ipcRenderer.invoke('orbit:link-open',url.href,{download:anchor.hasAttribute('download'),newTab:event.type==='auxclick'||event.ctrlKey||event.metaKey,background:(event.type==='auxclick'||event.ctrlKey||event.metaKey)&&!event.shiftKey}).catch(()=>{});
 }
+document.addEventListener('pointerdown',()=>ipcRenderer.send('orbit:workspace-address-blur'),true);
 document.addEventListener('click',openWorkspaceLink,true);
 document.addEventListener('auxclick',openWorkspaceLink,true);
 

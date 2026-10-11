@@ -38,7 +38,10 @@
  input.addEventListener('focus',()=>{input.select();selectOnClick=true;});
  input.addEventListener('click',()=>{if(selectOnClick){input.select();selectOnClick=false;}});
  input.addEventListener('input',()=>input.removeAttribute('aria-invalid'));
- input.addEventListener('blur',()=>syncInput(true));
+ function clearSelection(){selectOnClick=false;syncInput(true);input.setSelectionRange(input.value.length,input.value.length);}
+ input.addEventListener('blur',clearSelection);
+ document.addEventListener('pointerdown',event=>{if(event.target!==input){if(document.activeElement===input)input.blur();clearSelection();}},true);
+ window.orbitDesktop?.onWorkspaceAddressBlur(()=>{if(document.activeElement===input)input.blur();clearSelection();});
  input.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();syncInput(true);input.blur();}});
  document.addEventListener('keydown',event=>{
   if(form.hidden||document.getElementById('modal').open)return;

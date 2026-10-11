@@ -104,6 +104,12 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.26
+
+- Add the current webpage to a sidebar workspace from the address, webpage or tab context menu, preserving its own title and favicon. Existing shortcuts are reused and their custom names remain intact.
+- Show native webpage icons in the top tabs, with a dot only when no usable favicon exists. Page titles update during navigation and live changes, without retaining the previous page's title.
+- Clear address-bar selection after clicking the webpage or leaving the input; clicking the address still selects the entire URL.
+
 ### v1.8.25
 
 - Welcome new users once with a smooth, localized introduction to three core workflows. Subsequent launches and external PDF/web requests bypass it.

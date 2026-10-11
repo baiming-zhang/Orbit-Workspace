@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld('orbitDesktop',Object.freeze({
   onDownloadsChanged:callback=>{const handler=(_event,data)=>callback(data);ipcRenderer.on('orbit:downloads-changed',handler);return ()=>ipcRenderer.removeListener('orbit:downloads-changed',handler);},
   workspaceAction:(mode,action,value)=>ipcRenderer.invoke('orbit:workspace-action',mode,action,value),
   onWorkspaceState:callback=>{const handler=(_event,state)=>callback(state);ipcRenderer.on('orbit:workspace-state',handler);return ()=>ipcRenderer.removeListener('orbit:workspace-state',handler);},
+  onWorkspaceAddressBlur:callback=>{const handler=()=>callback();ipcRenderer.on('orbit:workspace-address-blur',handler);return ()=>ipcRenderer.removeListener('orbit:workspace-address-blur',handler);},
   onWorkspaceFocus:callback=>{const handler=()=>callback();ipcRenderer.on('orbit:workspace-focus',handler);return ()=>ipcRenderer.removeListener('orbit:workspace-focus',handler);},
   openPdf:()=>ipcRenderer.invoke('orbit:pdf-open'),
   getNavigation:()=>ipcRenderer.invoke('orbit:navigation-get'),
