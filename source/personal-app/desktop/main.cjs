@@ -72,7 +72,7 @@ function trusted(event){return mainWindow&&!mainWindow.isDestroyed()&&event.send
 async function openSafe(url){const safe=webUrl(url);if(!safe)throw new Error('不支持此链接。');return tabbedBrowser.open(safe,{reuseCurrent:true});}
 function createWindow(){
   mainWindow=new BrowserWindow({width:1440,height:1000,minWidth:1080,minHeight:720,backgroundColor:'#f6f7f4',title:'Orbit Workspace',icon:path.join(__dirname,'assets/icon.png'),autoHideMenuBar:true,titleBarStyle:'hidden',titleBarOverlay:{color:'#fafbf8',symbolColor:'#617055',height:48},show:!verify,webPreferences:{backgroundThrottling:!verify,preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true}});
-  brandWindow(mainWindow);if(!verify)registerShortcut();
+  brandWindow(mainWindow);if(!verify){mainWindow.maximize();registerShortcut();}
   enableMicrophone(mainWindow.webContents.session);
   mainWindow.webContents.setWindowOpenHandler(({url})=>{openSafe(url).catch(()=>{});return {action:'deny'};});
   mainWindow.webContents.on('context-menu',(event,params)=>tabbedBrowser?.showLinkMenu(mainWindow.webContents,params,event));

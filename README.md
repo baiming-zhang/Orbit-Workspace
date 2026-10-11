@@ -104,6 +104,11 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.23
+
+- Start Orbit maximized by default while retaining normal restore controls.
+- Group the project changelog by version, with numbered additions before numbered fixes. Match the Full changelog button to What’s new and show a localized animated thank-you when either download button is clicked.
+
 ### v1.8.22
 
 - The sidebar context menu shows a single Pin to top / Unpin action that changes with the tab state, removing duplicate pin actions.
