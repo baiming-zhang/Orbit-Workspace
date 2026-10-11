@@ -126,3 +126,5 @@ svg.icon{flex-shrink:0;aspect-ratio:1/1}.bottom-link [data-icon]{display:inline-
 html[data-theme="dark"] .nav-group-divider{background:#586577}
 
 .nav-pin-star{width:14px;height:14px;flex:0 0 14px;margin-left:auto;fill:#e9b52d;stroke:#e9b52d;stroke-width:2;stroke-linejoin:round}
+
+.sidebar .profile small{margin-top:2px}
