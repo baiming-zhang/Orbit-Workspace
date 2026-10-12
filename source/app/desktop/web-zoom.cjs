@@ -1,0 +1,14 @@
+const {app,ipcMain}=require('electron'),fs=require('node:fs'),path=require('node:path');
+function createWebZoom(){
+ const file=path.join(app.getPath('userData'),'web-zoom.json'),attached=new Set(),steps=[.25,.33,.5,.67,.75,.8,.9,1,1.1,1.25,1.5,1.75,2,2.5,3,4,5];let saved={},timer;
+ try{const parsed=JSON.parse(fs.readFileSync(file,'utf8'));for(const [key,value] of Object.entries(parsed))if(/^https?:\/\//.test(key)&&Number.isFinite(value)&&value>=.25&&value<=5)saved[key]=value;}catch{}
+ const origin=wc=>{try{const url=new URL(wc.getURL());return /^https?:$/.test(url.protocol)?url.origin:null;}catch{return null;}};
+ const pdf=wc=>/\.pdf(?:[?#]|$)/i.test(wc.getURL())||wc.mainFrame.framesInSubtree.some(f=>f.url.startsWith('chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/'));
+ function persist(){clearTimeout(timer);timer=setTimeout(()=>{try{fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file+'.tmp',JSON.stringify(saved));fs.renameSync(file+'.tmp',file);}catch{}},200);timer.unref?.();}
+ function change(wc,direction){if(!wc||wc.isDestroyed()||!origin(wc)||pdf(wc))return false;const key=origin(wc),current=wc.getZoomFactor(),factor=direction===0?1:direction>0?(steps.find(x=>x>current+.01)||5):([...steps].reverse().find(x=>x<current-.01)||.25);wc.setZoomFactor(factor);saved[key]=factor;const keys=Object.keys(saved);if(keys.length>512)delete saved[keys[0]];for(const other of attached)if(other!==wc&&!other.isDestroyed()&&origin(other)===key&&!pdf(other))other.setZoomFactor(factor);persist();return true;}
+ function input(event,input,wc){if(input.type!=='keyDown'||!(input.control||input.meta)||input.alt)return false;const key=input.key.toLowerCase(),code=input.code||'',direction=key==='0'||code==='Digit0'||code==='Numpad0'?0:['+','='].includes(key)||['Equal','NumpadAdd'].includes(code)?1:key==='-'||['Minus','NumpadSubtract'].includes(code)?-1:null;if(direction===null||!change(wc,direction))return false;event.preventDefault();return true;}
+ function attach(wc){if(attached.has(wc))return;attached.add(wc);const restore=()=>{if(wc.isDestroyed())return;const key=origin(wc);if(!key||pdf(wc)){wc.setZoomMode?.('default');return;}wc.setZoomMode?.('manual');wc.setZoomFactor(saved[key]||1);wc.setVisualZoomLevelLimits(1,3).catch(()=>{});};wc.on('did-navigate',restore);wc.on('dom-ready',restore);wc.on('before-input-event',(event,data)=>input(event,data,wc));wc.on('zoom-changed',(_event,direction)=>change(wc,direction==='in'?1:-1));wc.once('destroyed',()=>attached.delete(wc));}
+ const wheel=(event,direction)=>{if(attached.has(event.sender)&&event.senderFrame===event.sender.mainFrame&&(direction===1||direction===-1))change(event.sender,direction);};ipcMain.on('orbit:web-zoom',wheel);
+ return {attach,input,change,dispose(){ipcMain.removeListener('orbit:web-zoom',wheel);clearTimeout(timer);if(timer){try{fs.writeFileSync(file,JSON.stringify(saved));}catch{}}attached.clear();}};
+}
+module.exports={createWebZoom};

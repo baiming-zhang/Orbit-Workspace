@@ -106,6 +106,10 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.38
+
+- Restore webpage zoom with Ctrl +/−, Ctrl+0 and Ctrl+wheel, enable touchpad pinch zoom and remember each website’s scale across navigation and restarts. The ChatGPT side pane supports the same controls; native PDF zoom is preserved.
+
 ### v1.8.37
 
 - Fit PDF thumbnails to the sidebar width and render visible thumbnails more sharply in the background. Hiding the sidebar removes its divider and expands the reading area; PDF zoom follows the layout.

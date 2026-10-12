@@ -1,4 +1,5 @@
 const {ipcRenderer}=require('electron');
+document.addEventListener('wheel',event=>{if(!event.isTrusted||!(event.ctrlKey||event.metaKey)||event.deltaY===0||!/^(https?:)$/.test(location.protocol)||/\.pdf(?:[?#]|$)/i.test(location.href))return;event.preventDefault();ipcRenderer.send('orbit:web-zoom',event.deltaY<0?1:-1);},{capture:true,passive:false});
 // Ordinary links stay in their tab; modifiers explicitly request a new tab.
 function openWorkspaceLink(event){
  if(!event.isTrusted||event.defaultPrevented||event.type==='click'&&event.button!==0||event.type==='auxclick'&&event.button!==1)return;

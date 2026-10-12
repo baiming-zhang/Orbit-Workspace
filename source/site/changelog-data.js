@@ -1,5 +1,12 @@
 window.OrbitChangelog = [
   {
+    "version": "1.8.38",
+    "date": "2026-10-12",
+    "kind": "fix",
+    "en": "Restore webpage zoom with Ctrl +/−, Ctrl+0 and Ctrl+wheel, enable touchpad pinch zoom and remember each website’s scale across navigation and restarts. The ChatGPT side pane supports the same controls; native PDF zoom is preserved.",
+    "zh": "修复网页 Ctrl 加减、Ctrl+0 和 Ctrl+滚轮缩放，启用触控板双指缩放，网站比例在跳转与重启后保留；ChatGPT 侧栏支持相同操作，PDF 继续使用原生缩放。"
+  },
+  {
     "version": "1.8.37",
     "date": "2026-10-12",
     "kind": "fix",

@@ -29,6 +29,7 @@ function targetUrl(value){
 }
 function tabTitle(url,local){if(url.startsWith('file:'))return path.basename(fileURLToPath(url));if(/\.pdf(?:[?#]|$)/i.test(url)){const value=new URL(url).pathname.split('/').pop();try{return decodeURIComponent(value);}catch{return value;}}try{return new URL(url).hostname||local('New tab','新标签页');}catch{return local('New tab','新标签页');}}
 function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{},getLanguage=()=> 'en',onState=()=>{},onPin=()=>{},favorites=null,onNotice=()=>{},onIcon=()=>{}}){
+ const webZoom=require('./web-zoom.cjs').createWebZoom();
  const pdfStyle=createPdfStyle({getWindow,getLanguage,onReady:wc=>{const t=tabs.find(t=>t.view?.webContents===wc);if(t&&!t.pdfUiReady){t.pdfUiReady=true;layout();publish();}},linkItems:(wc,params)=>linkItems(wc,params),selectionItems:(wc,params)=>selectionItems(wc,params)});
  const pdfChatUpload=createPdfChatUpload({publish:()=>publish()});
  const specs=new Map(),views=new Map(),tabs=[],attached=new Set(),lastActive=new Map(),downloadSessions=new Map(),pageMetadata=new WeakMap();
@@ -77,7 +78,7 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
  function initToolbar(){
   if(toolbar)return;
   toolbar=new WebContentsView({webPreferences:{preload:path.join(__dirname,'tabs-preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true}});
-  themeView(toolbar);
+  themeView(toolbar);toolbar.webContents.on('before-input-event',(event,input)=>webZoom.input(event,input,current()?.focusedPane==='chat'?current()?.chat?.webContents:current()?.view?.webContents));
   toolbar.webContents.setWindowOpenHandler(()=>({action:'deny'}));toolbar.webContents.on('will-navigate',e=>e.preventDefault());toolbar.webContents.once('did-finish-load',()=>{toolbarReady=true;publish();});toolbar.webContents.loadURL(toolbarUrl).catch(()=>{});
  }
  function initSplitter(){
@@ -179,6 +180,7 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
   return {ok:true,id:owner.workspace,tabId:owner.id,currentTab:true};
  }
  function setup(wc,t){
+  webZoom.attach(wc);
   pageStatus.attach(wc,t,wc===t.view?.webContents?'page':'chat');
   pageMetadata.set(wc,{epoch:0,revision:0,favicon:'',tab:t,urls:[]});
   wc.on('did-start-navigation',(_event,url,inPlace,main)=>{if(!main||inPlace)return;const previous=pageMetadata.get(wc);pageMetadata.set(wc,{epoch:(previous?.epoch||0)+1,revision:0,favicon:'',tab:t,urls:[]});if(wc===t.view?.webContents){t.favicon='';t.title=tabTitle(url,local);publish();}});
@@ -321,7 +323,7 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
  const pageActions=Object.fromEntries(['readPageEditor','writePageEditor','uploadPageFiles','clickPageElement','describePageDom'].map(method=>[method,(id,input)=>{if(!pageEdit)throw Error('Page editing is unavailable in this build.');return pageEdit[method](views.get(id)?.webContents,id,input);} ]));
  function show(next,mode='browser'){if(!spec(mode))return {ok:false,error:'Unknown workspace.'};if(!next||!['x','y','width','height'].every(k=>Number.isFinite(next[k])))return {ok:false,error:'Invalid workspace bounds.'};const changing=!shown||workspace!==mode;initToolbar();bounds=next;shown=true;workspace=mode;ensureHome(mode);activeId=tabs.find(t=>t.id===lastActive.get(mode)&&t.workspace===mode&&!t.provisional)?.id||tabs.find(t=>t.workspace===mode&&!t.provisional)?.id||null;layout();if(changing)focusCurrent();publish();const state=snapshot();return {ok:true,workspaceState:state,navigation:{canGoBack:state.canBack,canGoForward:state.canForward}};}
  function remove(mode){for(const t of [...tabs].filter(t=>t.workspace===mode)){tabs.splice(tabs.indexOf(t),1);views.delete(t.id);views.delete(t.id+'-chat');for(const v of [t.view,t.chat]){if(attached.has(v)){getWindow()?.contentView.removeChildView(v);attached.delete(v);}if(v?.webContents&&!v.webContents.isDestroyed())v.webContents.close();}}specs.delete(mode);lastActive.delete(mode);if(workspace===mode){shown=false;activeId=null;detach();}publish();}
- function dispose(){if(disposed)return;disposed=true;for(const [session,handler] of downloadSessions)session.removeListener('will-download',handler);downloadSessions.clear();ipcMain.removeAllListeners('orbit:workspace-address-blur');drag=null;shown=false;detach();pageStatus.dispose();pdfStyle.dispose();const all=[...views.values(),toolbar,splitter];views.clear();tabs.length=0;activeId=null;toolbar=null;splitter=null;for(const v of all){const wc=v?.webContents;if(wc&&!wc.isDestroyed())wc.close();}for(const channel of ['orbit:tabs-action','orbit:split-drag','orbit:link-open'])ipcMain.removeHandler(channel);}
+ function dispose(){if(disposed)return;disposed=true;for(const [session,handler] of downloadSessions)session.removeListener('will-download',handler);downloadSessions.clear();ipcMain.removeAllListeners('orbit:workspace-address-blur');drag=null;shown=false;detach();pageStatus.dispose();pdfStyle.dispose();webZoom.dispose();const all=[...views.values(),toolbar,splitter];views.clear();tabs.length=0;activeId=null;toolbar=null;splitter=null;for(const v of all){const wc=v?.webContents;if(wc&&!wc.isDestroyed())wc.close();}for(const channel of ['orbit:tabs-action','orbit:split-drag','orbit:link-open'])ipcMain.removeHandler(channel);}
  return {getPdfPreferences:pdfStyle.get,savePdfPreferences:pdfStyle.update,refreshPdf:pdfStyle.refresh,automate,warmUp:initToolbar,open,openLink,selectionItems,selectionAction,pick,views,tabs,current,linkItems,showLinkMenu,pageItems,pinPage,addressItems,showAddressMenu,snapshot,navigate,show,configure,remove,toggleChat,pages,pageText,...pageActions,refresh:publish,hide(){drag=null;addressEditing=false;shown=false;detach();publish();},dispose};
 }
 module.exports={createTabbedBrowser,targetUrl,launchTargets,webUrl};
