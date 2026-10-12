@@ -45,29 +45,30 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
   for(const item of items){if(['browser','pdf'].includes(item.id)){specs.get(item.id).name=item.name;specs.get(item.id).iconData=item.iconData||'';continue;}const url=item.internal?'orbit://app/index.html#'+item.id:webUrl(item.url);if(!url)continue;const previous=specs.get(item.id);specs.set(item.id,{id:item.id,name:item.name,url,internal:!!item.internal,iconData:item.iconData||''});if(previous&&previous.url!==url&&!item.internal){const home=tabs.find(t=>t.id===item.id);if(home?.view){home.url=url;home.view.webContents.loadURL(url).catch(()=>{});}}}
   publish();return {ok:true};
  }
+ const pageStatus=require('./page-status.cjs').createPageStatus({getLanguage,onChange:()=>{layout();publish();},onFailure:t=>failedNavigation(t),onAction:(entry,action)=>{if(current()!==entry.tab||!shown)return {ok:false};if(action==='edit'){focusAddress();return {ok:true};}if(action==='home'){if(entry.side==='chat'){entry.wc.loadURL('https://chatgpt.com/').catch(()=>{});return {ok:true};}return performAction('home');}if(action==='retry'){if(entry.side==='page')loadTab(entry.tab,entry.problem.url||entry.url);else entry.wc.loadURL(entry.problem.url||entry.url).catch(()=>{});return {ok:true};}return {ok:false};}});
  configure(workspaceItems);
  function detach(){const win=getWindow();if(win&&!win.isDestroyed())for(const v of attached)win.contentView.removeChildView(v);attached.clear();}
  function mount(v){const win=getWindow();if(!v||!win||win.isDestroyed())return;if(!attached.has(v)){win.contentView.addChildView(v);attached.add(v);}}
  function snapshot(){
   const t=current(),wc=t?.view?.webContents,live=wc&&!wc.isDestroyed();
-  return {workspace,visible:shown,language:getLanguage(),internalActive:!!t?.internal,internalChatWidth:t?.internal&&t.chatVisible&&bounds?bounds.width-Math.round((bounds.width-8)*t.ratio):0,address:t?.url?.startsWith('file:')?fileURLToPath(t.url):t?.url||spec(workspace)?.url||'',addressEditing,
-   tabs:tabs.filter(t=>t.workspace===workspace&&!t.provisional).map(t=>({id:t.id,title:t.internal?title(t.workspace):t.title,url:t.url,favicon:t.favicon||spec(t.workspace)?.iconData||'',pdf:t.pdf,internal:!!t.internal,chat:!!t.chatVisible,upload:t.upload||null,loading:!!t.loading,pdfOpening:!!t.pdf&&!!t.loading&&!t.pdfUiReady&&!t.error})),activeId,ratio:t?.ratio||.62,
+  return {workspace,visible:shown,language:getLanguage(),internalActive:!!t?.internal,internalChatWidth:t?.internal&&t.chatVisible&&bounds?bounds.width-Math.round((bounds.width-8)*t.ratio):0,address:t?.pageProblem?.url|| (t?.url?.startsWith('file:')?fileURLToPath(t.url):t?.url||spec(workspace)?.url||''),addressEditing,
+   tabs:tabs.filter(t=>t.workspace===workspace&&!t.provisional).map(t=>({id:t.id,title:t.internal?title(t.workspace):t.title,url:t.url,favicon:t.favicon||spec(t.workspace)?.iconData||'',pdf:t.pdf,internal:!!t.internal,chat:!!t.chatVisible,upload:t.upload||null,loading:!!t.loading,pdfOpening:!!t.pdf&&!!t.loading&&!t.pdfUiReady&&!t.error&&!t.pageProblem})),activeId,ratio:t?.ratio||.62,
    canBack:!!(live&&wc.navigationHistory.canGoBack()),canForward:!!(live&&wc.navigationHistory.canGoForward()),error:t?.error||''};
  }
  function publish(){if(disposed)return;const state=snapshot(),wc=toolbar?.webContents;if(toolbarReady&&wc&&!wc.isDestroyed())wc.send('orbit:tabs-state',state);onState(state);}
  function layout(){
   if(disposed||!shown||!bounds||!toolbar)return;
-  const r=bounds,t=current(),split=!!(t?.chatVisible&&t.chat),barHeight=48,opening=!!t?.pdf&&!!t.loading&&!t.pdfUiReady&&!t.error;if(split)initSplitter();
+  const r=bounds,t=current(),split=!!(t?.chatVisible&&t.chat),barHeight=48,opening=!!t?.pdf&&!!t.loading&&!t.pdfUiReady&&!t.error&&!t.pageProblem;if(split)initSplitter();
   if(!split||drag&&drag.id!==t?.id)drag=null;
-  const wanted=new Set([toolbar,...(t?.view&&!addressEditing?[t.view]:[]),...(split&&!addressEditing?[t.chat,splitter]:[])]),win=getWindow();
+  const pageView=t?.view?(pageStatus.viewFor(t,'page')||t.view):null,chatView=split?(pageStatus.viewFor(t,'chat')||t.chat):null;const wanted=new Set([toolbar,...(pageView&&!addressEditing?[pageView]:[]),...(split&&!addressEditing?[chatView,splitter]:[])]),win=getWindow();
   if(split&&!addressEditing&&attached.has(splitter)&&(!attached.has(t.view)||!attached.has(t.chat))){win?.contentView.removeChildView(splitter);attached.delete(splitter);}
   for(const v of attached)if(!wanted.has(v)){win?.contentView.removeChildView(v);attached.delete(v);}
   mount(toolbar);toolbar.setBounds({x:r.x,y:r.y,width:r.width,height:addressEditing||opening||(!t?.view&&spec(workspace)?.pdfWorkspace)?r.height:barHeight});
   if((!t?.view&&!split)||addressEditing)return;
-  if(t.view)mount(t.view);const h=Math.max(1,r.height-barHeight),w=split?Math.round((r.width-8)*t.ratio):r.width;
-  t.view?.setBounds({x:r.x,y:r.y+barHeight,width:Math.max(1,w),height:h});
+  if(pageView)mount(pageView);const h=Math.max(1,r.height-barHeight),w=split?Math.round((r.width-8)*t.ratio):r.width;
+  pageView?.setBounds({x:r.x,y:r.y+barHeight,width:Math.max(1,w),height:h});
   if(opening&&attached.has(toolbar)){win?.contentView.removeChildView(toolbar);attached.delete(toolbar);mount(toolbar);}
-  if(split){mount(t.chat);t.chat.setBounds({x:r.x+w+8,y:r.y+barHeight,width:Math.max(1,r.width-w-8),height:h});mount(splitter);splitter.setBounds({x:r.x+(drag?0:w),y:r.y+barHeight,width:drag?r.width:8,height:h});if(splitterReady)splitter.webContents.send('orbit:split-state',{dragging:!!drag,x:drag?w:0,ratio:t.ratio});}
+  if(split){mount(chatView);chatView.setBounds({x:r.x+w+8,y:r.y+barHeight,width:Math.max(1,r.width-w-8),height:h});mount(splitter);splitter.setBounds({x:r.x+(drag?0:w),y:r.y+barHeight,width:drag?r.width:8,height:h});if(splitterReady)splitter.webContents.send('orbit:split-state',{dragging:!!drag,x:drag?w:0,ratio:t.ratio});}
  }
  function focusCurrent(preferChat=false){const win=getWindow(),t=current();if(!shown||addressEditing||!win||win.isDestroyed()||!win.isFocused())return;const target=t?.chatVisible&&(preferChat||t.focusedPane==='chat')?t.chat?.webContents:t?.view?.webContents;if(target&&!target.isDestroyed()&&attached.has(target===t.chat?.webContents?t.chat:t.view))target.focus();else if(t?.internal)win.webContents.focus();}
  function activate(id,notify=true){const t=tabs.find(t=>t.id===id);if(!t||t.provisional)return;drag=null;addressEditing=false;workspace=t.workspace;activeId=id;lastActive.set(workspace,id);shown=true;if(notify)onPage({id:workspace,title:title(workspace),navigation:{canGoBack:false,canGoForward:false}});layout();focusCurrent();publish();}
@@ -175,6 +176,7 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
   return {ok:true,id:owner.workspace,tabId:owner.id,currentTab:true};
  }
  function setup(wc,t){
+  pageStatus.attach(wc,t,wc===t.view?.webContents?'page':'chat');
   pageMetadata.set(wc,{epoch:0,revision:0,favicon:'',tab:t,urls:[]});
   wc.on('did-start-navigation',(_event,url,inPlace,main)=>{if(!main||inPlace)return;const previous=pageMetadata.get(wc);pageMetadata.set(wc,{epoch:(previous?.epoch||0)+1,revision:0,favicon:'',tab:t,urls:[]});if(wc===t.view?.webContents){t.favicon='';t.title=tabTitle(url,local);publish();}});
   wc.on('page-favicon-updated',(_event,urls)=>{refreshPageIcon(wc,urls).catch(()=>{});});
@@ -298,7 +300,7 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
  const pageActions=Object.fromEntries(['readPageEditor','writePageEditor','uploadPageFiles','clickPageElement','describePageDom'].map(method=>[method,(id,input)=>{if(!pageEdit)throw Error('Page editing is unavailable in this build.');return pageEdit[method](views.get(id)?.webContents,id,input);} ]));
  function show(next,mode='browser'){if(!spec(mode))return {ok:false,error:'Unknown workspace.'};if(!next||!['x','y','width','height'].every(k=>Number.isFinite(next[k])))return {ok:false,error:'Invalid workspace bounds.'};const changing=!shown||workspace!==mode;initToolbar();bounds=next;shown=true;workspace=mode;ensureHome(mode);activeId=tabs.find(t=>t.id===lastActive.get(mode)&&t.workspace===mode&&!t.provisional)?.id||tabs.find(t=>t.workspace===mode&&!t.provisional)?.id||null;layout();if(changing)focusCurrent();publish();const state=snapshot();return {ok:true,workspaceState:state,navigation:{canGoBack:state.canBack,canGoForward:state.canForward}};}
  function remove(mode){for(const t of [...tabs].filter(t=>t.workspace===mode)){tabs.splice(tabs.indexOf(t),1);views.delete(t.id);views.delete(t.id+'-chat');for(const v of [t.view,t.chat]){if(attached.has(v)){getWindow()?.contentView.removeChildView(v);attached.delete(v);}if(v?.webContents&&!v.webContents.isDestroyed())v.webContents.close();}}specs.delete(mode);lastActive.delete(mode);if(workspace===mode){shown=false;activeId=null;detach();}publish();}
- function dispose(){if(disposed)return;disposed=true;for(const [session,handler] of downloadSessions)session.removeListener('will-download',handler);downloadSessions.clear();ipcMain.removeAllListeners('orbit:workspace-address-blur');drag=null;shown=false;detach();const all=[...views.values(),toolbar,splitter];views.clear();tabs.length=0;activeId=null;toolbar=null;splitter=null;for(const v of all){const wc=v?.webContents;if(wc&&!wc.isDestroyed())wc.close();}for(const channel of ['orbit:tabs-action','orbit:split-drag','orbit:link-open'])ipcMain.removeHandler(channel);}
+ function dispose(){if(disposed)return;disposed=true;for(const [session,handler] of downloadSessions)session.removeListener('will-download',handler);downloadSessions.clear();ipcMain.removeAllListeners('orbit:workspace-address-blur');drag=null;shown=false;detach();pageStatus.dispose();const all=[...views.values(),toolbar,splitter];views.clear();tabs.length=0;activeId=null;toolbar=null;splitter=null;for(const v of all){const wc=v?.webContents;if(wc&&!wc.isDestroyed())wc.close();}for(const channel of ['orbit:tabs-action','orbit:split-drag','orbit:link-open'])ipcMain.removeHandler(channel);}
  return {warmUp:initToolbar,open,openLink,selectionItems,selectionAction,pick,views,tabs,current,linkItems,showLinkMenu,pageItems,pinPage,addressItems,showAddressMenu,snapshot,navigate,show,configure,remove,toggleChat,pages,pageText,...pageActions,refresh:publish,hide(){drag=null;addressEditing=false;shown=false;detach();publish();},dispose};
 }
 module.exports={createTabbedBrowser,targetUrl,launchTargets,webUrl};

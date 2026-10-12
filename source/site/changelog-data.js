@@ -1,5 +1,19 @@
 window.OrbitChangelog = [
   {
+    "version": "1.8.31",
+    "date": "2026-10-11",
+    "kind": "feature",
+    "en": "Show a clear page-status panel with retry, address editing, workspace home and original-response controls. The panel replaces only the affected page or ChatGPT side pane and follows the selected language and theme.",
+    "zh": "新增清晰的网页状态面板，可重试、修改网址、回到工作台首页或查看原网页响应；仅替换出错的网页或 ChatGPT 侧栏，并跟随界面语言和主题。"
+  },
+  {
+    "version": "1.8.31",
+    "date": "2026-10-11",
+    "kind": "fix",
+    "en": "Display connection failures, HTTP errors, empty responses, long waits and renderer crashes instead of a blank page. Pending requests can still recover when content arrives; downloads and PDF opening remain available.",
+    "zh": "连接失败、HTTP 错误、空响应、长时间等待及页面崩溃不再只显示空白；内容到达后可自动恢复，正常下载和 PDF 打开保持可用。"
+  },
+  {
     "version": "1.8.30",
     "date": "2026-10-11",
     "kind": "feature",

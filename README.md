@@ -104,6 +104,11 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.31
+
+- Show a clear page-status panel with retry, address editing, workspace home and original-response controls. The panel replaces only the affected page or ChatGPT side pane and follows the selected language and theme.
+- Display connection failures, HTTP errors, empty responses, long waits and renderer crashes instead of a blank page. Pending requests can still recover when content arrives; downloads and PDF opening remain available.
+
 ### v1.8.30
 
 - Reorder top tabs in every workspace by holding and dragging left or right. Preview the order while dragging, retain it when switching workspaces and press Escape to cancel. The active page stays open; normal clicks and close buttons continue to work.

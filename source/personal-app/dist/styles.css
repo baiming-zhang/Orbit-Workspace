@@ -137,3 +137,11 @@ html[data-theme="dark"] .nav-group-divider{background:#586577}
 
 /* The workspace breadcrumb is actionable without changing titlebar alignment. */
 .app-titlebar .crumb-home,.app-titlebar #page-name{-webkit-app-region:no-drag;padding:0;border-radius:4px;font:inherit;line-height:inherit;text-align:left}.app-titlebar #page-name{font-weight:500}.app-titlebar .crumb-home:hover,.app-titlebar #page-name:hover{color:var(--green);text-decoration:underline;text-underline-offset:3px}
+
+/* Keep a clear native caption area for dragging and double-clicking. */
+.app-titlebar .titlebar-brand{width:auto;padding-left:24px;padding-right:8px;gap:8px}
+.app-titlebar #sidebar-toggle{margin-left:0}
+.app-titlebar .breadcrumb,.workspace-navigation .app-titlebar .breadcrumb{padding-left:8px}
+.app-titlebar #workspace-address-form{max-width:880px;margin-left:3px}
+.titlebar-drag-space{flex:0 0 84px;align-self:stretch;-webkit-app-region:drag;app-region:drag;user-select:none}
+@media(max-width:1250px){.titlebar-drag-space{flex-basis:56px}.app-titlebar .titlebar-brand{padding-left:18px}.app-titlebar .breadcrumb,.workspace-navigation .app-titlebar .breadcrumb{padding-left:6px}}
