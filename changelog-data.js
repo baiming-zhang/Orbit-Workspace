@@ -1,5 +1,12 @@
 window.OrbitChangelog = [
   {
+    "version": "1.8.37",
+    "date": "2026-10-12",
+    "kind": "fix",
+    "en": "Fit PDF thumbnails to the sidebar width and render visible thumbnails more sharply in the background. Hiding the sidebar removes its divider and expands the reading area; PDF zoom follows the layout.",
+    "zh": "PDF 缩略图随侧栏宽度适配，并在后台提高可见缩略图的渲染清晰度；隐藏侧栏时同步收起分隔线并展开阅读区域，正文缩放跟随布局。"
+  },
+  {
     "version": "1.8.35",
     "date": "2026-10-12",
     "kind": "feature",
