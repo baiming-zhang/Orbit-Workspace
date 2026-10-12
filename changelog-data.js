@@ -1,5 +1,12 @@
 window.OrbitChangelog = [
   {
+    "version": "1.8.33",
+    "date": "2026-10-12",
+    "kind": "fix",
+    "en": "Fix blank PDF pages while thumbnails remain visible. Keep native PDF paint layers transparent and change reading backgrounds without modifying or resizing the initialized plugin.",
+    "zh": "修复 PDF 缩略图正常但正文空白的问题；保持原生绘制层透明，切换阅读背景时不再修改或缩放已初始化的插件。"
+  },
+  {
     "version": "1.8.32",
     "date": "2026-10-11",
     "kind": "feature",
