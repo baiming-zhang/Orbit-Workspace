@@ -106,6 +106,10 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.39
+
+- Make every webpage zoom input redraw immediately, fixing the case where the stored zoom changed but the visible page did not. Ctrl +/−, Ctrl+0 and Ctrl+wheel now update the actual page layout; website scale memory and native PDF zoom are preserved.
+
 ### v1.8.38
 
 - Restore webpage zoom with Ctrl +/−, Ctrl+0 and Ctrl+wheel, enable touchpad pinch zoom and remember each website’s scale across navigation and restarts. The ChatGPT side pane supports the same controls; native PDF zoom is preserved.
