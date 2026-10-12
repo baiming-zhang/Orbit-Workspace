@@ -1,3 +1,4 @@
+const {createAutomation}=require('./automation-controller.cjs');
 const {enableMicrophone}=require('./media-permissions.cjs');
 const {app,BrowserWindow,WebContentsView,protocol,net,shell,ipcMain,Menu,safeStorage,clipboard,dialog,nativeImage,nativeTheme}=require('electron');
 const path=require('node:path');
@@ -106,7 +107,7 @@ app.whenReady().then(()=>{
   localEvents=createEvents({app,safeStorage,getTimeZone:()=>settings.get().timeZone,onChange:events=>{background?.syncLocal(events);if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('orbit:events-changed',events);}});
   const pageActions=createPageApiFacade(browser,()=>tabbedBrowser);
   demoSummary=createDemoSummary({app,getSettings:()=>settings.get(),onChange:()=>{if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('orbit:data-changed');}});
-  localApi=createLocalApi({app,safeStorage,google,events:localEvents,browser:pageActions,pageActions,demoSummary,uploadRoots:[],applications,getSettings:()=>settings.get(),onCalendarChange:()=>{background?.refreshRemote();if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('orbit:data-changed');}});
+  localApi=createLocalApi({automation:createAutomation({app,getBrowser:()=>tabbedBrowser,getWindow:()=>mainWindow,downloads,favorites,navigation,settings,google,onNavigation:result=>{browser?.configure(result.items);tabbedBrowser?.configure(result.items);mainWindow?.webContents.send('orbit:navigation-action',{action:'saved',result});}}),app,safeStorage,google,events:localEvents,browser:pageActions,pageActions,demoSummary,uploadRoots:[],applications,getSettings:()=>settings.get(),onCalendarChange:()=>{background?.refreshRemote();if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('orbit:data-changed');}});
   const root=path.resolve(__dirname,'../dist');
   protocol.handle('orbit',request=>{
     let parsed;try{parsed=new URL(request.url);}catch{return new Response('Bad request',{status:400});}
@@ -189,7 +190,7 @@ app.whenReady().then(()=>{
   ipcMain.handle('orbit:sync-meetings',guard(events=>localEvents.replace(events)));
   ipcMain.handle('orbit:api-status',guard(()=>localApi.status()));
   ipcMain.handle('orbit:api-config',guard(input=>localApi.configure(input)));
-  ipcMain.handle('orbit:api-copy',guard(kind=>{if(!localApi.status().enabled)throw Error('请先开启本机 API。');const portable=process.env.PORTABLE_EXECUTABLE_FILE;const bridge=app.isPackaged?path.join(path.dirname(portable||app.getPath('exe')),'orbit-api-bridge.cjs'):path.join(__dirname,'mcp-bridge.cjs');const value=kind==='mcp'?{mcpServers:{orbit:{command:'node',args:[bridge],env:localApi.mcpEnv()}}}:localApi.clientConfig();clipboard.writeText(JSON.stringify(value,null,2));return {ok:true};}));
+  ipcMain.handle('orbit:api-copy',guard(kind=>{if(!localApi.status().enabled)throw Error('请先开启本机 API。');const portable=process.env.PORTABLE_EXECUTABLE_FILE;const bridge=app.isPackaged?path.join(path.dirname(portable||app.getPath('exe')),'orbit-api-bridge.cjs'):path.join(__dirname,'mcp-bridge.cjs');const value=kind==='codex'?localApi.codexConfig():kind==='mcp'?localApi.mcpConfig():kind==='chatgpt'?localApi.chatgptConfig():localApi.clientConfig();clipboard.writeText(typeof value==='string'?value:JSON.stringify(value,null,2));return {ok:true};}));
   ipcMain.handle('orbit:reminder-data',event=>background?.trustedPopup(event)?background.items():[]);
   ipcMain.handle('orbit:reminder-action',(event,action,id)=>background?.action(event,action,id));
   ipcMain.handle('orbit:show-service',guard((id,bounds)=>{browser.show(null);if(id===null){tabbedBrowser.hide();return {ok:true};}return tabbedBrowser.show(bounds,id);}));

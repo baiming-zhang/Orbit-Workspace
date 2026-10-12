@@ -3,11 +3,11 @@ const path=require('node:path');
 const crypto=require('node:crypto');
 
 // This module offers fixed operations, never caller-supplied JavaScript.
-const limits={textBytes:200*1024,fileCount:10,fileBytes:25*1024*1024,totalFileBytes:100*1024*1024};
+const limits={textBytes:4*1024*1024,fileCount:500,fileBytes:Number.MAX_SAFE_INTEGER,totalFileBytes:Number.MAX_SAFE_INTEGER};
 const queues=new WeakMap();
 function fault(code,message,statusCode=422){return Object.assign(new Error(message),{code,statusCode});}
 function hash(text){return crypto.createHash('sha256').update(text,'utf8').digest('hex');}
-function canonicalUrl(value){try{const url=new URL(value);if(!['https:','http:'].includes(url.protocol)||url.username||url.password)throw Error();return url.href;}catch{throw fault('INVALID_URL','需要完整的 HTTP 或 HTTPS 网页地址。',400);}}
+function canonicalUrl(value){try{const url=new URL(value);if(!['https:','http:','file:','orbit:'].includes(url.protocol)||url.username||url.password)throw Error();return url.href;}catch{throw fault('INVALID_URL','需要完整的 HTTP 或 HTTPS 网页地址。',400);}}
 function target(wc,input){if(!wc||wc.isDestroyed())throw fault('PAGE_NOT_FOUND','网页已关闭。',404);const expected=canonicalUrl(input?.expectedUrl);if(wc.getURL()!==expected)throw fault('PAGE_CHANGED','网页地址已变化，请重新读取后操作。',409);return expected;}
 function selector(input,required=false){const value=input?.selector;if(value===undefined&&!required)return null;if(typeof value!=='string'||!value.trim()||value.length>1024)throw fault('INVALID_SELECTOR','请选择唯一的网页控件。',400);return value;}
 async function serial(wc,work){const prior=queues.get(wc)||Promise.resolve();const pending=prior.catch(()=>{}).then(work);queues.set(wc,pending);try{return await pending;}finally{if(queues.get(wc)===pending)queues.delete(wc);}}
@@ -87,15 +87,15 @@ function within(root,filename){const relative=path.relative(root,filename);retur
 function validateFiles(input){
  if(!Array.isArray(input.roots)||!input.roots.length)throw fault('UPLOAD_DISABLED','没有配置允许上传的文件夹。',403);
  const roots=input.roots.map(root=>{if(typeof root!=='string'||!path.isAbsolute(root))throw fault('INVALID_UPLOAD_ROOT','上传目录配置无效。',400);try{const real=fs.realpathSync(root);if(!fs.statSync(real).isDirectory())throw Error();return real;}catch{throw fault('INVALID_UPLOAD_ROOT','上传目录不存在。',400);}});
- if(!Array.isArray(input.paths)||!input.paths.length||input.paths.length>limits.fileCount)throw fault('INVALID_FILES','一次请选择 1 至 10 个文件。',400);
+ if(!Array.isArray(input.paths)||!input.paths.length||input.paths.length>limits.fileCount)throw fault('INVALID_FILES','一次请选择 1 至 500 个文件。',400);
  let total=0;const files=input.paths.map(filename=>{
   if(typeof filename!=='string'||!path.isAbsolute(filename))throw fault('INVALID_FILE_PATH','上传文件必须使用绝对路径。',400);
   let real,stat;try{if(!fs.lstatSync(filename).isFile())throw Error();real=fs.realpathSync(filename);stat=fs.statSync(real);}catch{throw fault('FILE_NOT_FOUND','上传文件不存在或不是普通文件。',404);}
   if(!roots.some(root=>within(root,real)))throw fault('FILE_OUTSIDE_UPLOAD_ROOT','文件不在允许上传的文件夹中。',403);
-  if(stat.size>limits.fileBytes)throw fault('FILE_TOO_LARGE','单个上传文件不能超过 25 MiB。',413);
+  if(stat.size>limits.fileBytes)throw fault('FILE_TOO_LARGE','单个上传文件不能超过 平台支持范围。',413);
   total+=stat.size;return {path:real,name:path.basename(real),size:stat.size,mtimeMs:stat.mtimeMs,ino:stat.ino,dev:stat.dev};
  });
- if(total>limits.totalFileBytes)throw fault('FILES_TOO_LARGE','上传文件总大小不能超过 100 MiB。',413);
+ if(total>limits.totalFileBytes)throw fault('FILES_TOO_LARGE','上传文件总大小不能超过 平台支持范围。',413);
  if(new Set(files.map(file=>file.path.toLowerCase())).size!==files.length)throw fault('DUPLICATE_FILE','请勿重复选择同一个文件。',400);
  return files;
 }

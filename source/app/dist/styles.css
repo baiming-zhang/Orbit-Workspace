@@ -145,3 +145,5 @@ html[data-theme="dark"] .nav-group-divider{background:#586577}
 .app-titlebar #workspace-address-form{max-width:880px;margin-left:3px}
 .titlebar-drag-space{flex:0 0 84px;align-self:stretch;-webkit-app-region:drag;app-region:drag;user-select:none}
 @media(max-width:1250px){.titlebar-drag-space{flex-basis:56px}.app-titlebar .titlebar-brand{padding-left:18px}.app-titlebar .breadcrumb,.workspace-navigation .app-titlebar .breadcrumb{padding-left:6px}}
+
+.modal-actions:has([data-kind="chatgpt"]){flex-wrap:wrap}

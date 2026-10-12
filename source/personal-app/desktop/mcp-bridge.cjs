@@ -1,0 +1,4 @@
+'use strict';
+const readline=require('node:readline'),{rpc}=require('./mcp-tools.cjs');
+const base=process.env.ORBIT_API_URL,token=process.env.ORBIT_API_TOKEN;
+readline.createInterface({input:process.stdin}).on('line',async line=>{try{const message=JSON.parse(line);const answer=await rpc(message,async(method,pathname,body)=>{const target=new URL(pathname,base);if(target.origin!==new URL(base).origin)throw Error('Invalid API origin');const response=await fetch(target,{method,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},...(body!==undefined&&method!=='GET'?{body:JSON.stringify(body)}:{})});return {status:response.status,body:await response.json()};});if(answer)process.stdout.write(JSON.stringify(answer)+'\n');}catch(error){process.stderr.write(error.message+'\n');}});

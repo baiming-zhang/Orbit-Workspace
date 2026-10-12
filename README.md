@@ -52,9 +52,11 @@ For a focused paper-reading session, arrange your research shortcuts, choose a r
 
 Orbit's application source is open and editable, so you can adapt the workspace's own commands, integrations, and page behavior to your workflow. Supported API tasks can run while Orbit stays in the background or system tray: a local assistant can read a page's text, retrieve authorized Gmail and Calendar data, or manage local plans without driving the foreground with mouse clicks. This reduces desktop interruptions for workflows that already have an interface.
 
-The current release includes an optional, token-authenticated localhost HTTP API and a Node.js MCP bridge. See [the API implementation](source/app/desktop/local-api.cjs) and [the bridge](source/app/desktop/mcp-bridge.cjs). Developers can extend Orbit's [embedded page host](source/app/desktop/tabbed-browser.cjs) and add narrowly scoped commands to open a page, navigate it, or adapt its presentation, then expose those commands through their own integrations. Opening web addresses and PDF paths through the executable is already supported. Custom website interaction commands require implementation; the shipped API currently provides page listing/text reading, Google summaries and authorized calendar operations, and local-event management.
+The general and developer editions now provide the same full-control local API. Authorized clients can read and edit webpage fields, execute page JavaScript, dispatch native mouse/keyboard input, drag and scroll, upload readable local files, manage tabs and ChatGPT splits, operate the Orbit UI/native bridge, and manage navigation, categories, preferences, avatars, downloads, favorites, the clipboard and local plans. New profiles enable the API by default; an explicitly saved disabled setting remains respected. Authentication stays local and token-based.
 
-For example, an assistant can retrieve authorized calendar events through the local API while you continue reading a PDF, instead of repeatedly switching the active window. Developers can build additional ChatGPT webpage workflows around the embedded views, subject to the website's supported interfaces and the user's permission. This release does not ship a general-purpose ChatGPT webpage editing or message-sending API.
+In **Settings → Local data API**, copy **Codex / local MCP** for a bundled Windows bridge that does not require Node.js. Its stable user-data path follows Orbit's live API address across updates. A stateless streaming HTTP MCP endpoint is available at `/mcp`; **Copy ChatGPT connection** provides a private, capability-authenticated upstream URL for a configured Secure MCP Tunnel and ChatGPT plugin. Installing or connecting that plugin is a separate account-side step. Google Calendar authorization and website sign-in remain separate.
+
+See [the complete API and MCP guide](source/API.md), [the controller](source/app/desktop/automation-controller.cjs), [the HTTP API](source/app/desktop/local-api.cjs) and [the MCP tool catalog](source/app/desktop/mcp-tools.cjs). Background opening, editing and uploads keep the foreground workspace in place. Actions explicitly selecting a tab or showing a window change the display; authorization and file-picker workflows can require visible UI. Verify a site's save, upload or message outcome rather than treating input dispatch as proof of remote acceptance.
 
 Chrome and Edge also support browser automation and are based on the [open-source Chromium project](https://www.chromium.org/Home/). Orbit's advantage is that the entire workspace application and its integration layer are editable in this repository. Background workflows reduce foreground interaction when an API is available; they do not guarantee faster execution or unrestricted access to a website. Website sign-in, authorization, security checks, and service terms still apply.
 
@@ -103,6 +105,12 @@ THIRD-PARTY-NOTICES.txt
 See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also includes the Electron runtime template. Large binary files are distributed as release assets rather than committed to Git.
 
 ## What's new
+
+### v1.8.32
+
+- Enable full local control in the general edition: edit webpage fields, run page scripts, click, type, drag, scroll and upload readable local files. Orbit UI/native methods, tabs, navigation, settings, avatars, downloads, favorites, clipboard and local plans are available to authenticated clients.
+- Add 15 MCP tools, a bundled Node-free Windows bridge with a stable update-safe path, and a streaming HTTP MCP endpoint. Copy the Codex/local configuration or a private ChatGPT tunnel connection from API settings; access rotation revokes previous credentials and connection URLs.
+- Keep the foreground workspace in place during background opening and input. ChatGPT side-pane navigation and closing preserve the document; queued input rechecks the page address. Temporary input hosts and isolated verification processes are cleaned after use.
 
 ### v1.8.31
 

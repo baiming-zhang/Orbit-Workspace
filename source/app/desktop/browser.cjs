@@ -1,3 +1,4 @@
+const pageEdit=require('./page-edit.cjs');
 const {enableMicrophone}=require('./media-permissions.cjs');
 const path=require('node:path');
 const {WebContentsView}=require('electron');
@@ -95,8 +96,9 @@ function createBrowser({getWindow,views=new Map(),serviceUrls,portals,onPage,ses
  }
  function pages(){return [...views].filter(([,v])=>!v.webContents.isDestroyed()&&(!v.orbitWorkspace||workspaces.get(v.orbitWorkspace)===v)).map(([id,v])=>({id:v.orbitWorkspace||id,title:v.webContents.getTitle()||describe(id,v.webContents.getURL()).title,url:v.webContents.getURL(),active:active===v}));}
  async function pageText(id){const view=viewFor(id);if(!view||view.webContents.isDestroyed())throw Error('请先在工作台打开该网页。');const data=await view.webContents.executeJavaScript(`(()=>{const parts=[document.body?.innerText||''];for(const f of document.querySelectorAll('iframe')){try{const text=f.contentDocument?.body?.innerText;if(text)parts.push(text);}catch{}}const raw=parts.join('\\n');return {title:document.title,url:location.href,text:raw.slice(0,1000000),truncated:raw.length>1000000};})()`);return {id,...data,source:'untrusted-webpage-text',readAt:Date.now()};}
+ const editorActions=Object.fromEntries(['readPageEditor','writePageEditor','uploadPageFiles','clickPageElement','describePageDom'].map(method=>[method,(id,input)=>pageEdit[method](viewFor(id)?.webContents,id,input)]));
  function configure(items){for(const item of items){names[item.id]=item.name;if(!item.url)continue;const changed=serviceUrls[item.id]!==item.url;serviceUrls[item.id]=item.url;const view=viewFor(item.id);if(changed&&view&&!view.webContents.isDestroyed()){view.orbitUrl=item.url;load(view,item.url);}}}
  function remove(id){for(const [key,view] of views){if((key===id||view.orbitWorkspace===id)&&!view.webContents.isDestroyed())view.webContents.close();}workspaces.delete(id);if(id.startsWith('nav-')){delete serviceUrls[id];delete names[id];}}
- return {views,show,open,navigate,pages,pageText,configure,remove,dispose:()=>{if(disposed)return;disposed=true;const all=[...views.values()];views.clear();workspaces.clear();active=null;for(const view of all){const wc=view.webContents;if(wc&&!wc.isDestroyed())wc.close();}}};
+ return {views,show,open,navigate,pages,pageText,...editorActions,configure,remove,dispose:()=>{if(disposed)return;disposed=true;const all=[...views.values()];views.clear();workspaces.clear();active=null;for(const view of all){const wc=view.webContents;if(wc&&!wc.isDestroyed())wc.close();}}};
 }
 module.exports={webUrl,createBrowser};
