@@ -1,0 +1,7 @@
+import {getDocument,GlobalWorkerOptions} from './vendor/pdfjs/pdf.mjs';
+GlobalWorkerOptions.workerSrc=new URL('./vendor/pdfjs/pdf.worker.mjs',import.meta.url).href;
+const documents=new Map();
+window.orbitThumbnails={
+ async load(key,base64){if(documents.has(key))return;const data=Uint8Array.from(atob(base64),c=>c.charCodeAt(0));const task=getDocument({data,cMapUrl:new URL('./vendor/pdfjs/cmaps/',import.meta.url).href,cMapPacked:true,standardFontDataUrl:new URL('./vendor/pdfjs/standard_fonts/',import.meta.url).href,wasmUrl:new URL('./vendor/pdfjs/wasm/',import.meta.url).href,isEvalSupported:false,useSystemFonts:true,verbosity:0});const doc=await task.promise;documents.set(key,doc);if(documents.size>3){const old=documents.keys().next().value;await documents.get(old).destroy();documents.delete(old);}},
+ async render(key,index,width){const doc=documents.get(key);if(!doc)return null;const page=await doc.getPage(index+1),viewport=page.getViewport({scale:1,rotation:0}),target=page.getViewport({scale:width/viewport.width,rotation:0}),canvas=document.createElement('canvas');canvas.width=Math.ceil(target.width);canvas.height=Math.ceil(target.height);await page.render({canvas,viewport:target,background:'rgb(255,255,255)'}).promise;const result={pageIndex:index,width:canvas.width,height:canvas.height,png:canvas.toDataURL('image/png')};canvas.width=canvas.height=0;page.cleanup();return result;}
+};

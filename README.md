@@ -106,6 +106,10 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.37
+
+- Fit PDF thumbnails to the sidebar width and render visible thumbnails more sharply in the background. Hiding the sidebar removes its divider and expands the reading area; PDF zoom follows the layout.
+
 ### v1.8.35
 
 - Zoom PDF thumbnails independently and drag the divider to resize the sidebar. Remember the layout and separate light/dark reading backgrounds; dark mode offers six Dark tones.

@@ -8,6 +8,7 @@
  function style(target,id,css){let s=target.querySelector('#'+id);if(!s){s=document.createElement('style');s.id=id;target.append(s);}if(s.textContent!==css)s.textContent=css;}
  style(root,'orbit-pdf-viewer-style',`
  :host{${vars};--viewer-side-background-color:var(--orbit-pdf-bg);--viewer-pdf-toolbar-background-color:var(--orbit-pdf-paper);--pdf-toolbar-text-color:var(--orbit-pdf-accent);--viewer-border-color:var(--orbit-pdf-line);--viewer-icon-focus-outline-color:var(--orbit-pdf-accent);--viewer-icon-ink-fill-color:var(--orbit-pdf-accent);--viewer-text-input-selection-color:var(--orbit-pdf-active);--viewer-icon-ink-selected-fill-color:var(--orbit-pdf-accent);--viewer-icon-ink-selected-background-color:var(--orbit-pdf-active);color:var(--orbit-pdf-ink)}
+ #sidenav-container[closed],#sidenav-container.orbit-pdf-closed{width:0!important;min-width:0!important;flex:0 0 0!important;border:0!important;visibility:hidden!important}
  #sidenav-container{background:var(--orbit-pdf-bg)!important;flex-shrink:0!important;overflow:hidden}
  /* Transparent compositor layers are required for the native PDF surface. */
  #container,#main,#scroller,#content{background:transparent!important}
@@ -17,6 +18,7 @@
  :host(.orbit-immersive) #orbit-pdf-expand{display:inline-grid;place-items:center}
  #orbit-pdf-divider{width:8px;flex:0 0 8px;cursor:col-resize;background:var(--orbit-pdf-bg);position:relative;touch-action:none;user-select:none}
  #orbit-pdf-divider:before{content:'';position:absolute;top:0;bottom:0;left:3px;width:2px;border-radius:2px;background:var(--orbit-pdf-line)}
+ #orbit-pdf-divider[hidden]{display:none!important}#orbit-pdf-divider.orbit-floating{position:absolute;top:0;bottom:0;left:var(--viewer-pdf-sidenav-width);z-index:2}
  #orbit-pdf-divider:hover:before,#orbit-pdf-divider:focus-visible:before{background:var(--orbit-pdf-accent)}
  #orbit-pdf-drag-shield{position:fixed;inset:0;z-index:1000;cursor:col-resize;background:transparent}
  `);

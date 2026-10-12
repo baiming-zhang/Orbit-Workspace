@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string]$PythonExecutable = 'python',
     [string]$SevenZip = '7z',
     [string]$MakeNsis = 'makensis',
@@ -26,7 +26,7 @@ Invoke-Checked $PythonExecutable @((Join-Path $sourceRoot 'build\pack_asar.py'),
 $runtimeArchive = Join-Path $buildRoot 'runtime.7z'
 Push-Location $runtimeRoot
 try { Invoke-Checked $SevenZip @('a', '-t7z', '-mx=5', $runtimeArchive, '.\*') } finally { Pop-Location }
-$cacheId='1.8.35-'+(Get-FileHash -LiteralPath (Join-Path $runtimeRoot 'resources\app.asar') -Algorithm SHA256).Hash.Substring(0,16).ToLowerInvariant()+'-'+(Get-FileHash -LiteralPath (Join-Path $runtimeRoot 'Orbit.exe') -Algorithm SHA256).Hash.Substring(0,8).ToLowerInvariant()
+$cacheId='1.8.37-'+(Get-FileHash -LiteralPath (Join-Path $runtimeRoot 'resources\app.asar') -Algorithm SHA256).Hash.Substring(0,16).ToLowerInvariant()+'-'+(Get-FileHash -LiteralPath (Join-Path $runtimeRoot 'Orbit.exe') -Algorithm SHA256).Hash.Substring(0,8).ToLowerInvariant()
 $exe = Join-Path $outputRoot 'Orbit.exe'
 Invoke-Checked $MakeNsis @('/INPUTCHARSET', 'UTF8', '/V2', ('/DOUTPUT_EXE=' + $exe), ('/DCACHE_ID=' + $cacheId), ('/DAPP_ICON=' + (Join-Path $sourceRoot 'app\desktop\assets\icon.ico')), ('/DRUNTIME_ARCHIVE=' + $runtimeArchive), ('/DNSIS_PLUGIN_DIR=' + $pluginRoot), (Join-Path $sourceRoot 'build\Orbit.nsi'))
 Copy-Item -LiteralPath (Join-Path $sourceRoot 'app\desktop\mcp-bridge.cjs') -Destination (Join-Path $outputRoot 'orbit-api-bridge.cjs')

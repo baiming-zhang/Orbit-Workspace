@@ -17,3 +17,7 @@ The runtime-template.7z also preserves these license texts.
 
 The build requires Python 3, 7-Zip, NSIS, and the Nsis7z plugin, provided
 separately by their maintainers. The Orbit build scripts are MIT licensed.
+
+PDF.js (pdfjs-dist 6.4.299)
+Copyright Mozilla Foundation and contributors. Licensed under Apache License 2.0.
+Used only for background, on-demand PDF thumbnail rendering. License: source/app/dist/vendor/pdfjs/LICENSE.
