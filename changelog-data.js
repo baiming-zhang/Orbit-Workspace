@@ -1,5 +1,12 @@
 window.OrbitChangelog = [
   {
+    "version": "1.8.39",
+    "date": "2026-10-12",
+    "kind": "fix",
+    "en": "Make every webpage zoom input redraw immediately, fixing the case where the stored zoom changed but the visible page did not. Ctrl +/−, Ctrl+0 and Ctrl+wheel now update the actual page layout; website scale memory and native PDF zoom are preserved.",
+    "zh": "修复缩放比例已改变但网页画面没有更新的问题；Ctrl 加减、Ctrl+0 与 Ctrl+滚轮每次输入都会立即更新实际页面布局，保留网站比例记忆和 PDF 原生缩放。"
+  },
+  {
     "version": "1.8.38",
     "date": "2026-10-12",
     "kind": "fix",
