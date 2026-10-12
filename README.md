@@ -106,6 +106,10 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.33
+
+- Fix blank PDF pages while thumbnails remain visible. Keep native PDF paint layers transparent and change reading backgrounds without modifying or resizing the initialized plugin.
+
 ### v1.8.32
 
 - Enable full local control in the general edition: edit webpage fields, run page scripts, click, type, drag, scroll and upload readable local files. Orbit UI/native methods, tabs, navigation, settings, avatars, downloads, favorites, clipboard and local plans are available to authenticated clients.

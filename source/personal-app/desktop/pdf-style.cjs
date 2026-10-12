@@ -7,10 +7,9 @@ function createPdfStyle({getWindow,getLanguage=()=> 'en',linkItems=null,selectio
  const t=value=>OrbitI18n.text(value,getLanguage());
  const preference=path.join(app.getPath('userData'),'pdf-preferences.json'),script=fs.readFileSync(path.join(__dirname,'pdf-chrome.js'),'utf8'),contents=new Map();let tone='blue';
  try{const saved=JSON.parse(fs.readFileSync(preference,'utf8'));if(tones[saved.background])tone=saved.background;}catch{}
- function repaint(wc){if(wc.isDestroyed())return;const color=(0xff000000|parseInt(tones[tone].color.slice(1),16))>>>0;for(const frame of wc.mainFrame.framesInSubtree){if(!frame.parent?.url.startsWith(viewerOrigin))continue;
-  // The inner PDF renderer caches the colors of its gutters. Update its actual
-  // plugin and briefly resize it so Chromium recalculates those background parts.
-  frame.executeJavaScript(`(()=>{const plugin=document.querySelector('embed[type="application/x-google-chrome-pdf"]');if(typeof plugin?.postMessage!=='function')return false;plugin.postMessage({type:'setBackgroundColor',color:${color}});const previous=plugin.style.width;plugin.style.width=Math.max(1,plugin.getBoundingClientRect().width-2)+'px';setTimeout(()=>{if(plugin.isConnected)plugin.style.width=previous;},120);return true;})()`).catch(()=>{});
+ function repaint(wc){if(wc.isDestroyed())return;const color=(0xff000000|parseInt(tones[tone].color.slice(1),16))>>>0;for(const frame of wc.mainFrame.framesInSubtree){if(!frame.url.startsWith(viewerOrigin))continue;
+  // Keep the native plugin and its dimensions intact while changing gutters.
+  frame.executeJavaScript(`(()=>{const viewer=document.querySelector('pdf-viewer');if(!viewer)return false;viewer.pluginController_?.setBackgroundColor(${color});window.dispatchEvent(new Event('resize'));return true;})()`).catch(()=>{});
  }}
  function apply(wc,refresh=false){if(wc.isDestroyed())return;for(const frame of wc.mainFrame.framesInSubtree){if(frame.url.startsWith(viewerOrigin))frame.executeJavaScript('window.__orbitPdfBackground='+JSON.stringify(tones[tone].color)+';'+script).then(changed=>{if(changed&&refresh)repaint(wc);}).catch(()=>{});}}
  function choose(value){if(!tones[value])return;tone=value;fs.mkdirSync(path.dirname(preference),{recursive:true});fs.writeFileSync(preference+'.tmp',JSON.stringify({background:tone}));fs.renameSync(preference+'.tmp',preference);for(const wc of contents.keys())apply(wc,true);}

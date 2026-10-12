@@ -1,6 +1,6 @@
 {
   "name": "orbit-workspace",
-  "version": "1.8.32",
+  "version": "1.8.33",
   "description": "A refined desktop workspace for Google services and Zoom meetings",
   "main": "desktop/main.cjs",
   "author": "Orbit Workspace",

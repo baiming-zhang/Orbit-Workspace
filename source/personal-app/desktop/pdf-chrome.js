@@ -20,7 +20,9 @@
  if(page)style(page,'orbit-pdf-page-style',`:host{color:#475467!important}input,#pageSelector{background:#f6f8fb!important;color:#475467!important;border:1px solid #e9edf3!important;border-radius:5px!important}#content{color:#475467!important}`);
  style(root,'orbit-pdf-viewer-style',`
   :host{--viewer-side-background-color:var(--orbit-pdf-background);--viewer-pdf-toolbar-background-color:#fff;--pdf-toolbar-text-color:#5c8bbc;--viewer-border-color:#dbe3ed;--viewer-icon-focus-outline-color:#9cb9de;--viewer-icon-ink-fill-color:#5c8bbc;--viewer-text-input-selection-color:#d7e5f6;--viewer-icon-ink-selected-fill-color:#5c8bbc;--viewer-icon-ink-selected-background-color:#e4edf9;color:#475467}
-  #container,#main,#scroller,#sidenav-container{background:var(--orbit-pdf-background)!important}
+  #sidenav-container{background:var(--orbit-pdf-background)!important}
+  /* Native PDF surfaces must not be covered by opaque scrolling layers. */
+  #container,#main,#scroller,#content{background:transparent!important}
   :host(.orbit-immersive){--viewer-pdf-toolbar-height:0px}
   :host(.orbit-immersive) #toolbar{display:none!important}
   :host(.orbit-immersive) #container{height:100%!important}
@@ -42,7 +44,9 @@
   const changed=viewer.dataset.orbitBackground!==color;
   viewer.style.setProperty('--orbit-pdf-background',color);document.documentElement.style.backgroundColor=color;document.body.style.backgroundColor=color;
   viewer.getBackgroundColor=()=>argb;
-  const plugin=root.querySelector('#plugin');plugin?.setAttribute('background-color',String(argb));try{viewer.pluginController_?.setBackgroundColor(argb);}catch{}
+  // Update the live plugin through its message API. Changing embed attributes
+  // after initialization can invalidate the native rendering surface.
+  if(changed)try{viewer.pluginController_?.setBackgroundColor(argb);}catch{}
   viewer.dataset.orbitBackground=color;lightNested(root);return changed;
  };
  const backgroundChanged=window.__orbitPdfSetBackground(window.__orbitPdfBackground);
