@@ -88,7 +88,7 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
   return 'persist:personal-websites';
  }
  function addInternal(mode){const t={id:'home-'+mode,url:spec(mode).url,workspace:mode,title:title(mode),internal:true,pdf:false,view:null,chat:null,chatVisible:false,ratio:.62,error:''};tabs.push(t);return t;}
- function ensureHome(mode){const config=spec(mode);if(!config)throw Error('Unknown workspace.');if(config.internal){if(mode==='pdf'){const document=tabs.find(t=>t.workspace===mode&&!t.internal&&!t.provisional);if(document)return document;}if(!tabs.some(t=>t.workspace===mode&&t.internal))return addInternal(mode);}else if(!tabs.some(t=>t.workspace===mode&&!t.provisional))return add(config.url,{workspace:mode,primary:true,loadUrl:sessions?.startUrl(mode,config.url)||config.url,activate:false});return tabs.find(t=>t.workspace===mode&&!t.provisional);}
+ function ensureHome(mode,reset=false){const config=spec(mode);if(!config)throw Error('Unknown workspace.');const existing=tabs.find(t=>t.workspace===mode&&!t.provisional);if(existing)return existing;return config.internal?addInternal(mode):add(config.url,{workspace:mode,primary:true,loadUrl:reset?config.url:sessions?.startUrl(mode,config.url)||config.url,activate:false});}
  function linkItems(wc,params){
   const url=webUrl(params.linkURL);if(!url)return [];
   const owner=tabs.find(t=>t.view?.webContents===wc||t.chat?.webContents===wc),mode=owner?.workspace||workspace;
@@ -237,13 +237,19 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
  }
  function ensureHomeIfInternal(mode){if(spec(mode)?.internal)ensureHome(mode);}
  function removeTab(t,destroyed=false){
-  const index=tabs.indexOf(t);if(index<0)return;clearTimeout(t.failureTimer);tabs.splice(index,1);views.delete(t.id);views.delete(t.id+'-chat');
+  const index=tabs.indexOf(t);if(index<0)return;const workspaceIndex=tabs.filter(tab=>tab.workspace===t.workspace&&!tab.provisional).indexOf(t);clearTimeout(t.failureTimer);tabs.splice(index,1);views.delete(t.id);views.delete(t.id+'-chat');
   for(const v of [t.view,t.chat]){if(attached.has(v)){getWindow()?.contentView.removeChildView(v);attached.delete(v);}if(!destroyed||v===t.chat){if(v?.webContents&&!v.webContents.isDestroyed())v.webContents.close();}}
   if(lastActive.get(t.workspace)===t.id)lastActive.delete(t.workspace);
-  if(activeId===t.id){const parent=tabs.find(p=>p.id===t.parentId),next=parent||tabs.filter(p=>p.workspace===t.workspace&&!p.provisional).at(-1)||(t.workspace==='browser'?add(blankUrl,{workspace:'browser',primary:true,activate:false,loadUrl:blankUrl}):ensureHome(t.workspace));activeId=next?.id||null;if(next)lastActive.set(t.workspace,next.id);}
+  if(activeId===t.id){const remaining=tabs.filter(p=>p.workspace===t.workspace&&!p.provisional),next=remaining[Math.min(workspaceIndex,remaining.length-1)]||ensureHome(t.workspace,true);activeId=next?.id||null;if(next)lastActive.set(t.workspace,next.id);}
   layout();focusCurrent();publish();
  }
- function close(id){const t=tabs.find(t=>t.id===id);if(t&&!t.internal)removeTab(t);}
+ function close(id){const t=tabs.find(t=>t.id===id&&t.workspace===workspace&&!t.provisional);if(t)removeTab(t);}
+ function reorder(value){
+  const visible=tabs.filter(t=>t.workspace===workspace&&!t.provisional),ids=value?.ids;
+  if(value?.workspace!==workspace||!Array.isArray(ids)||ids.length!==visible.length||new Set(ids).size!==ids.length||ids.some(id=>typeof id!=='string'||!visible.some(t=>t.id===id)))throw Error(local('Tab order changed. Try again.','标签页已变化，请重新拖动。'));
+  const ordered=ids.map(id=>visible.find(t=>t.id===id));let index=0;
+  for(let slot=0;slot<tabs.length;slot++)if(tabs[slot].workspace===workspace&&!tabs[slot].provisional)tabs[slot]=ordered[index++];
+ }
  function toggleChat(){
   const t=current();if(!t)return;t.chatVisible=!t.chatVisible;
   if(t.chatVisible&&!t.chat){t.chat=new WebContentsView({webPreferences:{partition:'persist:chatgpt',preload:path.join(__dirname,'website-preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true}});views.set(t.id+'-chat',t.chat);const wc=t.chat.webContents;setup(wc,t);(sessions?.prepare('persist:chatgpt',wc.session)||Promise.resolve()).then(()=>wc.loadURL(t.pdf?'https://chatgpt.com/':sessions?.startUrl('chatgpt','https://chatgpt.com/')||'https://chatgpt.com/')).catch(()=>{});wc.on('did-navigate',(_e,url)=>sessions?.remember('chatgpt','https://chatgpt.com/',url));wc.on('did-finish-load',()=>{if(t.pdf&&t.chatVisible)pdfChatUpload.attach(t);});}
@@ -254,7 +260,7 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
  function tabMenu(id){const t=tabs.find(t=>t.id===id);if(!t)return;const pin=pageItems(t.view?.webContents);Menu.buildFromTemplate([
   {id:'tab-reload',label:local('Reload','刷新'),enabled:!!t.view,click:()=>t.view?.webContents.reload()},
   {id:'tab-copy-link',label:local('Copy link','复制链接'),click:()=>clipboard.writeText(t.url.startsWith('file:')?fileURLToPath(t.url):t.url)},
-  {id:'tab-close',label:local('Close tab','关闭标签页'),enabled:!t.internal,click:()=>close(id)},
+  {id:'tab-close',label:local('Close tab','关闭标签页'),enabled:true,click:()=>close(id)},
   ...(pin.length?[{type:'separator'},...pin]:[])
  ]).popup({window:getWindow()});}
  async function pick(mode=workspace){const pdf=spec(mode)?.pdfWorkspace,result=await dialog.showOpenDialog(getWindow(),{title:local('Open a PDF or webpage file','打开 PDF 或网页文件'),properties:['openFile','multiSelections'],filters:[{name:local('PDF and webpages','PDF 与网页'),extensions:pdf?['pdf']:[...localExtensions].map(x=>x.slice(1))}]});for(const file of result.filePaths||[])open(file,{workspace:mode});return {ok:true};}
@@ -264,6 +270,7 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
   else if(action==='new'){if(spec(workspace)?.pdfWorkspace)await pick(workspace);else open(value||(spec(workspace)?.internal?blankUrl:spec(workspace)?.url)||blankUrl,{workspace,forceNew:true});}
   else if(action==='select')activate(value);
   else if(action==='close')close(value);
+  else if(action==='reorder')reorder(value);
   else if(action==='tab-menu'||action==='pdf-file-menu')tabMenu(value);
   else if(action==='pdf-address-open')openAddress(tabs.find(tab=>tab.id===value));
   else if(action==='pdf-address-close'){addressEditing=false;layout();}
@@ -280,7 +287,7 @@ function createTabbedBrowser({getWindow,sessions,workspaceItems=[],onPage=()=>{}
   else if(action==='home'){if(spec(workspace).internal){const home=tabs.find(tab=>tab.workspace===workspace&&tab.internal)||addInternal(workspace);activate(home.id);}else if(t&&wc)loadTab(t,spec(workspace).url);}
   publish();return {ok:true,workspaceState:snapshot()};
  }catch(error){if(current())current().error=error.message;publish();return {ok:false,error:error.message};}}
- function navigate(mode,action,value){if(disposed||!shown||mode!==workspace||!spec(mode))return {ok:false,error:'Workspace is not active.'};if(!['back','forward','reload','home','navigate','open-file','new','select','close'].includes(action))return {ok:false,error:'Unsupported navigation action.'};return performAction(action,value);}
+ function navigate(mode,action,value){if(disposed||!shown||mode!==workspace||!spec(mode))return {ok:false,error:'Workspace is not active.'};if(!['back','forward','reload','home','navigate','open-file','new','select','close','reorder'].includes(action))return {ok:false,error:'Unsupported navigation action.'};return performAction(action,value);}
  function trustedToolbar(e){return toolbar&&e.sender===toolbar.webContents&&e.senderFrame===e.sender.mainFrame&&e.senderFrame.url===toolbarUrl;}
  ipcMain.handle('orbit:tabs-action',(e,a,v)=>trustedToolbar(e)?performAction(a,v):{ok:false});
  ipcMain.on('orbit:workspace-address-blur',e=>{if(ownerFor(e.sender)&&e.senderFrame===e.sender.mainFrame)blurAddress();});

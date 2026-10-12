@@ -104,6 +104,11 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.30
+
+- Reorder top tabs in every workspace by holding and dragging left or right. Preview the order while dragging, retain it when switching workspaces and press Escape to cancel. The active page stays open; normal clicks and close buttons continue to work.
+- Allow closing built-in initial tabs, including the PDF Reader start tab. Closing the final tab creates one initialized tab for that workspace; closing an initial tab while other tabs remain no longer recreates it on workspace switches.
+
 ### v1.8.29
 
 - Make the titlebar breadcrumb actionable: Workspace returns to Overview and expands the sidebar; the workspace name and Home button return to that workspace’s initial page while retaining other open tabs and PDFs.

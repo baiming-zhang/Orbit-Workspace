@@ -1,5 +1,19 @@
 window.OrbitChangelog = [
   {
+    "version": "1.8.30",
+    "date": "2026-10-11",
+    "kind": "feature",
+    "en": "Reorder top tabs in every workspace by holding and dragging left or right. Preview the order while dragging, retain it when switching workspaces and press Escape to cancel. The active page stays open; normal clicks and close buttons continue to work.",
+    "zh": "所有工作台的顶部标签均支持长按后左右拖动排序，拖动时实时预览，切换工作台保留顺序，按 Esc 可取消；保留正在查看的页面，普通点击及关闭按钮正常使用。"
+  },
+  {
+    "version": "1.8.30",
+    "date": "2026-10-11",
+    "kind": "fix",
+    "en": "Allow closing built-in initial tabs, including the PDF Reader start tab. Closing the final tab creates one initialized tab for that workspace; closing an initial tab while other tabs remain no longer recreates it on workspace switches.",
+    "zh": "PDF Reader 等内置初始标签也可通过 × 关闭；关闭最后一个标签后生成该工作台的一个初始标签。仍有其他标签时，已关闭的初始标签不会在切换工作台后重新出现。"
+  },
+  {
     "version": "1.8.29",
     "date": "2026-10-11",
     "kind": "feature",
