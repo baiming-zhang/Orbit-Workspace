@@ -5,3 +5,5 @@ contextBridge.exposeInMainWorld('orbitReminder',{
  action:(action,id)=>ipcRenderer.invoke('orbit:reminder-action',action,id),
  onUpdate:(callback)=>ipcRenderer.on('orbit:reminder-update',()=>callback())
 });
+
+contextBridge.exposeInMainWorld('orbitTheme',Object.freeze({get:()=>ipcRenderer.invoke('orbit:theme-get'),onChanged:fn=>ipcRenderer.on('orbit:theme-changed',(_event,data)=>fn(data))}));

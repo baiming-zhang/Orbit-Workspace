@@ -1,3 +1,4 @@
+const {themeView}=require('./view-theme.cjs');
 const pageEdit=require('./page-edit.cjs');
 const {enableMicrophone}=require('./media-permissions.cjs');
 const path=require('node:path');
@@ -38,6 +39,7 @@ function createBrowser({getWindow,views=new Map(),serviceUrls,portals,onPage,ses
   const portal=portals.some(p=>p.id===id);
   const partition=id==='chatgpt'?'persist:chatgpt':(portal||id.startsWith('nav-'))?'persist:personal-websites':'persist:google-services';
   const view=new WebContentsView({...(webContents?{webContents}:{}),webPreferences:{...(session?{session}:{partition}),preload:path.join(__dirname,'website-preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true}});
+  themeView(view);
   views.set(id,view);view.orbitUrl=url||serviceUrls[id];
   const wc=view.webContents;
   wc.setUserAgent(wc.getUserAgent().replace(/\sElectron\/[^\s]+/g,'').replace(/\sOrbit(?:%20| )?Workspace\/[^\s]+/gi,''));

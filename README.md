@@ -106,9 +106,17 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.35
+
+- Zoom PDF thumbnails independently and drag the divider to resize the sidebar. Remember the layout and separate light/dark reading backgrounds; dark mode offers six Dark tones.
+- Use gentle rising bubbles while a website loads. Waiting pages offer Go back and Return home and respect reduced-motion preferences.
+- Unify dark mode in black and gray across workspaces, dialogs, reminders, PDF controls and reading surfaces. Apply the selected theme before showing a new surface to prevent light/dark flashes, and restore blank PDF pages with the compatible native renderer.
+- Preserve maximized and normal window states when opening files and links; restore minimized windows before revealing them. Waiting-page navigation cancels pending requests and returns to the previous page or workspace home.
+- Keep download records available while renaming or moving files, avoiding a transient missing path being marked as deleted.
+
 ### v1.8.33
 
-- Fix blank PDF pages while thumbnails remain visible. Keep native PDF paint layers transparent and change reading backgrounds without modifying or resizing the initialized plugin.
+- Restore PDF page rendering and thumbnail navigation using the compatible native viewer. Keep GPU acceleration, reading controls, files and preferences.
 
 ### v1.8.32
 

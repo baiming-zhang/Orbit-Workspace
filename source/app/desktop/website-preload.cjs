@@ -49,3 +49,6 @@ if(location.protocol==='https:'){
  ipcRenderer.on('orbit:language-changed',()=>{entryCache=null;lastRead=0;tick();});
  window.addEventListener('DOMContentLoaded',()=>{tick();let queued=false;new MutationObserver(()=>{if(!queued){queued=true;setTimeout(()=>{queued=false;tick();},250);}}).observe(document.documentElement,{childList:true,subtree:true});});window.addEventListener('load',tick);setInterval(tick,1500);
 }
+
+// PDF viewer messages carry layout preferences only, never page commands.
+window.addEventListener('message',event=>{if(event.origin!=='chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai'||event.data?.type!=='orbit-pdf-preferences')return;const patch=event.data.patch;if(!patch||typeof patch!=='object')return;ipcRenderer.send('orbit:pdf-preferences',{...(Number.isFinite(patch.thumbnailScale)?{thumbnailScale:patch.thumbnailScale}:{}),...(Number.isFinite(patch.sidebarWidth)?{sidebarWidth:patch.sidebarWidth}:{})});});
