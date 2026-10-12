@@ -1,5 +1,26 @@
 window.OrbitChangelog = [
   {
+    "version": "1.8.32",
+    "date": "2026-10-11",
+    "kind": "feature",
+    "en": "Enable full local control in the general edition: edit webpage fields, run page scripts, click, type, drag, scroll and upload readable local files. Orbit UI/native methods, tabs, navigation, settings, avatars, downloads, favorites, clipboard and local plans are available to authenticated clients.",
+    "zh": "通用版开放完整本机控制：网页编辑、脚本、点击、输入、拖动、滚动和可读取文件上传；已认证客户端可调用 Orbit 界面及原生方法，管理标签、导航、设置、头像、下载、收藏、剪贴板及本地日程。"
+  },
+  {
+    "version": "1.8.32",
+    "date": "2026-10-11",
+    "kind": "feature",
+    "en": "Add 15 MCP tools, a bundled Node-free Windows bridge with a stable update-safe path, and a streaming HTTP MCP endpoint. Copy the Codex/local configuration or a private ChatGPT tunnel connection from API settings; access rotation revokes previous credentials and connection URLs.",
+    "zh": "新增 15 个 MCP 工具、无需 Node 的 Windows 桥接及稳定更新路径，并提供 HTTP MCP 入口；设置中可复制 Codex/本地配置或 ChatGPT 私有隧道连接。重置访问权限会撤销旧令牌及连接地址。"
+  },
+  {
+    "version": "1.8.32",
+    "date": "2026-10-11",
+    "kind": "fix",
+    "en": "Keep the foreground workspace in place during background opening and input. ChatGPT side-pane navigation and closing preserve the document; queued input rechecks the page address. Temporary input hosts and isolated verification processes are cleaned after use.",
+    "zh": "后台打开和输入保持前台工作台不变；ChatGPT 侧栏导航、关闭保留文档，排队输入会重新核对网址。临时输入窗口和隔离验证进程在使用后清理。"
+  },
+  {
     "version": "1.8.31",
     "date": "2026-10-11",
     "kind": "feature",
