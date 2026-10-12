@@ -1,10 +1,45 @@
 window.OrbitChangelog = [
   {
+    "version": "1.8.35",
+    "date": "2026-10-12",
+    "kind": "feature",
+    "en": "Zoom PDF thumbnails independently and drag the divider to resize the sidebar. Remember the layout and separate light/dark reading backgrounds; dark mode offers six Dark tones.",
+    "zh": "PDF 缩略图可独立缩放，拖动分隔线调整侧栏宽度；记住布局与深浅阅读背景，深色模式提供六种 Dark 色系。"
+  },
+  {
+    "version": "1.8.35",
+    "date": "2026-10-12",
+    "kind": "feature",
+    "en": "Use gentle rising bubbles while a website loads. Waiting pages offer Go back and Return home and respect reduced-motion preferences.",
+    "zh": "网页加载时显示柔和上浮气泡；等待页提供返回上一级和返回主页，并支持减少动态效果。"
+  },
+  {
+    "version": "1.8.35",
+    "date": "2026-10-12",
+    "kind": "fix",
+    "en": "Unify dark mode in black and gray across workspaces, dialogs, reminders, PDF controls and reading surfaces. Apply the selected theme before showing a new surface to prevent light/dark flashes, and restore blank PDF pages with the compatible native renderer.",
+    "zh": "工作台、弹窗、提醒、PDF 控件和阅读区域统一黑灰深色；新界面显示前应用主题，修复深浅色跳转闪屏，并使用兼容原生渲染恢复 PDF 空白正文。"
+  },
+  {
+    "version": "1.8.35",
+    "date": "2026-10-12",
+    "kind": "fix",
+    "en": "Preserve maximized and normal window states when opening files and links; restore minimized windows before revealing them. Waiting-page navigation cancels pending requests and returns to the previous page or workspace home.",
+    "zh": "打开文件或链接时保留最大化与普通窗口状态，显示前恢复最小化窗口；等待页跳转会取消待处理请求并返回上一级或工作台主页。"
+  },
+  {
+    "version": "1.8.35",
+    "date": "2026-10-12",
+    "kind": "fix",
+    "en": "Keep download records available while renaming or moving files, avoiding a transient missing path being marked as deleted.",
+    "zh": "重命名或移动文件时保留下载记录，避免将操作期间暂时消失的旧路径误标为已删除。"
+  },
+  {
     "version": "1.8.33",
     "date": "2026-10-12",
     "kind": "fix",
-    "en": "Fix blank PDF pages while thumbnails remain visible. Keep native PDF paint layers transparent and change reading backgrounds without modifying or resizing the initialized plugin.",
-    "zh": "修复 PDF 缩略图正常但正文空白的问题；保持原生绘制层透明，切换阅读背景时不再修改或缩放已初始化的插件。"
+    "en": "Restore PDF page rendering and thumbnail navigation using the compatible native viewer. Keep GPU acceleration, reading controls, files and preferences.",
+    "zh": "使用兼容的原生阅读器恢复 PDF 正文及缩略图跳页，保留硬件加速、阅读控制、文件和偏好设置。"
   },
   {
     "version": "1.8.32",
