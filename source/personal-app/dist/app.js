@@ -245,7 +245,7 @@ function servicesGrid(){return `<div class="service-grid">${services.map(s=>`<a 
 
 function mailPreview(m){return `<button class="mail-preview" data-action="read-mail" data-id="${m.id}"><span class="sender-avatar ${m.color}">${escapeHtml(m.initial)}</span><div class="mail-info"><div class="mail-line"><span class="sender-name">${escapeHtml(m.sender)}</span><span class="mail-time">${escapeHtml(m.time)}</span></div><div class="mail-subject">${escapeHtml(m.subject)}</div></div>${m.unread?'<span class="unread-dot"></span>':''}</button>`;}
 
-function todaySchedule(){return OrbitSchedule.merge(liveSummary.calendar?.events||[],futureMeetings.events||[],state.events).filter(e=>e.date===today);}
+function todaySchedule(){return OrbitSchedule.merge(liveSummary.calendar?.events||[],futureMeetings.events||[],state.events).filter(e=>OrbitSchedule.onDate(e,today,prefs.timeZone));}
 function schedulePreview(e){return '<div class="schedule-item '+(OrbitSchedule.ended(e,prefs.timeZone)?'is-past':'')+'"><span class="schedule-time">'+escapeHtml(OrbitI18n.text(e.time,prefs.language))+'</span><span class="schedule-line '+(e.type||'blue')+'"></span><span class="schedule-text"><strong>'+escapeHtml(e.title)+'</strong><small>'+icon(e.zoomLink?'video':'pin')+escapeHtml(e.zoomLink?'Zoom 会议':e.location||'未设置地点')+'</small></span>'+(e.zoomLink?'<button class="join-mini" data-action="join-zoom" data-id="'+escapeHtml(e.id)+'" data-mode="app">加入 '+icon('arrow')+'</button>':'<button class="icon-btn" data-action="view-event" data-id="'+escapeHtml(e.id)+'" aria-label="查看日程详情">'+icon('chevron')+'</button>')+'</div>';}
 
 function overviewPage(){
