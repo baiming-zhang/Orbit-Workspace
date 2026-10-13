@@ -19,7 +19,8 @@ function createMeetingReader({api,getTimeZone,getLanguage=()=> 'en',now=()=>new 
  async function getMeetings(){const zone=getTimeZone(),start=now().toISOString(),items=await calendars();
  const results=await mapConcurrent(items,async calendar=>{const events=await list(calendar,{timeMin:start,singleEvents:'false',orderBy:'updated'});const zoom=events.filter(e=>meetingLink(e));const expanded=await mapConcurrent(zoom,async e=>e.recurrence?await nextInstance(calendar,e,start):e);const failure=expanded.find(r=>!r.ok);if(failure)throw Error(failure.error);return expanded.filter(r=>r.value).map(r=>displayEvent(r.value,calendar,zone,getLanguage()));});return collect(results,zone);
  }
+ async function getTodayEvents(window){const zone=getTimeZone(),items=await calendars();const results=await mapConcurrent(items,async calendar=>(await list(calendar,{timeMin:window.start,timeMax:window.end,singleEvents:'true',orderBy:'startTime'})).map(e=>displayEvent(e,calendar,zone)));const combined=collect(results,zone);if(combined.status==='error')throw Error(combined.errors.join('；'));return {...combined,status:'success',partial:combined.status==='partial'};}
  async function getReminderEvents(){const zone=getTimeZone(),start=now(),items=await calendars();const results=await mapConcurrent(items,async calendar=>(await list(calendar,{timeMin:new Date(start.getTime()-300000).toISOString(),timeMax:new Date(start.getTime()+86400000).toISOString(),singleEvents:'true',orderBy:'startTime'})).map(e=>displayEvent(e,calendar,zone,getLanguage())));const combined=collect(results,zone);if(combined.status!=='success')throw Error(combined.errors.join('；'));return combined.events;}
- return {getMeetings,getReminderEvents,clear:()=>{calendarCache=null;cacheAt=0;}};
+ return {getMeetings,getTodayEvents,getReminderEvents,clear:()=>{calendarCache=null;cacheAt=0;}};
 }
 module.exports={createMeetingReader,displayEvent,attending,meetingLink};

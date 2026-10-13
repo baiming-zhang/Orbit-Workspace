@@ -1,5 +1,19 @@
 window.OrbitChangelog = [
   {
+    "version": "1.8.40",
+    "date": "2026-10-13",
+    "kind": "feature",
+    "en": "Mark messages as read or move them to Gmail Trash directly from Overview; marking the mail notification as read also updates Gmail. Zoom links saved with a meeting time appear in both Today’s schedule and the Zoom list, including meetings from all connected calendars. Existing Google connections may need renewed mail permission.",
+    "zh": "概览新增邮件已读和删除按钮，直接同步 Gmail；铃铛邮件通知标为已读时也同步处理邮件。带时间的 Zoom 链接自动显示在今日日程和 Zoom 列表，并同步所有已连接日历的会议；已有 Google 连接可能需要重新授权邮件处理权限。"
+  },
+  {
+    "version": "1.8.40",
+    "date": "2026-10-13",
+    "kind": "fix",
+    "en": "Refresh summaries whenever Overview is revisited so processed mail does not stay unread. Strike through finished events and dim their color markers; ongoing and all-day events remain active.",
+    "zh": "每次切回概览自动刷新汇总，避免已处理邮件仍显示未读；已结束的日程显示划线并淡化颜色，正在进行和当天全天日程保持正常。"
+  },
+  {
     "version": "1.8.39",
     "date": "2026-10-12",
     "kind": "fix",

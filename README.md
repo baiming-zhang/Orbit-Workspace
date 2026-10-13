@@ -106,6 +106,11 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.40
+
+- Mark messages as read or move them to Gmail Trash directly from Overview; marking the mail notification as read also updates Gmail. Zoom links saved with a meeting time appear in both Today’s schedule and the Zoom list, including meetings from all connected calendars. Existing Google connections may need renewed mail permission.
+- Refresh summaries whenever Overview is revisited so processed mail does not stay unread. Strike through finished events and dim their color markers; ongoing and all-day events remain active.
+
 ### v1.8.39
 
 - Make every webpage zoom input redraw immediately, fixing the case where the stored zoom changed but the visible page did not. Ctrl +/−, Ctrl+0 and Ctrl+wheel now update the actual page layout; website scale memory and native PDF zoom are preserved.

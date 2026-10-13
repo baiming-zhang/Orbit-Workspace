@@ -147,3 +147,5 @@ html[data-theme="dark"] .nav-group-divider{background:#586577}
 @media(max-width:1250px){.titlebar-drag-space{flex-basis:56px}.app-titlebar .titlebar-brand{padding-left:18px}.app-titlebar .breadcrumb,.workspace-navigation .app-titlebar .breadcrumb{padding-left:6px}}
 
 .modal-actions:has([data-kind="chatgpt"]){flex-wrap:wrap}
+
+.live-mail-row{cursor:default;flex-wrap:wrap}.live-mail-row .mail-info{flex:1;min-width:90px}.live-mail-actions{display:flex;align-items:center;gap:12px;margin-left:auto;flex-shrink:0}.live-mail-actions button{font-size:calc(10px * var(--ui-scale));padding:5px 0;white-space:nowrap}.live-mail-actions button:disabled{opacity:.45;cursor:wait}.schedule-item.is-past .schedule-time,.schedule-item.is-past .schedule-text{opacity:.5;text-decoration:line-through}.schedule-item.is-past .schedule-line{opacity:.28;filter:saturate(.3)}.schedule-item.is-past>.join-mini{opacity:.5}

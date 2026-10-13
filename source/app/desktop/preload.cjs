@@ -62,6 +62,7 @@ contextBridge.exposeInMainWorld('orbitDesktop',Object.freeze({
   onDataChanged:callback=>{const handler=()=>callback();ipcRenderer.on('orbit:data-changed',handler);return ()=>ipcRenderer.removeListener('orbit:data-changed',handler);},
   disconnectGoogle:()=>ipcRenderer.invoke('orbit:google-disconnect'),
   getMeetings:()=>ipcRenderer.invoke('orbit:google-meetings'),
+  processGmail:input=>ipcRenderer.invoke('orbit:gmail-action',input),
   getSummary:()=>ipcRenderer.invoke('orbit:google-summary'),
   syncMeetings:(events)=>ipcRenderer.invoke('orbit:sync-meetings',events)
 }));
