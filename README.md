@@ -106,6 +106,11 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.46
+
+- PDFs open in read mode. Enter Edit mode to add editable Chinese or English text, rectangles, ellipses, tapered arrows, lines, triangles, diamonds, highlights, and underlines. Select, edit, or erase individual Orbit annotations, including after saving and reopening the PDF.
+- Restore accurate drawing color swatches in light and dark themes, retain each annotation as a separate PDF object, and rename the schedule reset button to Current.
+
 ### v1.8.43
 
 - Browse yesterday, tomorrow, or any date directly in the Overview schedule. Use the arrows, date picker, and Today button; new local meetings use the selected date.

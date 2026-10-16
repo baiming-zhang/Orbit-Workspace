@@ -1,5 +1,19 @@
 window.OrbitChangelog = [
   {
+    "version": "1.8.46",
+    "date": "2026-10-15",
+    "kind": "feature",
+    "en": "PDFs open in read mode. Enter Edit mode to add editable Chinese or English text, rectangles, ellipses, tapered arrows, lines, triangles, diamonds, highlights, and underlines. Select, edit, or erase individual Orbit annotations, including after saving and reopening the PDF.",
+    "zh": "PDF 默认以阅读模式打开；进入编辑模式后可添加中英文文字、方框、椭圆、尖尾锥形箭头、直线、三角形、菱形、记号笔与下划线。Orbit 批注可独立选择、编辑或擦除，保存并重新打开后仍可修改。"
+  },
+  {
+    "version": "1.8.46",
+    "date": "2026-10-15",
+    "kind": "fix",
+    "en": "Restore accurate drawing color swatches in light and dark themes, retain each annotation as a separate PDF object, and rename the schedule reset button to Current.",
+    "zh": "修复明暗主题下绘制色板被主题背景覆盖的问题，批注保存为独立 PDF 对象；行程日期按钮改为“回到当前”。"
+  },
+  {
     "version": "1.8.43",
     "date": "2026-10-15",
     "kind": "feature",

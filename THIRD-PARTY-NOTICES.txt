@@ -21,3 +21,5 @@ separately by their maintainers. The Orbit build scripts are MIT licensed.
 PDF.js (pdfjs-dist 6.4.299)
 Copyright Mozilla Foundation and contributors. Licensed under Apache License 2.0.
 Used only for background, on-demand PDF thumbnail rendering. License: source/app/dist/vendor/pdfjs/LICENSE.
+
+PDF annotation tools: pdf-lib 1.17.1 (MIT), @pdf-lib/fontkit 1.1.1 (MIT), Noto Sans SC (SIL OFL 1.1). Embedded package licenses, README, font license and version lock are retained under source/app/desktop/vendor and source/personal-app/desktop/vendor.
