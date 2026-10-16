@@ -14,6 +14,41 @@ window.OrbitChangelog = [
     "zh": "拖动 PDF 工具栏时实时跟随鼠标，松手后平滑吸附正文区域四边，未接近边缘则回到顶部中心；左侧吸附避开缩略图。荧光笔划过文字直接高亮。支持单点和框选批注，垃圾桶仅删除选中项；清除全部新增或原有批注前显示确认框。折叠手柄自动滑向对应正文角落，仍可自由拖动。工具选中底色统一、图标居中；支持 Ctrl+Z 撤销及 Ctrl+Y、Ctrl+Shift+Z 恢复。"
   },
   {
+    "version": "1.9.1",
+    "date": "2026-10-16",
+    "kind": "feature",
+    "en": "Keep a Reupload PDF button beside ChatGPT after automatic attachment. Retry the current file after a failed upload, show upload status, and prevent duplicate submissions while uploading.",
+    "zh": "自动附加 PDF 后，右侧常驻“重新上传 PDF”按钮；首次上传失败可直接重试当前文件，显示上传状态，上传中避免重复提交。"
+  },
+  {
+    "version": "1.9.1",
+    "date": "2026-10-16",
+    "kind": "fix",
+    "en": "Fix a crash when closing the first restored ChatGPT tab. Unify page lifetimes and split-pane creation so navigation and theme work stop before a page closes.",
+    "zh": "修复关闭恢复后的首个 ChatGPT 标签页时闪退；统一页面生命周期和分屏创建流程，关闭前停止相关导航与主题任务。"
+  },
+  {
+    "version": "1.9.1",
+    "date": "2026-10-16",
+    "kind": "fix",
+    "en": "Start webpage navigation immediately without waiting for theme initialization. Show an animated loading panel for blank pages and a tab spinner during loading; retain visible content while slow resources finish. Recover saved placeholder navigation correctly.",
+    "zh": "网页导航不再等待主题初始化，修复网页无法打开及空白等待；空白页显示加载动画，标签页显示加载状态，慢资源加载时保留已显示内容，并正确恢复占位历史中的原网址。"
+  },
+  {
+    "version": "1.9.1",
+    "date": "2026-10-16",
+    "kind": "fix",
+    "en": "Ease Today’s schedule to the first unfinished, unexpired item when opening Overview, preserving manual scrolling during refresh.",
+    "zh": "打开概览时，今日日程平滑滚动到第一个未完成且未过时的项目；刷新时保留手动滚动位置。"
+  },
+  {
+    "version": "1.9.1",
+    "date": "2026-10-16",
+    "kind": "fix",
+    "en": "Use one toolbar font size, blue for PDF actions and soft red for ChatGPT actions in both themes. Remove the redundant New tab text button while retaining the + shortcut. Consolidate browser ownership, desktop IPC and renderer initialization.",
+    "zh": "顶部工具栏统一字号，PDF 操作用蓝色、ChatGPT 操作用柔和红色，适配明暗主题；移除重复的“新增标签页”文字按钮，保留 + 入口。整理浏览器归属、桌面通信和界面初始化。"
+  },
+  {
     "version": "1.8.48",
     "date": "2026-10-15",
     "kind": "feature",
