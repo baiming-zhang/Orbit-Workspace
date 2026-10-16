@@ -1,1 +1,2 @@
 PDF annotations: pdf-lib 1.17.1 (MIT), @pdf-lib/fontkit 1.1.1 (MIT), Noto Sans CJK SC Regular (SIL OFL 1.1). Licenses, upstream README, dependency lockfile: desktop/vendor.
+Text selection geometry: Mozilla PDF.js 6.4.299 (Apache-2.0), desktop/vendor/pdfjs/LICENSE; locked dependency metadata retained.

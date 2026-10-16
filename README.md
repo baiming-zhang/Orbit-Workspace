@@ -108,8 +108,8 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ### v1.8.47
 
-- A compact icon ribbon brings PDF drawing tools together. Click the page to type in a transparent text box; a gray dashed outline appears only while editing. Existing text remains editable after saving and reopening.
-- Add new-tab shortcuts beside Open file and after the last tab, label the right-side action New tab, and narrow the address field by 30%. Bilingual labels and light/dark themes are supported.
+- The native Draw button toggles a compact icon ribbon with selected-state colors. Drag it to dock at any edge; tools reflow while icons remain upright. Add transparent inline text with a gray dashed editing outline. Symbols stay fixed and can be erased by clicking or dragging; text remains editable. Highlight selected PDF text with the highlighter beside the pen, scroll while editing, save all notes, or exit with the final ×.
+- Right-click drawing tools for individual colors, line widths, text size, rectangle corners, highlighter opacity, and eraser range. Arrows use an inset kite head capped at 3× the shaft width. Add new-tab shortcuts beside Open file and after the final tab; the right-side action is labeled New tab, and the address field is 30% narrower.
 
 ### v1.8.46
 
