@@ -108,8 +108,8 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ### v1.8.48
 
-- Refine the PDF drawing ribbon: neutral icons until selected, background feedback for the active tool, and custom tool colors reflected in their icons. Simplify the highlighter, use a plain T inside a rounded box, fill the arrow head, shrink the color chip, and align diagonal tools at 45 degrees.
-- Remove triangle and diamond drawing tools while preserving existing annotations. Keep edge docking, transparent editable text, fixed symbols with point or stroke erasing, selected-text highlighting, tool preferences, edit-mode scrolling, and Save notes. Remove persistent annotation tips from the reading area; top docking follows the collapsed PDF toolbar. Personal and public editions are synchronized.
+- Center the PDF ribbon on each docked edge, use one column on the sides, rotate only the six-dot grip, and animate moving and unfolding. Right-click the grip to fold or expand; the folded grip can move freely and expands on click. Add six editable circular color presets and a custom color wheel. Tool sizes and styles live in right-click settings.
+- Use uniform neutral icons with active backgrounds and custom tool colors, simplify the boxed T and highlighter, fill and soften the inset arrow head, and remove its former width cap. Remove triangle and diamond tools and persistent tips. Top docking follows a collapsed PDF toolbar. Text mode edits existing boxes, and cached page groups track native viewport changes for smoother synchronized scrolling. Match the current page, slash and total page count colors in both themes.
 
 ### v1.8.47
 

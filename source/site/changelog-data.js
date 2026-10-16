@@ -3,15 +3,15 @@ window.OrbitChangelog = [
     "version": "1.8.48",
     "date": "2026-10-15",
     "kind": "feature",
-    "en": "Refine the PDF drawing ribbon: neutral icons until selected, background feedback for the active tool, and custom tool colors reflected in their icons. Simplify the highlighter, use a plain T inside a rounded box, fill the arrow head, shrink the color chip, and align diagonal tools at 45 degrees.",
-    "zh": "细化 PDF 绘图工具栏：默认图标统一颜色，当前工具以背景提示选中；自定义颜色同步到对应图标。荧光笔去掉底部横线，文字改为圆角方框里的朴素 T，箭头头部实心，色块缩小，斜向工具统一为 45 度。"
+    "en": "Center the PDF ribbon on each docked edge, use one column on the sides, rotate only the six-dot grip, and animate moving and unfolding. Right-click the grip to fold or expand; the folded grip can move freely and expands on click. Add six editable circular color presets and a custom color wheel. Tool sizes and styles live in right-click settings.",
+    "zh": "PDF 工具栏吸附到各边中心，左右单列排列，仅六点手柄随方向旋转；平移和展开加入顺滑动画。右键手柄折叠或展开，折叠后可自由移动，左键也可展开。新增六个可改色圆形预置及自定义色盘，粗细、字号等统一放入工具右键设置。"
   },
   {
     "version": "1.8.48",
     "date": "2026-10-15",
     "kind": "fix",
-    "en": "Remove triangle and diamond drawing tools while preserving existing annotations. Keep edge docking, transparent editable text, fixed symbols with point or stroke erasing, selected-text highlighting, tool preferences, edit-mode scrolling, and Save notes. Remove persistent annotation tips from the reading area; top docking follows the collapsed PDF toolbar. Personal and public editions are synchronized.",
-    "zh": "移除三角形和菱形工具，已有标注继续保留。四边吸附、透明文字框、固定图形点擦及轨迹擦除、选中文字高亮、工具个性设置、编辑时滚动和保存笔记继续保留，阅读区域移除常驻操作提示，顶部吸附随 PDF 顶栏收起自动上移，个人版与通用版同步。"
+    "en": "Use uniform neutral icons with active backgrounds and custom tool colors, simplify the boxed T and highlighter, fill and soften the inset arrow head, and remove its former width cap. Remove triangle and diamond tools and persistent tips. Top docking follows a collapsed PDF toolbar. Text mode edits existing boxes, and cached page groups track native viewport changes for smoother synchronized scrolling. Match the current page, slash and total page count colors in both themes.",
+    "zh": "未选中图标统一颜色，选中项以背景提示，自定义颜色同步至图标；简化圆框 T 和荧光笔，箭头头部实心并放钝，取消原来的头宽限制。移除三角形、菱形和常驻提示，顶部吸附随顶栏收起上移。文本模式点击旧文字框直接编辑，标注采用整页缓存和原生视口同步，改善滚动时文字滞后。明暗主题下当前页、斜杠和总页数统一颜色，确保清晰可见。"
   },
   {
     "version": "1.8.47",
