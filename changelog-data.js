@@ -10,8 +10,8 @@ window.OrbitChangelog = [
     "version": "1.8.48",
     "date": "2026-10-15",
     "kind": "fix",
-    "en": "Use uniform neutral icons with active backgrounds and custom tool colors, simplify the boxed T and highlighter, fill and soften the inset arrow head, and remove its former width cap. Remove triangle and diamond tools and persistent tips. Top docking follows a collapsed PDF toolbar. Text mode edits existing boxes, and cached page groups track native viewport changes for smoother synchronized scrolling. Match the current page, slash and total page count colors in both themes.",
-    "zh": "未选中图标统一颜色，选中项以背景提示，自定义颜色同步至图标；简化圆框 T 和荧光笔，箭头头部实心并放钝，取消原来的头宽限制。移除三角形、菱形和常驻提示，顶部吸附随顶栏收起上移。文本模式点击旧文字框直接编辑，标注采用整页缓存和原生视口同步，改善滚动时文字滞后。明暗主题下当前页、斜杠和总页数统一颜色，确保清晰可见。"
+    "en": "Use uniform neutral icons with active backgrounds and custom tool colors, simplify the boxed T and highlighter, fill and soften the inset arrow head, and remove its former width cap. Remove triangle and diamond tools and persistent tips. Top docking follows a collapsed PDF toolbar. Text mode edits existing boxes, and cached page groups track native viewport changes for smoother synchronized scrolling. Match the current page, slash and total page count colors in both themes. Place schedule completion checkboxes on the left, check completed or elapsed events automatically without refreshing Overview, and use a trash icon for removal.",
+    "zh": "未选中图标统一颜色，选中项以背景提示，自定义颜色同步至图标；简化圆框 T 和荧光笔，箭头头部实心并放钝，取消原来的头宽限制。移除三角形、菱形和常驻提示，顶部吸附随顶栏收起上移。文本模式点击旧文字框直接编辑，标注采用整页缓存和原生视口同步，改善滚动时文字滞后。明暗主题下当前页、斜杠和总页数统一颜色，确保清晰可见。行程左侧改为完成方框，完成或到时自动打勾，通过局部更新避免概览闪动，删除改为垃圾桶图标。"
   },
   {
     "version": "1.8.47",
