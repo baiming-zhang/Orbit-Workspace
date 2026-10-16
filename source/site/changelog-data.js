@@ -1,5 +1,19 @@
 window.OrbitChangelog = [
   {
+    "version": "1.8.48",
+    "date": "2026-10-15",
+    "kind": "feature",
+    "en": "Refine the PDF drawing ribbon: neutral icons until selected, background feedback for the active tool, and custom tool colors reflected in their icons. Simplify the highlighter, use a plain T inside a rounded box, fill the arrow head, shrink the color chip, and align diagonal tools at 45 degrees.",
+    "zh": "细化 PDF 绘图工具栏：默认图标统一颜色，当前工具以背景提示选中；自定义颜色同步到对应图标。荧光笔去掉底部横线，文字改为圆角方框里的朴素 T，箭头头部实心，色块缩小，斜向工具统一为 45 度。"
+  },
+  {
+    "version": "1.8.48",
+    "date": "2026-10-15",
+    "kind": "fix",
+    "en": "Remove triangle and diamond drawing tools while preserving existing annotations. Keep edge docking, transparent editable text, fixed symbols with point or stroke erasing, selected-text highlighting, tool preferences, edit-mode scrolling, and Save notes. Remove persistent annotation tips from the reading area; top docking follows the collapsed PDF toolbar. Personal and public editions are synchronized.",
+    "zh": "移除三角形和菱形工具，已有标注继续保留。四边吸附、透明文字框、固定图形点擦及轨迹擦除、选中文字高亮、工具个性设置、编辑时滚动和保存笔记继续保留，阅读区域移除常驻操作提示，顶部吸附随 PDF 顶栏收起自动上移，个人版与通用版同步。"
+  },
+  {
     "version": "1.8.47",
     "date": "2026-10-15",
     "kind": "feature",

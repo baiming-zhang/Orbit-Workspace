@@ -106,6 +106,11 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.48
+
+- Refine the PDF drawing ribbon: neutral icons until selected, background feedback for the active tool, and custom tool colors reflected in their icons. Simplify the highlighter, use a plain T inside a rounded box, fill the arrow head, shrink the color chip, and align diagonal tools at 45 degrees.
+- Remove triangle and diamond drawing tools while preserving existing annotations. Keep edge docking, transparent editable text, fixed symbols with point or stroke erasing, selected-text highlighting, tool preferences, edit-mode scrolling, and Save notes. Remove persistent annotation tips from the reading area; top docking follows the collapsed PDF toolbar. Personal and public editions are synchronized.
+
 ### v1.8.47
 
 - The native Draw button toggles a compact icon ribbon with selected-state colors. Drag it to dock at any edge; tools reflow while icons remain upright. Add transparent inline text with a gray dashed editing outline. Symbols stay fixed and can be erased by clicking or dragging; text remains editable. Highlight selected PDF text with the highlighter beside the pen, scroll while editing, save all notes, or exit with the final ×.
