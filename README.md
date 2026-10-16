@@ -106,6 +106,11 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.9.1
+
+- Restore every workspace tab, its order, selected tab, split conversation, zoom and reading position from an encrypted local session. PDF tools now offer four editable presets, an anchored color panel, red default annotation icons and more spacious controls.
+- Drag PDF tools with the pointer, then ease onto the document viewport edges or return to top center when dropped away from an edge. Keep left docking beside the PDF, clear of thumbnails. Drag across text to highlight it. Select notes with a click or marquee and delete only the selection. Confirm before clearing all added or original notes. Collapsing slides the handle to the nearest corresponding document corner. Centered tool icons use one soft selection surface. Undo and redo support Ctrl+Z, Ctrl+Y and Ctrl+Shift+Z.
+
 ### v1.8.48
 
 - Center the PDF ribbon on each docked edge, use one column on the sides, rotate only the six-dot grip, and animate moving and unfolding. Right-click the grip to fold or expand; the folded grip can move freely and expands on click. Add six editable circular color presets and a custom color wheel. Tool sizes and styles live in right-click settings.

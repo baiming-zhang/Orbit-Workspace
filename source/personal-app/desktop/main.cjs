@@ -233,8 +233,8 @@ app.on('before-quit',event=>{
   quitSaving=true;
   const shutdownError=error=>{try{fs.appendFileSync(path.join(app.getPath('userData'),'orbit-shutdown.log'),new Date().toISOString()+' '+(error?.stack||error)+'\n');}catch{}};
   // before-quit fires again after saving the sessions. Destroy each view once.
-  for(const cleanup of [()=>favoritesFlyout?.dispose(),()=>downloadsFlyout?.dispose(),()=>tabbedBrowser?.dispose(),()=>background?.dispose(),()=>applications?.dispose(),()=>google?.dispose(),()=>localApi?.stop()])try{cleanup();}catch(error){shutdownError(error);}
-  Promise.resolve().then(()=>browserSessions?.flush()).catch(shutdownError).finally(()=>{
+  for(const cleanup of [()=>favoritesFlyout?.dispose(),()=>downloadsFlyout?.dispose(),()=>background?.dispose(),()=>applications?.dispose(),()=>google?.dispose(),()=>localApi?.stop()])try{cleanup();}catch(error){shutdownError(error);}
+  Promise.resolve().then(()=>tabbedBrowser?.saveSession()).catch(shutdownError).then(()=>{try{tabbedBrowser?.dispose();}catch(error){shutdownError(error);}return browserSessions?.flush();}).catch(shutdownError).finally(()=>{
     try{browserSessions?.dispose();browser?.dispose();}catch(error){shutdownError(error);}
     quitFlushed=true;app.quit();
   });
