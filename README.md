@@ -109,7 +109,7 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 ### v1.8.48
 
 - Center the PDF ribbon on each docked edge, use one column on the sides, rotate only the six-dot grip, and animate moving and unfolding. Right-click the grip to fold or expand; the folded grip can move freely and expands on click. Add six editable circular color presets and a custom color wheel. Tool sizes and styles live in right-click settings.
-- Use uniform neutral icons with active backgrounds and custom tool colors, simplify the boxed T and highlighter, fill and soften the inset arrow head, and remove its former width cap. Remove triangle and diamond tools and persistent tips. Top docking follows a collapsed PDF toolbar. Text mode edits existing boxes, and cached page groups track native viewport changes for smoother synchronized scrolling. Match the current page, slash and total page count colors in both themes.
+- Use uniform neutral icons with active backgrounds and custom tool colors, simplify the boxed T and highlighter, fill and soften the inset arrow head, and remove its former width cap. Remove triangle and diamond tools and persistent tips. Top docking follows a collapsed PDF toolbar. Text mode edits existing boxes, and cached page groups track native viewport changes for smoother synchronized scrolling. Match the current page, slash and total page count colors in both themes. Place schedule completion checkboxes on the left, check completed or elapsed events automatically without refreshing Overview, and use a trash icon for removal.
 
 ### v1.8.47
 

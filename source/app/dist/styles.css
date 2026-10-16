@@ -155,3 +155,6 @@ html[data-theme="dark"] .nav-group-divider{background:#586577}
 
 /* Compact address field and a second new-tab entry. */
 #workspace-address-form{flex:1;max-width:960px;min-width:160px}.app-titlebar #workspace-address-form{max-width:880px}#workspace-address{flex:0 1 calc((100% - 35px)*.7);width:calc((100% - 35px)*.7)}#workspace-new-tab{flex-shrink:0;width:30px;height:32px;font-size:23px;color:#5c8bbc}
+
+/* Quiet schedule completion checkboxes and delete icons. */
+.overview-page .schedule-item>.schedule-complete{margin:0 2px 0 0;width:22px;height:28px;padding:0;display:grid;place-items:center;color:var(--muted);opacity:1}.schedule-checkbox{display:grid;place-items:center;width:16px;height:16px;border:1.5px solid currentColor;border-radius:3px;background:transparent}.schedule-checkbox svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:0}.schedule-complete[aria-checked="true"] .schedule-checkbox svg{opacity:1}.overview-page .schedule-complete[aria-checked="true"]{color:var(--muted)}.overview-page .schedule-complete:disabled{cursor:default}.overview-page .schedule-remove .icon{width:17px;height:17px}
