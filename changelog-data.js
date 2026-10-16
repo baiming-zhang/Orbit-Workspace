@@ -1,5 +1,19 @@
 window.OrbitChangelog = [
   {
+    "version": "1.8.47",
+    "date": "2026-10-15",
+    "kind": "feature",
+    "en": "The native Draw button toggles a compact icon ribbon with selected-state colors. Drag it to dock at any edge; tools reflow while icons remain upright. Add transparent inline text with a gray dashed editing outline. Symbols stay fixed and can be erased by clicking or dragging; text remains editable. Highlight selected PDF text with the highlighter beside the pen, scroll while editing, save all notes, or exit with the final ×.",
+    "zh": "原涂鸦图标切换编辑并高亮选中；图标工具栏可拖动吸附到四边，自适应横竖排列，图标始终正向。透明文字框直接输入，编辑时显示灰色虚线；图形落笔固定，可点擦或滑动轨迹擦除，文字可再次编辑。钢笔旁的荧光笔沿选中文字高亮，编辑时仍可滚动；保存全部笔记，末端 × 退出。"
+  },
+  {
+    "version": "1.8.47",
+    "date": "2026-10-15",
+    "kind": "fix",
+    "en": "Right-click drawing tools for individual colors, line widths, text size, rectangle corners, highlighter opacity, and eraser range. Arrows use an inset kite head capped at 3× the shaft width. Add new-tab shortcuts beside Open file and after the final tab; the right-side action is labeled New tab, and the address field is 30% narrower.",
+    "zh": "绘图工具右键可分别设置颜色、粗细、字号、方框圆角、荧光笔透明度及擦除范围，并自动保留。箭头为内收风筝形，头宽最多为箭杆最粗处的 3 倍。打开文件左侧和末尾标签右侧新增 +，右侧入口改为“新增标签页”，网址输入框缩窄 30%。"
+  },
+  {
     "version": "1.8.46",
     "date": "2026-10-15",
     "kind": "feature",
