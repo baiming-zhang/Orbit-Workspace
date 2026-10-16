@@ -91,8 +91,9 @@ function createGoogle({app,safeStorage,shell,getLanguage=()=> 'en',getTimeZone=(
   catch(error){return {ok:false,ids:done,error:error.status===403?'需要重新授权 Google，允许将邮件标为已读或移到垃圾箱。':error.message,needsMailPermission:error.status===403};}
  }
  const meetingReader=createMeetingReader({api,getLanguage,getTimeZone});
+ async function getSchedule(date){if(typeof date!=='string')throw Error('日程日期不正确。');const instant=OrbitTime.localInstant(date,'12:00',getTimeZone()),window=dayWindow(new Date(instant),getTimeZone());if(!config.refreshToken)return {date,status:'not_connected',events:[]};return {date,...await calendar(window)};}
  async function getMeetings(){if(!config.refreshToken)return {status:'not_connected',events:[]};return meetingReader.getMeetings();}
  async function getReminderEvents(){return config.refreshToken?meetingReader.getReminderEvents():[];}
- return {connection,saveConnection,connect,getProfile,getSummary,getMeetings,getReminderEvents,readCalendar,writeCalendar,readMails,readMail,processGmail,disconnect,dispose:()=>authorizeCancel?.()};
+ return {connection,saveConnection,connect,getProfile,getSummary,getSchedule,getMeetings,getReminderEvents,readCalendar,writeCalendar,readMails,readMail,processGmail,disconnect,dispose:()=>authorizeCancel?.()};
 }
 module.exports={createGoogle,dayWindow,zoomInEvent};

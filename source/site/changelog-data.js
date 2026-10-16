@@ -1,5 +1,19 @@
 window.OrbitChangelog = [
   {
+    "version": "1.8.43",
+    "date": "2026-10-15",
+    "kind": "feature",
+    "en": "Browse yesterday, tomorrow, or any date directly in the Overview schedule. Use the arrows, date picker, and Today button; new local meetings use the selected date.",
+    "zh": "概览行程支持左右切换昨日、明日及其他日期，也可直接选日期或回到今天；新增本地会议自动使用当前查看日期。"
+  },
+  {
+    "version": "1.8.43",
+    "date": "2026-10-15",
+    "kind": "fix",
+    "en": "Load all connected Google calendars for the selected day in your configured time zone, including daylight-saving boundaries. Keep the chosen date when refreshing and prevent old responses from replacing a newer selection.",
+    "zh": "按所选日期和软件时区读取所有已连接 Google 日历，正确处理夏令时边界；刷新保留查看日期，快速切换时避免旧请求覆盖新日期。"
+  },
+  {
     "version": "1.8.40",
     "date": "2026-10-13",
     "kind": "feature",

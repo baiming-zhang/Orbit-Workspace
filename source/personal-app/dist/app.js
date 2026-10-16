@@ -162,7 +162,7 @@ async function refreshMeetings(){if(!window.orbitDesktop||meetingsLoading)return
 
 function validateZoom(value){try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&(u.hostname==='zoom.us'||u.hostname.endsWith('.zoom.us')||u.hostname==='zoom.com'||u.hostname.endsWith('.zoom.com'))&&/^\/(?:j|my|wc\/join)\/[^/]+\/?$/.test(u.pathname);}catch{return false;}}
 
-function findEvent(id){return state.events.find(e=>e.id===id)||futureMeetings.events?.find(e=>e.id===id)||liveSummary.calendar?.events?.find(e=>e.id===id);}
+function findEvent(id){return state.events.find(e=>e.id===id)||futureMeetings.events?.find(e=>e.id===id)||liveSummary.calendar?.events?.find(e=>e.id===id)||scheduleData.events?.find(e=>e.id===id);}
 
 function summaryStatistic(value,unit){return '<div class="summary-stat"><div class="metric-value">'+value+'<span class="metric-unit">'+unit+'</span></div></div>';}
 
@@ -174,7 +174,7 @@ async function processLiveMail(action,id){if(mailActionBusy)return false;mailAct
 
 function updateConnectionLabel(){if(typeof applyProfile==='function')applyProfile();const el=$('.demo-indicator');el.innerHTML='<span></span>'+(liveSummary.connected?'Google 已连接':'Google 未连接');el.classList.toggle('is-connected',!!liveSummary.connected);$('.profile small').textContent=liveSummary.connected?'Google 已授权':'个人工作空间';}
 
-async function refreshSummary(){if(!window.orbitDesktop)return;if(summaryPromise){summaryQueued=true;return summaryPromise;}summaryPromise=(async()=>{do{summaryQueued=false;summaryLoading=true;if(state.page==='overview')render();try{const result=await window.orbitDesktop.getSummary();if(result.ok===false)throw new Error(result.error);liveSummary=result;if(result.date){today=result.date;currentDate=dateObject(today);}}catch{toast('暂时无法刷新数据，请稍后重试。');}finally{summaryLoading=false;render();}}while(summaryQueued);})();try{return await summaryPromise;}finally{summaryPromise=null;}}
+async function refreshSummary(){if(!window.orbitDesktop)return;if(summaryPromise){summaryQueued=true;return summaryPromise;}summaryPromise=(async()=>{do{summaryQueued=false;summaryLoading=true;if(state.page==='overview')render();try{const result=await window.orbitDesktop.getSummary();if(result.ok===false)throw new Error(result.error);liveSummary=result;if(result.date){today=result.date;currentDate=dateObject(today);}}catch{toast('暂时无法刷新数据，请稍后重试。');}finally{summaryLoading=false;if(scheduleDate)refreshSchedule();render();}}while(summaryQueued);})();try{return await summaryPromise;}finally{summaryPromise=null;}}
 
 function nativePage(id){return '<section id="native-web-surface" class="native-web-surface"><div class="native-loading"></div></section>';}
 
@@ -245,6 +245,14 @@ function servicesGrid(){return `<div class="service-grid">${services.map(s=>`<a 
 
 function mailPreview(m){return `<button class="mail-preview" data-action="read-mail" data-id="${m.id}"><span class="sender-avatar ${m.color}">${escapeHtml(m.initial)}</span><div class="mail-info"><div class="mail-line"><span class="sender-name">${escapeHtml(m.sender)}</span><span class="mail-time">${escapeHtml(m.time)}</span></div><div class="mail-subject">${escapeHtml(m.subject)}</div></div>${m.unread?'<span class="unread-dot"></span>':''}</button>`;}
 
+let scheduleDate=null,scheduleData={date:null,status:'idle',events:[]},scheduleRequest=0;
+function selectedScheduleDate(){return scheduleDate||today;}
+function shiftScheduleDate(date,days){const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10);}
+function scheduleSource(){const date=selectedScheduleDate();return date===today?liveSummary.calendar||{}:scheduleData.date===date&&scheduleData.timeZone===prefs.timeZone?scheduleData:{status:'loading',events:[]};}
+function selectedSchedule(){return OrbitSchedule.merge(scheduleSource().events||[],state.events).filter(e=>OrbitSchedule.onDate(e,selectedScheduleDate(),prefs.timeZone));}
+async function refreshSchedule(){const date=selectedScheduleDate(),zone=prefs.timeZone,request=++scheduleRequest;if(date===today){render();return;}scheduleData={date,timeZone:zone,status:'loading',events:[]};render();try{const result=await window.orbitDesktop.getSchedule(date);if(result.ok===false)throw Error(result.error);if(request!==scheduleRequest||date!==selectedScheduleDate()||zone!==prefs.timeZone)return;scheduleData={...result,date,timeZone:zone};}catch(error){if(request!==scheduleRequest||date!==selectedScheduleDate()||zone!==prefs.timeZone)return;scheduleData={date,timeZone:zone,status:'error',events:[],error:error.message};}render();}
+function selectScheduleDate(date){if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date+'T12:00:00Z'))||new Date(date+'T12:00:00Z').toISOString().slice(0,10)!==date)return;scheduleDate=date===today?null:date;refreshSchedule();}
+function scheduleControls(){const date=selectedScheduleDate(),en=prefs.language==='en';return '<div class="schedule-date-controls"><button class="icon-btn" data-action="schedule-prev" aria-label="'+(en?'Previous day':'前一天')+'">'+icon('left')+'</button><input type="date" class="schedule-date-input" value="'+date+'" aria-label="'+(en?'Schedule date':'行程日期')+'"><button class="icon-btn" data-action="schedule-next" aria-label="'+(en?'Next day':'后一天')+'">'+icon('chevron')+'</button><button class="text-link" data-action="schedule-today" '+(date===today?'disabled':'')+'>'+(en?'Today':'今天')+'</button></div>';}
 function todaySchedule(){return OrbitSchedule.merge(liveSummary.calendar?.events||[],futureMeetings.events||[],state.events).filter(e=>OrbitSchedule.onDate(e,today,prefs.timeZone));}
 function schedulePreview(e){return '<div class="schedule-item '+(OrbitSchedule.ended(e,prefs.timeZone)?'is-past':'')+'"><span class="schedule-time">'+escapeHtml(OrbitI18n.text(e.time,prefs.language))+'</span><span class="schedule-line '+(e.type||'blue')+'"></span><span class="schedule-text"><strong>'+escapeHtml(e.title)+'</strong><small>'+icon(e.zoomLink?'video':'pin')+escapeHtml(e.zoomLink?'Zoom 会议':e.location||'未设置地点')+'</small></span>'+(e.zoomLink?'<button class="join-mini" data-action="join-zoom" data-id="'+escapeHtml(e.id)+'" data-mode="app">加入 '+icon('arrow')+'</button>':'<button class="icon-btn" data-action="view-event" data-id="'+escapeHtml(e.id)+'" aria-label="查看日程详情">'+icon('chevron')+'</button>')+'</div>';}
 
@@ -258,15 +266,15 @@ function overviewPage(){
 
  const local=state.events.filter(e=>e.date===today);
 
- const items=todaySchedule();
+ const items=selectedSchedule(),source=scheduleSource(),en=prefs.language==='en';
 
  const unread=liveSummary.gmail?.status==='success'?liveSummary.gmail.count:'—';
 
- const eventCount=liveSummary.calendar?.status==='success'?items.length:local.length||'—';
+ const eventCount=source.status==='success'?items.length:items.length||'—';
 
- const scheduleContent=items.length?items.slice(0,6).map(schedulePreview).join(''):'<div class="summary-empty">'+icon('calendar')+'<strong>'+(liveSummary.calendar?.status==='success'?'今天暂时没有安排':'让今天的安排，一目了然')+'</strong><p>'+(liveSummary.calendar?.status==='success'?'留一些时间，给自己。':'连接 Google 账号查看日程，或添加本地会议。')+'</p><button class="secondary-btn" data-action="new-event">'+icon('plus')+'添加会议</button></div>';
+ const scheduleContent=(source.status==='loading'?'<p class="schedule-load-note" role="status">'+(en?'Loading schedule…':'正在读取日程…')+'</p>':'')+(source.status==='error'?'<p class="schedule-load-note" role="status">'+escapeHtml(source.error||'')+' <button class="text-link" data-action="schedule-retry">'+(en?'Retry':'重试')+'</button></p>':'')+(source.partial?'<p class="schedule-load-note">'+(en?'Some calendars could not be loaded.':'部分日历读取失败，当前显示已读取的安排。')+'</p>':'')+(items.length?items.map(schedulePreview).join(''):'<div class="summary-empty">'+icon('calendar')+'<strong>'+(source.status==='success'?(en?'No events on this day':'这一天暂时没有安排'):(en?'Your schedule, at a glance':'查看这一天的安排'))+'</strong><p>'+(source.status==='success'?(en?'Make some time for yourself.':'留一些时间，给自己。'):(en?'Connect Google Calendar or add a local meeting.':'连接 Google 账号查看日程，或添加本地会议。'))+'</p><button class="secondary-btn" data-action="new-event">'+icon('plus')+'添加会议</button></div>');
 
- const schedulePanel='<section class="panel summary-panel" data-summary="calendar"><div class="panel-top"><div class="panel-title">'+icon('calendar')+'<h2>今日日程</h2></div>'+summaryStatistic(eventCount,'项')+'</div>'+'<div class="summary-content schedule-list">'+scheduleContent+'</div></section>';
+ const schedulePanel='<section class="panel summary-panel" data-summary="calendar"><div class="panel-top"><div class="panel-title">'+icon('calendar')+'<h2>'+(selectedScheduleDate()===today?(en?'Today’s schedule':'今日日程'):(en?'Schedule':'行程安排'))+'</h2></div>'+summaryStatistic(eventCount,'项')+'</div>'+scheduleControls()+'<div class="summary-content schedule-list" aria-live="polite">'+scheduleContent+'</div></section>';
 
  const mailPanel='<section class="panel summary-panel" data-summary="gmail"><div class="panel-top"><div class="panel-title">'+icon('mail')+'<h2>今日未读邮件</h2></div>'+summaryStatistic(unread,'封')+'</div>'+'<div class="summary-content">'+mailSummaryContent()+'</div></section>';
 
@@ -332,7 +340,8 @@ document.addEventListener('click',e=>{const el=e.target.closest('[data-action]')
 
  case 'calendar-view':state.calendarView=el.dataset.view;render();break;
 
- case 'new-event':eventModal();break;case 'new-event-date':eventModal(el.dataset.date);break;
+ case 'schedule-prev':selectScheduleDate(shiftScheduleDate(selectedScheduleDate(),-1));break;case 'schedule-next':selectScheduleDate(shiftScheduleDate(selectedScheduleDate(),1));break;case 'schedule-today':selectScheduleDate(today);break;case 'schedule-retry':refreshSchedule();break;
+ case 'new-event':eventModal(state.page==='overview'?selectedScheduleDate():today);break;case 'new-event-date':eventModal(el.dataset.date);break;
 
  case 'view-event':viewEvent(id);break;case 'edit-event':eventModal(today,findEvent(id));break;
 
@@ -417,3 +426,5 @@ document.addEventListener('input',e=>{if(e.target.id==='navigation-spacing'){$('
 
 setInterval(()=>{if(!$('#modal').open&&['overview','zoom'].includes(state.page))render();},30000);
 window.addEventListener('focus',()=>{if(state.page==='overview'){refreshSummary();refreshMeetings();}});
+
+document.addEventListener('change',event=>{if(event.target.matches('.schedule-date-input'))selectScheduleDate(event.target.value);});

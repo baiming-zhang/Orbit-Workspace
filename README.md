@@ -106,6 +106,11 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.43
+
+- Browse yesterday, tomorrow, or any date directly in the Overview schedule. Use the arrows, date picker, and Today button; new local meetings use the selected date.
+- Load all connected Google calendars for the selected day in your configured time zone, including daylight-saving boundaries. Keep the chosen date when refreshing and prevent old responses from replacing a newer selection.
+
 ### v1.8.40
 
 - Mark messages as read or move them to Gmail Trash directly from Overview; marking the mail notification as read also updates Gmail. Zoom links saved with a meeting time appear in both Today’s schedule and the Zoom list, including meetings from all connected calendars. Existing Google connections may need renewed mail permission.

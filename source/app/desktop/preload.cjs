@@ -63,6 +63,7 @@ contextBridge.exposeInMainWorld('orbitDesktop',Object.freeze({
   disconnectGoogle:()=>ipcRenderer.invoke('orbit:google-disconnect'),
   getMeetings:()=>ipcRenderer.invoke('orbit:google-meetings'),
   processGmail:input=>ipcRenderer.invoke('orbit:gmail-action',input),
+  getSchedule:date=>ipcRenderer.invoke('orbit:calendar-day',date),
   getSummary:()=>ipcRenderer.invoke('orbit:google-summary'),
   syncMeetings:(events)=>ipcRenderer.invoke('orbit:sync-meetings',events)
 }));
