@@ -1,5 +1,19 @@
 window.OrbitChangelog = [
   {
+    "version": "1.9.1",
+    "date": "2026-10-16",
+    "kind": "feature",
+    "en": "Restore every workspace tab, its order, selected tab, split conversation, zoom and reading position from an encrypted local session. PDF tools now offer four editable presets, an anchored color panel, red default annotation icons and more spacious controls.",
+    "zh": "标签页会话本地加密保存，恢复各工作区全部标签、顺序、选中项、分屏会话及缩放和阅读位置。PDF 工具改为四个可改色预置、就近展开的颜色面板，默认批注图标显示红色，排版更宽松。"
+  },
+  {
+    "version": "1.9.1",
+    "date": "2026-10-16",
+    "kind": "fix",
+    "en": "Drag PDF tools with the pointer, then ease onto the document viewport edges or return to top center when dropped away from an edge. Keep left docking beside the PDF, clear of thumbnails. Drag across text to highlight it. Select notes with a click or marquee and delete only the selection. Confirm before clearing all added or original notes. Collapsing slides the handle to the nearest corresponding document corner. Centered tool icons use one soft selection surface. Undo and redo support Ctrl+Z, Ctrl+Y and Ctrl+Shift+Z.",
+    "zh": "拖动 PDF 工具栏时实时跟随鼠标，松手后平滑吸附正文区域四边，未接近边缘则回到顶部中心；左侧吸附避开缩略图。荧光笔划过文字直接高亮。支持单点和框选批注，垃圾桶仅删除选中项；清除全部新增或原有批注前显示确认框。折叠手柄自动滑向对应正文角落，仍可自由拖动。工具选中底色统一、图标居中；支持 Ctrl+Z 撤销及 Ctrl+Y、Ctrl+Shift+Z 恢复。"
+  },
+  {
     "version": "1.8.48",
     "date": "2026-10-15",
     "kind": "feature",
