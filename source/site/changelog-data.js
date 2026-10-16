@@ -1,5 +1,19 @@
 window.OrbitChangelog = [
   {
+    "version": "1.8.47",
+    "date": "2026-10-15",
+    "kind": "feature",
+    "en": "A compact icon ribbon brings PDF drawing tools together. Click the page to type in a transparent text box; a gray dashed outline appears only while editing. Existing text remains editable after saving and reopening.",
+    "zh": "PDF 绘图改为紧凑图标工具栏；点击页面即可在透明文字框中直接输入，编辑时显示灰色虚线占位，结束编辑隐藏边框。保存重开后仍可继续修改文字。"
+  },
+  {
+    "version": "1.8.47",
+    "date": "2026-10-15",
+    "kind": "fix",
+    "en": "Add new-tab shortcuts beside Open file and after the last tab, label the right-side action New tab, and narrow the address field by 30%. Bilingual labels and light/dark themes are supported.",
+    "zh": "在打开文件左侧和最后一个标签页右侧新增 +，右侧入口改为“新增标签页”，三个入口功能一致；网址输入框缩窄 30%，适配中英文及明暗主题。"
+  },
+  {
     "version": "1.8.46",
     "date": "2026-10-15",
     "kind": "feature",

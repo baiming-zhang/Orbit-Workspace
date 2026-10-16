@@ -106,6 +106,11 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.8.47
+
+- A compact icon ribbon brings PDF drawing tools together. Click the page to type in a transparent text box; a gray dashed outline appears only while editing. Existing text remains editable after saving and reopening.
+- Add new-tab shortcuts beside Open file and after the last tab, label the right-side action New tab, and narrow the address field by 30%. Bilingual labels and light/dark themes are supported.
+
 ### v1.8.46
 
 - PDFs open in read mode. Enter Edit mode to add editable Chinese or English text, rectangles, ellipses, tapered arrows, lines, triangles, diamonds, highlights, and underlines. Select, edit, or erase individual Orbit annotations, including after saving and reopening the PDF.

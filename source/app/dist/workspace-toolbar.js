@@ -15,6 +15,7 @@
   const english=prefs.language==='en',pdf=page==='pdf';
   input.placeholder=pdf?(english?'PDF file path or URL':'PDF 文件路径或网址'):(english?'Enter a URL or search':'输入网址或搜索关键词');
   input.setAttribute('aria-label',pdf?(english?'PDF file path or URL':'PDF 文件路径或网址'):(english?'Website address or search':'网址或搜索关键词'));
+  const add=document.getElementById('workspace-new-tab');add.title=english?'New tab':'新增标签页';add.setAttribute('aria-label',add.title);
   file.title=pdf?(english?'Open PDF':'打开 PDF'):(english?'Open file':'打开文件');file.setAttribute('aria-label',file.title);
   const chatWidth=current()?.internalActive?current().internalChatWidth||0:0;document.body.classList.toggle('internal-chat',chatWidth>0);document.body.style.setProperty('--orbit-chat-width',chatWidth+'px');
   syncInput();
@@ -33,6 +34,7 @@
   if(!result.ok){input.setAttribute('aria-invalid','true');toast(result.error);return;}
   if(result.workspaceState)accept(result.workspaceState);input.blur();syncInput(true);
  });
+ document.getElementById('workspace-new-tab').addEventListener('click',async()=>{const result=await window.orbitDesktop.workspaceAction(state.page,'new');if(!result.ok)toast(result.error);});
  file.addEventListener('click',async()=>{const result=await window.orbitDesktop.workspaceAction(state.page,'open-file');if(!result.ok)toast(result.error);});
  let selectOnClick=false;
  input.addEventListener('focus',()=>{input.select();selectOnClick=true;});

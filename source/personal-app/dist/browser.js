@@ -4,7 +4,7 @@ function fitTabs(){const root=$('#tabs'),count=root.children.length,width=root.c
 new ResizeObserver(fitTabs).observe($('#tabs'));
 function labels(){
  document.documentElement.lang=current?.language==='zh'?'zh-CN':'en';
- $('#new').title=current?.workspace==='pdf'?tr('Open another PDF','打开另一个 PDF'):tr('Open another browser tab (Ctrl+T)','多开一个浏览标签页（Ctrl+T）');$('#new').setAttribute('aria-label',$('#new').title);
+ for(const id of ['strip-new','new-label']){const b=$('#'+id);b.title=tr('New tab (Ctrl+T)','新增标签页（Ctrl+T）');b.setAttribute('aria-label',tr('New tab','新增标签页'));}$('#new-label').textContent=tr('New tab','新增标签页');
  $('#chat-reload').title=tr('Reload ChatGPT','刷新 ChatGPT');
  $('#empty h1').textContent=tr('PDF Reader','PDF 阅读');$('#empty p').textContent=tr('Click + above to open a PDF.','点击上方 + 打开 PDF。');$('#empty p:last-child').textContent=tr('Open ChatGPT to ask questions while reading.','打开 ChatGPT，边阅读边提问。');
  $('#file-address-dialog h2').textContent=tr('File address','文件地址');$('#file-address-dialog label').textContent=tr('View or edit the PDF path / URL','查看或修改 PDF 路径 / 网址');$('#file-address-cancel').textContent=tr('Cancel','取消');$('#file-address-save').textContent=tr('Open','打开');
@@ -27,7 +27,8 @@ function renderTabState(s){
  $('#chat').setAttribute('aria-pressed',!!active?.chat);$('#chat-reload').hidden=!active?.chat;$('#error').textContent=OrbitI18n.text(s.error,current.language);
 }
 function acceptTabState(s){if(tabGesture&&s.workspace===tabGesture.workspace){pendingTabState=s;return;}if(tabGesture)finishTabGesture();renderTabState(s);}window.orbitTabs.onState(acceptTabState);
-for(const action of ['new','chat','chat-reload'])$('#'+action).onclick=()=>window.orbitTabs.action(action);
+for(const id of ['strip-new','new-label'])$('#'+id).onclick=()=>window.orbitTabs.action('new');
+for(const action of ['chat','chat-reload'])$('#'+action).onclick=()=>window.orbitTabs.action(action);
 $('#pdf-upload-status').onclick=()=>window.orbitTabs.action('pdf-chat-retry');
 function cancelAddress(){if($('#file-address-dialog').open)$('#file-address-dialog').close();addressId=null;window.orbitTabs.action('pdf-address-close');}
 window.orbitTabs.onPdfAddress(value=>{addressId=value.id;$('#file-address-title').textContent=value.title;$('#file-address').value=value.address;$('#file-address-error').textContent='';if(!$('#file-address-dialog').open)$('#file-address-dialog').showModal();$('#file-address').focus();$('#file-address').select();});
