@@ -1,3 +1,4 @@
+const {closePage}=require('./page-lifecycle.cjs');
 'use strict';
 const {WebContentsView}=require('electron');
 const path=require('node:path');
@@ -23,7 +24,7 @@ function createFavoritesFlyout({getWindow,getData,getLanguage,onVisibility=()=>{
   if(!visible){visible=true;win.contentView.addChildView(view);onVisibility(true);}position();raise();update();if(ready)view.webContents.focus();return {ok:true};
  }
  function trusted(event){return !!view&&!view.webContents.isDestroyed()&&event.sender===view.webContents&&event.senderFrame===view.webContents.mainFrame&&event.senderFrame.url==='orbit://app/favorites.html';}
- function dispose(){close();if(view&&!view.webContents.isDestroyed())view.webContents.close();view=null;ready=false;}
+ function dispose(){close();if(view&&!view.webContents.isDestroyed())closePage(view.webContents);view=null;ready=false;}
  return {show,close,update,raise,trusted,dispose,isVisible:()=>visible,getView:()=>view};
 }
 module.exports={createFavoritesFlyout};

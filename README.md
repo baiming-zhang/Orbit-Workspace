@@ -106,6 +106,15 @@ See [source/BUILD.md](source/BUILD.md) to rebuild. The complete release ZIP also
 
 ## What's new
 
+### v1.9.2
+
+- Resize text boxes from all eight corner and edge handles; drag selected text to reposition it. Preserve text wrapping and box dimensions when saving and reopening. / 文本框提供四角与四边中点共八个控制点，选中文字可拖动位置；保存重开后保留换行和文本框尺寸。
+- Show a neutral text boundary only for the active editor or selected text box. Remove persistent red frames after editing and in reading mode. / 仅当前编辑或选中的文本框显示中性边界，编辑完成和阅读模式下移除常驻红框。
+- Keep highlights selectable, erasable and deletable. Clear all now removes both added and original annotations, including reopened documents, with undo and redo. / 荧光笔批注可正常选择、擦除与删除；全部清除同时清除新增和原有批注，支持重开文档及撤销重做。
+- Close numeric tool settings automatically when drawing starts, including text highlight and underline gestures. / 开始绘图时自动关闭右键数字设置窗口，文字荧光笔和下划线拖选同样适用。
+- Underline selected PDF text along its baseline, following text ranges and separate lines instead of drawing a free straight line. / 下划线识别并跟随选中的 PDF 文字，沿文字底部逐行标注，不再绘制自由直线。
+
+
 ### v1.9.1
 
 - Restore every workspace tab, its order, selected tab, split conversation, zoom and reading position from an encrypted local session. PDF tools now offer four editable presets, an anchored color panel, red default annotation icons and more spacious controls.

@@ -5,7 +5,7 @@
  const brightness=c=>c?(c[0]*.2126+c[1]*.7152+c[2]*.0722)/255:0;
  function repair(){queued=false;if(!dark||!document.body)return;
   for(const el of document.body.querySelectorAll('*')){
-   if(['IMG','VIDEO','CANVAS','SVG','PATH','STYLE','SCRIPT','LINK','SOURCE','PICTURE','IFRAME','EMBED'].includes(el.tagName)||el.closest('svg')||el.matches('.bubble,.loading-symbol'))continue;
+   if(['IMG','VIDEO','CANVAS','SVG','PATH','STYLE','SCRIPT','LINK','SOURCE','PICTURE','IFRAME','EMBED'].includes(el.tagName)||el.closest('svg,[data-theme-managed]')||el.matches('.bubble,.loading-symbol'))continue;
    const style=getComputedStyle(el);if(style.display==='none'||style.visibility==='hidden')continue;
    const bg=rgba(style.backgroundColor),ink=rgba(style.color),border=rgba(style.borderTopColor);
    const lightGradient=/gradient\(/.test(style.backgroundImage)&&(/(?:#fff\b|#ffffff|rgb\(2[4-5]\d,\s*2[4-5]\d,\s*2[4-5]\d\))/.test(style.backgroundImage));
